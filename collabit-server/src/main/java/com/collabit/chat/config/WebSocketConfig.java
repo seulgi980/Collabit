@@ -26,9 +26,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     //메시지 송수신 주소 설정
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableStompBrokerRelay("/sub")
-                .setRelayHost("localhost")
-                .setRelayPort(6379);
+        registry.enableSimpleBroker("/sub");
         registry.setApplicationDestinationPrefixes("/pub");
     }
 
