@@ -43,9 +43,7 @@ public class S3Service {
 
     public boolean delete(String fileUrl) {
         try {
-            String fileName = extractUrl(fileUrl);
-            // S3에서 객체 삭제
-            amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
+            amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileUrl));
             return true;
         } catch (AmazonServiceException e) {
             System.err.println("Error occurred while deleting object from S3: " + e.getMessage());
