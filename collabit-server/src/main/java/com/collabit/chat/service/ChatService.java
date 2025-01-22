@@ -20,7 +20,7 @@ public class ChatService {
                 .roomCode(chatMessageSubDTO.getRoomCode())
                 .sender(chatMessageSubDTO.getSender())
                 .message(chatMessageSubDTO.getMessage())
-                .time(LocalDateTime.now())
+                .timestamp(LocalDateTime.now())
                 .build();
 
         simpMessagingTemplate.convertAndSend("/sub/chatRoom/" + chatMessageSubDTO.getRoomCode(), chatMessagePubDTO);
