@@ -24,7 +24,7 @@ public class User {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "id")
+    @Column(name = "id", unique = true)
     private String id;
 
     @Column(name = "github_id", unique = true)
@@ -33,7 +33,7 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "nickname", length = 20, nullable = false)
+    @Column(name = "nickname", length = 20, nullable = false, unique = true)
     private String nickname;
 
     @Column(name = "profile_image", nullable = false)
