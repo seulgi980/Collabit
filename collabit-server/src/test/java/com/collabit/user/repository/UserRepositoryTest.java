@@ -1,6 +1,7 @@
 package com.collabit.user.repository;
 
 import com.collabit.user.domain.entity.User;
+import jakarta.transaction.Transactional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test; //junit5
 import org.junit.jupiter.api.DisplayName; //junit5
@@ -10,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -19,10 +21,12 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Test
+    @Transactional
     @DisplayName("GitHub 아이디로 사용자 찾기 테스트")
     public void testFindByGithubId() {
         // Given: 테스트용 깃허브 유저 데이터 저장
-        User gitUser = User.githubBuilder()
+        User gitUser = User.builder()
+                .code(UUID.randomUUID().toString()) // UUID 생성은 비즈니스 로직으로 처리
                 .githubId("testGitUser")
                 .nickname("testNickname")
                 .profileImage("default.png")
@@ -43,6 +47,7 @@ public class UserRepositoryTest {
     }
 
     @Test
+    @Transactional
     @DisplayName("GitHub 아이디로 사용자 찾기 - 존재하지 않을 때")
     public void testFindByGithubId_NotFound() {
         // When: 존재하지 않는 아이디로 검색
