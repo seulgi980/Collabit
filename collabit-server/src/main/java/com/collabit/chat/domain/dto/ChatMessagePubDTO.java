@@ -13,5 +13,5 @@ public class ChatMessagePubDTO {
     private int roomCode;
     private String sender;
     private String message;
-    private LocalDateTime time;
+    private LocalDateTime timestamp;
 }

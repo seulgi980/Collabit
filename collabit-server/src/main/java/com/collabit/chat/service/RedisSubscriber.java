@@ -24,7 +24,7 @@ public class RedisSubscriber {
                     .roomCode(chatMessageSubDTO.getRoomCode())
                     .sender(chatMessageSubDTO.getSender())
                     .message(chatMessageSubDTO.getMessage())
-                    .time(LocalDateTime.now())
+                    .timestamp(LocalDateTime.now())
                     .build();
             log.info("받은 메시지: {}", chatMessagePubDTO);
             template.convertAndSend("chat", chatMessagePubDTO);
