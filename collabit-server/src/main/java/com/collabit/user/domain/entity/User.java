@@ -24,8 +24,8 @@ public class User {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "id", unique = true)
-    private String id;
+    @Column(name = "email", unique = true)
+    private String email;
 
     @Column(name = "github_id", unique = true)
     private String githubId;
