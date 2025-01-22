@@ -43,6 +43,8 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    private Role role;
+
     // 일반회원에 GitHub 연동을 위한 메서드
     public void linkGithub(String githubId) {
         this.githubId = githubId;
