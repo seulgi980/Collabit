@@ -24,7 +24,7 @@ public class User {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "id")
+    @Column(name = "id", unique = true)
     private String id;
 
     @Column(name = "github_id", unique = true)
@@ -33,7 +33,7 @@ public class User {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "nickname", length = 20, nullable = false)
+    @Column(name = "nickname", length = 20, nullable = false, unique = true)
     private String nickname;
 
     @Column(name = "profile_image", nullable = false)
@@ -42,6 +42,8 @@ public class User {
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    private Role role;
 
     // 일반회원에 GitHub 연동을 위한 메서드
     public void linkGithub(String githubId) {
