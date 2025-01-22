@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 //@EnableWebSecurity // spring boot는 생략가능
 public class SecurityConfig {
 
+    // securityFilterChain 생성
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화>< JWT, OAUTH 사용할거라 필요 없음!
