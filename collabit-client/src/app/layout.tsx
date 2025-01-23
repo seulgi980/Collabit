@@ -1,8 +1,10 @@
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import Footer from "@/features/ui/footer/Footer";
+import Header from "@/widget/ui/Header";
 import QueryProviders from "../shared/lib/query/QueryProviders";
+import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,9 +23,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko-KR">
-      <body className={`${inter.className}`}>
+      <body className={`${inter.className} `}>
         <QueryProviders>
-          {children}
+          <Header />
+          <main className="w-full px-5 md:px-20">{children}</main>
+          <Footer />
+
           <ReactQueryDevtools />
         </QueryProviders>
       </body>
