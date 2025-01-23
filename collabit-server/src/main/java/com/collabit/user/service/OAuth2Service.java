@@ -26,12 +26,12 @@ public class OAuth2Service {
     }
 
     // 새로운 GitHub 사용자 생성 및 저장
-    private User signUpOAuth2User(OAuth2UserRequestDTO userRequestDTO) {
+    private User signUpOAuth2User(OAuth2UserRequestDTO oAuth2UserRequestDTO) {
         User newGitUser = User.builder()
                 .code(UUID.randomUUID().toString()) // 고유한 사용자 코드 생성
-                .githubId(userRequestDTO.getGithubId())
-                .nickname(userRequestDTO.getNickname())
-                .profileImage(userRequestDTO.getProfileImage())
+                .githubId(oAuth2UserRequestDTO.getGithubId())
+                .nickname(oAuth2UserRequestDTO.getNickname())
+                .profileImage(oAuth2UserRequestDTO.getProfileImage())
                 .role(Role.ROLE_USER) // 기본 사용자 권한 설정
                 .build();
 
