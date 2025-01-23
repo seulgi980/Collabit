@@ -20,12 +20,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         this.oAuth2Service = oAuth2Service;
     }
 
-    // Spring Security의 인증 과정에서 사용될 사용자 정보를 반환
+    // 실제 access token을 사용해 GitHub API와 통신하고 사용자 정보를 가져와 DTO mapping
     // OAuth2UserRequest : Access Token, Client 정보 포함
     // OAuth2User : GitHub에서 받은 사용자 정보 가짐
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        // 실제 access token을 사용해 GitHub API와 통신하고 사용자 정보를 가져오는 작업
         OAuth2User oauth2User = super.loadUser(userRequest);
 
         // Github에서 받은 사용자 정보를 OAuth2UserRequestDTO로 변환
@@ -35,7 +34,16 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .profileImage(oauth2User.getAttribute("avatar_url"))
                 .build();
 
-        oAuth2Service.saveOrLoginOAuth2User(oauth2UserRequestDTO);
+        // 깃허브 연동 요청인 경우 (oAuth2Service에 임시 저장해둔 usercode가 있음)
+        String storedUserCode = oAuth2Service.getStoredUserCode();
+        if (storedUserCode != null) {
+            oAuth2Service.linkGithubAccount(storedUserCode, oauth2UserRequestDTO);
+        }
+
+        // OAuth2 로그인/회원가입인 경우
+        else {
+            oAuth2Service.saveOrLoginOAuth2User(oauth2UserRequestDTO);
+        }
 
         // 사용자 정보와 권한을 담은 DefaultOAuth2User 반환
         return new DefaultOAuth2User(
