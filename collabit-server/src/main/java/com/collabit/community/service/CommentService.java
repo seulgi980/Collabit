@@ -42,8 +42,8 @@ public class CommentService {
     public GetCommentResponseDTO updateComment(int commentCode, UpdateCommentRequestDTO requestDTO) {
         Comment comment = commentRepository.findByCode(commentCode);
         comment.setContent(requestDTO.getContent());
-        Comment savedComment = commentRepository.save(comment);
-        GetCommentResponseDTO responseDTO = buildDTO(savedComment);
+        Comment updatedComment = commentRepository.save(comment);
+        GetCommentResponseDTO responseDTO = buildDTO(updatedComment);
         return responseDTO;
     }
 

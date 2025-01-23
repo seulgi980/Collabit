@@ -44,6 +44,7 @@ public class CommentController {
     @Operation(summary="댓글 수정",description = "댓글을 수정하는 API입니다.")
     @PutMapping("/{commentCode}")
     public ResponseEntity<?> getCommentList(@PathVariable("commentCode") int commentCode,@RequestBody UpdateCommentRequestDTO requestDTO) {
+        // 유저 권한 확인
         GetCommentResponseDTO responseDTO = commentService.updateComment(commentCode,requestDTO);
         return ResponseEntity.status(201).body(responseDTO);
     }
@@ -51,6 +52,7 @@ public class CommentController {
     @Operation(summary="댓글 삭제",description = "댓글을 삭제하는 API입니다.")
     @DeleteMapping("/{commentCode}")
     public ResponseEntity<?> deleteComment(@PathVariable int commentCode){
+        // 유저 권한 확인
         commentService.deletePost(commentCode);
         return ResponseEntity.status(204).build();
     }
