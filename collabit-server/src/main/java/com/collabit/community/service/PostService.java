@@ -12,6 +12,7 @@ import com.collabit.community.repository.PostLikeRepository;
 import com.collabit.community.repository.PostRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -26,16 +27,12 @@ public class PostService {
     private final S3Service s3Service;
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
-    private final PostLikeRepository postLikeRepository;
+    private final PostCacheService postCacheService;
 
-    private final StringRedisTemplate redisTemplate;
-
-    private static final String LIKE_COUNT_PREFIX = "likeCount:";
-    private static final String LIKED_PREFIX = "liked:";
     private static final String DIR_NAME = "posts";
 
     @Transactional
-    public CreatePostResponseDTO createPost(CreatePostRequestDTO request, String userCode) {
+    public CreatePostResponseDTO createPost(String userCode, CreatePostRequestDTO request) {
         Post post = Post.builder()
             .userCode(userCode)
             .content(request.getContent())
@@ -62,40 +59,21 @@ public class PostService {
 
         List<Post> posts = postRepository.findAll();
         for (Post post : posts) {
-            List<Image> images = imageRepository.findByPost(post);
-
-            String[] imageUrls = images.stream()
-                .map(Image::getUrl)
-                .toArray(String[]::new);
-
-            GetPostResponseDTO responseDTO = buildDTO(post, imageUrls);
-
+            GetPostResponseDTO responseDTO = buildDTO(post,userCode);
             list.add(responseDTO);
-
-            // 캐시 관련
-            getLikeCountFromCache(post.getCode());
-            getIsLikedFromCache(userCode, post.getCode());
         }
         return list;
     }
 
-    public GetPostResponseDTO getPost(int postCode) {
+    public GetPostResponseDTO getPost(String userCode, int postCode) {
         Post post = postRepository.findByCode(postCode);
-        List<Image> images = imageRepository.findByPost(post);
-        String[] imageUrls = images.stream()
-            .map(Image::getUrl)
-            .toArray(String[]::new);
-
-        GetPostResponseDTO responseDTO = buildDTO(post, imageUrls);
-
-        // 캐시 관련
-        getLikeCountFromCache(post.getCode());
+        GetPostResponseDTO responseDTO = buildDTO(post,userCode);
 
         return responseDTO;
     }
 
     @Transactional
-    public GetPostResponseDTO updatePost(int postCode, UpdatePostRequestDTO requestDTO) {
+    public GetPostResponseDTO updatePost(String userCode, int postCode, UpdatePostRequestDTO requestDTO) {
         Post post = postRepository.findByCode(postCode);
         post.setContent(requestDTO.getContent());
         Post savedPost = postRepository.save(post);
@@ -106,13 +84,7 @@ public class PostService {
             imageRepository.deleteByUrl(url);
         }
 
-        List<Image> images = imageRepository.findByPost(savedPost);
-
-        String[] updateImageUrls = images.stream()
-            .map(Image::getUrl)
-            .toArray(String[]::new);
-
-        GetPostResponseDTO responseDTO = buildDTO(post,updateImageUrls);
+        GetPostResponseDTO responseDTO = buildDTO(savedPost,userCode);
 
         return responseDTO;
     }
@@ -120,7 +92,8 @@ public class PostService {
     @Transactional
     public void deletePost(int postCode) {
         Post post = postRepository.findByCode(postCode);
-        List<Image> images = imageRepository.findByPost(post);
+        // List<Image> images = imageRepository.findByPost(post);
+        List<Image> images = post.getImages();
         String[] imageUrls = images.stream()
             .map(Image::getUrl)
             .toArray(String[]::new);
@@ -130,38 +103,13 @@ public class PostService {
         postRepository.deleteByCode(postCode);
     }
 
-    private void getLikeCountFromCache(int postCode) {
-        String likeCountKey = LIKE_COUNT_PREFIX + postCode;
-        String cachedLikeCount = redisTemplate.opsForValue().get(likeCountKey);
-
-        if (cachedLikeCount == null) {
-            // 캐시가 없으면 데이터베이스에서 조회하여 캐싱
-            int likeCount = fetchLikeCountFromDB(postCode);
-            redisTemplate.opsForValue().set(likeCountKey, String.valueOf(likeCount));
-        }
-    }
-
-    private int fetchLikeCountFromDB(int postCode) {
-        return postLikeRepository.countById_PostCode(postCode);
-    }
-
-    private void getIsLikedFromCache(String userCode, int postCode) {
-        String likedKey = userCode + LIKED_PREFIX + postCode;
-        String cachedLiked = redisTemplate.opsForValue().get(likedKey);
-
-        if (cachedLiked == null) {
-            // 캐시가 없으면 데이터베이스에서 조회하여 캐싱
-            boolean liked = fetchIsLikedFromDB(userCode, postCode);
-            redisTemplate.opsForValue().set(likedKey, String.valueOf(liked));
-        }
-    }
-
-    private boolean fetchIsLikedFromDB(String userCode, int postCode) {
-        return postLikeRepository.existsById_UserCodeAndId_PostCode(userCode, postCode);
-    }
-
-
-    public GetPostResponseDTO buildDTO (Post post, String[] imageUrls) {
+    public GetPostResponseDTO buildDTO (Post post, String userCode) {
+        List<Image> images = post.getImages();
+        String[] imageUrls = images.stream()
+            .map(Image::getUrl)
+            .toArray(String[]::new);
+        int likeCount = postCacheService.getLikeCount((post.getCode()));
+        boolean isLiked = postCacheService.getIsLiked(userCode, post.getCode());
         return GetPostResponseDTO.builder()
             .code(post.getCode())
             .userCode(post.getUserCode())
@@ -169,6 +117,8 @@ public class PostService {
             .createdAt(post.getCreatedAt())
             .updatedAt(post.getUpdatedAt())
             .images(imageUrls)
+            .likeCount(likeCount)
+            .isLiked(isLiked)
             .build();
     }
 }
