@@ -1,54 +1,75 @@
 package com.collabit.global.config;
 
+import com.collabit.global.config.security.*;
 import com.collabit.user.handler.OAuth2SuccessHandler;
 import com.collabit.user.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+    private final TokenProvider tokenProvider;
+    private final CorsFilter corsFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
-                          OAuth2SuccessHandler oAuth2SuccessHandler) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
-    }
+//    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
+//                          OAuth2SuccessHandler oAuth2SuccessHandler) {
+//        this.customOAuth2UserService = customOAuth2UserService;
+//        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+//    }
 
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
-            .authorizeHttpRequests(auth -> {
-                // 회원가입, 로그인 허용
-                auth.requestMatchers("/api/user/sign-up","/api/user/login").permitAll();
+                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
 
-                // 그 외 요청은 인증 필요
-                auth.anyRequest().authenticated();
-            })
+                // exception handling 할 때 우리가 만든 클래스 추가
+                .exceptionHandling((exceptionHandling) ->
+                        exceptionHandling
+                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                                .accessDeniedHandler(jwtAccessDeniedHandler)
+                )
+                // HTTP 헤더 설정
+                .headers(headers ->
+                        headers
+                                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                )
 
-            .logout(logout -> logout
-                    .logoutUrl("/api/user/logout")
-                    // 로그아웃 성공 후 추가작업
-                    .logoutSuccessHandler((request, response, authentication) -> {
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.setContentType("application/json");
-                        response.getWriter().write("Logout successful! 로그아웃 성공");
-                    })
-                    .permitAll()
-            )
+                // 세션 관리 설정 (Stateless)
+                .sessionManagement(sessionManagement ->
+                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // 권한 설정
+                .authorizeHttpRequests(auth ->
+                        auth
+                                .requestMatchers("/auth/**").permitAll()
+                                .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
+                )
+
+
 
             // Spring Security에서 OAuth2 로그인 기능을 활성화
             .oauth2Login(oauth2 ->  oauth2
@@ -67,6 +88,7 @@ public class SecurityConfig {
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
             );
+
 
         return http.build();
     }
