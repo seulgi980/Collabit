@@ -16,4 +16,6 @@ public class GetPostResponseDTO {
     String[] images;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    int likeCount;
+    boolean isLiked;
 }
