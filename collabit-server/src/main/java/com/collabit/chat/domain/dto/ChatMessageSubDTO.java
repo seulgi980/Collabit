@@ -9,6 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 public class ChatMessageSubDTO {
     private int roomCode;
-    private String sender;
+    private String nickname;
     private String message;
 }

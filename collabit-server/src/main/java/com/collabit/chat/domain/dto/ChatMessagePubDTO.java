@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ChatMessagePubDTO {
     private int roomCode;
-    private String sender;
+    private String nickname;
     private String message;
     private LocalDateTime timestamp;
 }
