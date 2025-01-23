@@ -30,11 +30,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
             .authorizeHttpRequests(auth -> {
-                // 회원가입, 로그인 허용
-                auth.requestMatchers("/api/user/sign-up","/api/user/login").permitAll();
-
-                // 그 외 요청은 인증 필요
-                auth.anyRequest().authenticated();
+                auth.requestMatchers("/api/user/sign-up","/api/user/login").permitAll(); // 회원가입, 로그인 허용
+                auth.requestMatchers("/api/oauth/link").authenticated();
+                auth.requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll(); // OAuth 엔드포인트 허용
+                auth.anyRequest().authenticated(); // 그 외 요청은 인증 필요
             })
 
             .logout(logout -> logout
