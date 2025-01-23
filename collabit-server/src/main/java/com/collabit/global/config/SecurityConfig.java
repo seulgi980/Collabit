@@ -1,16 +1,20 @@
 package com.collabit.global.config;
 
-import com.collabit.global.config.security.*;
+import com.collabit.auth.jwt.JwtAccessDeniedHandler;
+import com.collabit.auth.jwt.JwtAuthenticationEntryPoint;
+import com.collabit.auth.jwt.JwtFilter;
+import com.collabit.auth.jwt.TokenProvider;
 import com.collabit.user.handler.OAuth2SuccessHandler;
 import com.collabit.user.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,11 +35,6 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
-//    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
-//                          OAuth2SuccessHandler oAuth2SuccessHandler) {
-//        this.customOAuth2UserService = customOAuth2UserService;
-//        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
-//    }
 
 
     @Bean
@@ -89,6 +88,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 
