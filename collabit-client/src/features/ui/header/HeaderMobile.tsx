@@ -1,0 +1,40 @@
+import HeaderDropDown from "@/entities/ui/headerDropDown/HeaderDropDown";
+import { Button } from "@/shared/ui/button";
+import { HeaderProps } from "@/widget/types/Header";
+import { AlignJustify } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+const HeaderMobile = ({
+  isLogin,
+  handleToLogin,
+  handleLogout,
+  handleToMyPage,
+}: HeaderProps) => {
+  return (
+    <header className="flex h-[72px] w-full items-center justify-between px-5">
+      <Link href="/" className="flex h-[24px] w-[65px] items-center">
+        <Image
+          src="/images/logo-lg.png"
+          alt="collabit"
+          width={65}
+          height={24}
+          priority
+        />
+      </Link>
+      {isLogin ? (
+        <HeaderDropDown
+          Icon={AlignJustify}
+          handleToMyPage={handleToMyPage}
+          handleLogout={handleLogout}
+        />
+      ) : (
+        <Button variant="outline" onClick={handleToLogin}>
+          로그인
+        </Button>
+      )}
+    </header>
+  );
+};
+
+export default HeaderMobile;

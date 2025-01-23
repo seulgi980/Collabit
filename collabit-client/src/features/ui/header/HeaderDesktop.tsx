@@ -1,6 +1,6 @@
 "use client";
 
-import UserAvatar from "@/entities/userAvatar/ui/UserAvatar";
+import UserAvatar from "@/entities/ui/userAvatar/UserAvatar";
 import { cn } from "@/shared/lib/shadcn/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -9,31 +9,26 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/shared/ui/navigation-menu";
+import { HeaderProps } from "@/widget/types/Header";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
 
-const HeaderDesktop = () => {
+const HeaderDesktop = ({
+  isLogin,
+  handleToLogin,
+  handleLogout,
+  handleToMyPage,
+  menuList,
+}: HeaderProps) => {
   const pathname = usePathname();
 
   const user = {
     name: "춤추는 라이언",
   };
-  const menus = [
-    { name: "리포트", href: "/report" },
-    { name: "프로젝트", href: "/project" },
-    {
-      name: "커뮤니티",
-      href: "/community",
-    },
-    { name: "채팅", href: "/chat" },
-  ];
-
-  const [isLogin, setIsLogin] = useState(true);
 
   return (
-    <header className="fixed left-0 top-0 flex h-[92px] w-full justify-between px-20 py-4 shadow-md">
+    <header className="flex h-[92px] w-full justify-between px-20 py-4 shadow-md">
       {/* 로고 */}
       <Link
         href="/"
@@ -51,7 +46,7 @@ const HeaderDesktop = () => {
         {/* 메뉴 */}
         <NavigationMenu>
           <NavigationMenuList className="flex items-center">
-            {menus.map((i) => (
+            {menuList!.map((i) => (
               <NavigationMenuItem
                 key={i.name}
                 className={cn(
@@ -67,9 +62,15 @@ const HeaderDesktop = () => {
           </NavigationMenuList>
         </NavigationMenu>
         {isLogin ? (
-          <UserAvatar user={user} />
+          <UserAvatar
+            user={user}
+            handleToMyPage={handleToMyPage}
+            handleLogout={handleLogout}
+          />
         ) : (
-          <Button variant="outline">로그인</Button>
+          <Button variant="outline" onClick={handleToLogin}>
+            로그인
+          </Button>
         )}
       </div>
     </header>
