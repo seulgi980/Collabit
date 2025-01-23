@@ -74,15 +74,23 @@ public class PostService {
 
     @Transactional
     public GetPostResponseDTO updatePost(String userCode, int postCode, UpdatePostRequestDTO requestDTO) {
-        Post post = postRepository.findByCode(postCode);
-        post.setContent(requestDTO.getContent());
-        Post savedPost = postRepository.save(post);
+        Post post = postRepository.findByCode(postCode); // Post를 가져옴
+        post.setContent(requestDTO.getContent()); // Post 내용 업데이트
 
-        String[] imageUrls = requestDTO.getImages();
-        for (String url : imageUrls) {
-            s3Service.delete(url);
-            imageRepository.deleteByUrl(url);
-        }
+        String[] imageUrls = requestDTO.getImages(); // 삭제할 이미지 URL 배열
+        List<Image> postImages = post.getImages(); // Post에 연결된 이미지 리스트 가져오기
+
+        // 삭제할 URL에 해당하는 이미지 삭제
+        postImages.removeIf(image -> {
+            boolean shouldRemove = Arrays.asList(imageUrls).contains(image.getUrl());
+            if (shouldRemove) {
+                // S3에서 이미지 삭제
+                s3Service.delete(image.getUrl());
+            }
+            return shouldRemove; // 삭제 조건에 해당하면 리스트에서 제거
+        });
+
+        Post savedPost = postRepository.save(post);
 
         GetPostResponseDTO responseDTO = buildDTO(savedPost,userCode);
 

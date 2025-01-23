@@ -22,7 +22,7 @@ public class Image {
     @Column(nullable = false)
     private String url;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "post_code")
     private Post post;
 }
