@@ -1,4 +1,4 @@
-package com.collabit.global.config.security;
+package com.collabit.auth.jwt;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

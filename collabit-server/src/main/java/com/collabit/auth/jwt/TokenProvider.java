@@ -1,8 +1,10 @@
-package com.collabit.global.config.security;
+package com.collabit.auth.jwt;
 
+import com.collabit.auth.controller.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,7 +29,7 @@ public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 *  30; // 30분
-    private static final long REFRESH_TOEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7; // 7일
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7; // 7일
 
     // 비밀키 객체: 서명 만들 때 or 검증에 사용
     private final Key key;
@@ -59,7 +61,7 @@ public class TokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
-                .setExpiration(new Date(now + REFRESH_TOEN_EXPIRE_TIME))
+                .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
 
@@ -80,7 +82,7 @@ public class TokenProvider {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
 
-        // claims에서 권한 정보 가져오기
+        // claims 에서 권한 정보 가져오기
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
@@ -98,9 +100,9 @@ public class TokenProvider {
     // token 정보 검증
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder() // JWT token을 파싱하기 위한 객체 생성
+            Jwts.parserBuilder() // JWT token 을 파싱하기 위한 객체 생성
                     .setSigningKey(key) // 서명 검증에 사용할 키(비밀키)
-                    .build().parseClaimsJws(token); // token검증
+                    .build().parseClaimsJws(token); // token 검증
             return true;
         } catch (SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.");
@@ -124,6 +126,15 @@ public class TokenProvider {
             return e.getClaims();
         }
 
+    }
+
+    // Getter 메서드 추가
+    public long getAccessTokenExpireTime() {
+        return ACCESS_TOKEN_EXPIRE_TIME;
+    }
+
+    public long getRefreshTokenExpireTime() {
+        return REFRESH_TOKEN_EXPIRE_TIME;
     }
 
 }
