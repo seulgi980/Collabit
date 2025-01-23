@@ -60,7 +60,7 @@ public class SecurityConfig {
                 // 권한 설정
                 .authorizeHttpRequests(auth ->
                         auth
-                                .requestMatchers("/auth/**").permitAll()
+                                .requestMatchers("/**").permitAll() // Todo: /auth/** 회원가입/로그인만 열어야함
                                 .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
                 )
 
