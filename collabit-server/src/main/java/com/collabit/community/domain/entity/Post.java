@@ -31,11 +31,9 @@ public class Post {
     @Column
     private String content;
 
-    @CreationTimestamp
     @Column
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
     @Column
     private LocalDateTime updatedAt;
 
