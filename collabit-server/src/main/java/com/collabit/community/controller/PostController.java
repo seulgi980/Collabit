@@ -24,7 +24,7 @@ public class PostController {
     @Operation(summary="게시글 등록",description = "게시글을 등록하는 API입니다.")
     @PostMapping("/")
     public ResponseEntity<?> createPost(@ModelAttribute CreatePostRequestDTO requestDTO){
-        CreatePostResponseDTO responseDTO = postService.createPost(requestDTO,"1");
+        CreatePostResponseDTO responseDTO = postService.createPost("1", requestDTO);
         return ResponseEntity.status(201).body(responseDTO);
     }
 
@@ -32,20 +32,21 @@ public class PostController {
     @GetMapping("/")
     public ResponseEntity<?> getPostList(){
         List<GetPostResponseDTO> list = postService.getPostList("1");
+        if (list.isEmpty()) return ResponseEntity.status(204).build();
         return ResponseEntity.status(200).body(list);
     }
 
     @Operation(summary="게시글 상세 조회",description = "게시글을 상세 조회하는 API입니다.")
     @GetMapping("/{postCode}")
     public ResponseEntity<?> getPost(@PathVariable int postCode){
-        GetPostResponseDTO responseDTO = postService.getPost(postCode);
+        GetPostResponseDTO responseDTO = postService.getPost("1", postCode);
         return ResponseEntity.status(200).body(responseDTO);
     }
 
     @Operation(summary="게시글 수정",description = "게시글을 수정하는 API입니다.")
     @PutMapping("/{postCode}")
     public ResponseEntity<?> updatePost(@PathVariable int postCode,@RequestBody UpdatePostRequestDTO requestDTO){
-        GetPostResponseDTO responseDTO = postService.updatePost(postCode, requestDTO);
+        GetPostResponseDTO responseDTO = postService.updatePost("1", postCode, requestDTO);
         return ResponseEntity.status(201).body(responseDTO);
     }
 
