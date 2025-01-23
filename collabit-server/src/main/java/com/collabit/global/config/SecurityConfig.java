@@ -1,10 +1,17 @@
 package com.collabit.global.config;
 
+import com.collabit.auth.jwt.JwtAccessDeniedHandler;
+import com.collabit.auth.jwt.JwtAuthenticationEntryPoint;
+import com.collabit.auth.jwt.JwtFilter;
+import com.collabit.auth.jwt.TokenProvider;
 import com.collabit.user.handler.OAuth2SuccessHandler;
 import com.collabit.user.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -12,19 +19,23 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+    private final TokenProvider tokenProvider;
+    private final CorsFilter corsFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
-                          OAuth2SuccessHandler oAuth2SuccessHandler) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
-    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,17 +46,29 @@ public class SecurityConfig {
                 auth.requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll(); // OAuth 엔드포인트 허용
                 auth.anyRequest().authenticated(); // 그 외 요청은 인증 필요
             })
+                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class) // cors필터 추가
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
 
-            .logout(logout -> logout
-                    .logoutUrl("/api/user/logout")
-                    // 로그아웃 성공 후 추가작업
-                    .logoutSuccessHandler((request, response, authentication) -> {
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.setContentType("application/json");
-                        response.getWriter().write("Logout successful! 로그아웃 성공");
-                    })
-                    .permitAll()
-            )
+                // exception handling 할 때 우리가 만든 클래스 추가
+                .exceptionHandling((exceptionHandling) ->
+                        exceptionHandling
+                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                                .accessDeniedHandler(jwtAccessDeniedHandler)
+                )
+
+                // JWT는 세션 기반x -> stateless 방식으로 작동 -> 필요 없는 세션 비활성화
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
+                )
+
+                // 권한 설정
+                .authorizeHttpRequests(auth ->
+                        auth
+                                .requestMatchers("/auth/**").permitAll()
+                                .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
+                )
+
+
 
             // Spring Security에서 OAuth2 로그인 기능을 활성화
             .oauth2Login(oauth2 ->  oauth2
@@ -65,6 +88,9 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
             );
 
+
+
+
         return http.build();
     }
 
@@ -72,6 +98,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 
 
