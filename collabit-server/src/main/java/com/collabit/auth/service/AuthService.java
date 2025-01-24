@@ -96,10 +96,13 @@ public class AuthService {
 
         // UserResponseDto 생성(FE 에게 정보 전달 용)
         // isGithub 은 회원가입시에는 false. 로그인 때 확인
-        return new UserResponseDto(user.getNickname(), user.getProfileImage(), false);
+        return UserResponseDto.builder()
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .isGithub(false)
+                .build();
 
     }
-
 
 
     // 이메일 중복 체크
