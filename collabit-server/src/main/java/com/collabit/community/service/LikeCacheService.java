@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class PostCacheService {
+public class LikeCacheService {
 
     private final PostLikeRepository postLikeRepository;
 
