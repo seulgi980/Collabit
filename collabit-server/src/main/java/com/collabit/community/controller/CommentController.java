@@ -44,7 +44,7 @@ public class CommentController {
 
     @Operation(summary="댓글 수정",description = "댓글을 수정하는 API입니다.")
     @PutMapping("/{commentCode}")
-    public ResponseEntity<?> getCommentList(@PathVariable("commentCode") int commentCode,@RequestBody UpdateCommentRequestDTO requestDTO) {
+    public ResponseEntity<?> updateComment(@PathVariable("commentCode") int commentCode,@RequestBody UpdateCommentRequestDTO requestDTO) {
         // 유저 권한 확인
         String userCode = "1";
         GetCommentResponseDTO responseDTO = commentService.updateComment(userCode,commentCode,requestDTO);
