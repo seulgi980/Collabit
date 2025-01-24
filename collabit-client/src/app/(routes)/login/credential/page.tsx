@@ -40,9 +40,7 @@ const LoginCredentialPage = () => {
           />
         </div>
 
-        <Button className="mt-10 h-12 w-full bg-violet-700 text-white hover:bg-violet-800">
-          로그인
-        </Button>
+        <Button className="mt-10 h-12 w-full">로그인</Button>
         <div className="mt-10 flex flex-col items-center justify-center gap-2 text-sm text-gray-500">
           <p>
             아직 계정이 없으신가요?{" "}
