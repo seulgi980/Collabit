@@ -16,6 +16,7 @@ public class CustomUserDetails implements UserDetails {
     private final String email; // Email
     private final String password; // Password(인중 후에는 null)
     private final String nickname; // 닉네임
+    private final String githubId;
     private final String profileImage; // 프로필 이미지
     private final Collection<? extends GrantedAuthority> authorities;
 

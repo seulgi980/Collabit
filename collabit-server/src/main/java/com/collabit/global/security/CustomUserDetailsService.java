@@ -24,6 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 user.getCode(), // PK
                 user.getEmail(),
                 user.getPassword(),
+                user.getGithubId(),
                 user.getNickname(),
                 user.getProfileImage(),
                 user.getAuthorities() // 권한 정보
