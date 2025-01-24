@@ -1,10 +1,8 @@
-package com.collabit.auth.controller.dto;
+package com.collabit.auth.domain.dto;
 
-import com.collabit.user.domain.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor

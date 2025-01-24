@@ -1,4 +1,4 @@
-package com.collabit.auth.config;
+package com.collabit.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

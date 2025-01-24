@@ -1,8 +1,10 @@
 package com.collabit.auth.controller;
 
-import com.collabit.auth.controller.dto.*;
+import com.collabit.auth.domain.dto.UserLoginRequestDto;
+import com.collabit.auth.domain.dto.UserResponseDto;
+import com.collabit.auth.domain.dto.UserSignupRequestDto;
 import com.collabit.auth.service.AuthService;
-import com.collabit.auth.service.UserService;
+import com.collabit.user.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,7 @@ public class AuthController {
     private final UserService userService;
 
     // 회원가입
-    @PostMapping("/api/user/sign-up")
+    @PostMapping("/api/auth/sign-up")
     public ResponseEntity<UserResponseDto> signup(@RequestBody UserSignupRequestDto userSignupRequestDto){
         return ResponseEntity.ok(userService.signup(userSignupRequestDto));
     }

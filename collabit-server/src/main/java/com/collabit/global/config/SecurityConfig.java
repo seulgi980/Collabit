@@ -1,11 +1,11 @@
 package com.collabit.global.config;
 
-import com.collabit.auth.jwt.JwtAccessDeniedHandler;
-import com.collabit.auth.jwt.JwtAuthenticationEntryPoint;
-import com.collabit.auth.jwt.JwtFilter;
-import com.collabit.auth.jwt.TokenProvider;
-import com.collabit.user.handler.OAuth2SuccessHandler;
-import com.collabit.user.service.CustomOAuth2UserService;
+import com.collabit.global.security.JwtAccessDeniedHandler;
+import com.collabit.global.security.JwtAuthenticationEntryPoint;
+import com.collabit.global.security.JwtFilter;
+import com.collabit.global.security.TokenProvider;
+import com.collabit.oauth.handler.OAuth2SuccessHandler;
+import com.collabit.oauth.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -31,39 +31,39 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
-                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class) // cors필터 추가
-                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
+            .authorizeHttpRequests(auth -> {
+                auth.requestMatchers("/api/user/sign-up","/api/user/login").permitAll(); // 회원가입, 로그인 허용
+                auth.requestMatchers("/api/oauth/link").authenticated();
+                auth.requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll(); // OAuth 엔드포인트 허용
+                auth.anyRequest().authenticated(); // 그 외 요청은 인증 필요
+            })
+            .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class) // cors필터 추가
+            .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
 
-                // exception handling 할 때 우리가 만든 클래스 추가
-                .exceptionHandling((exceptionHandling) ->
-                        exceptionHandling
-                                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                                .accessDeniedHandler(jwtAccessDeniedHandler)
-                )
+            // exception handling 할 때 우리가 만든 클래스 추가
+            .exceptionHandling((exceptionHandling) ->
+                    exceptionHandling
+                            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                            .accessDeniedHandler(jwtAccessDeniedHandler)
+            )
 
-                // JWT는 세션 기반x -> stateless 방식으로 작동 -> 필요 없는 세션 비활성화
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
-                )
+            // JWT는 세션 기반x -> stateless 방식으로 작동 -> 필요 없는 세션 비활성화
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
+            )
 
-                // 권한 설정
-                .authorizeHttpRequests(auth ->
-                        auth
-                                .requestMatchers("/**").permitAll() // Todo: /auth/** 회원가입/로그인만 열어야함
-                                .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
-                )
-
-
+            // 권한 설정
+            .authorizeHttpRequests(auth ->
+                    auth
+                            .requestMatchers("/auth/**").permitAll()
+                            .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
+            )
 
             // Spring Security에서 OAuth2 로그인 기능을 활성화
             .oauth2Login(oauth2 ->  oauth2
@@ -78,9 +78,6 @@ public class SecurityConfig {
                     })
             );
 
-
-
-
         return http.build();
     }
 
@@ -94,6 +91,4 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
-
 }
