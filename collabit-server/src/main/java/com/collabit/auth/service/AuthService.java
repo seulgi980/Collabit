@@ -1,23 +1,21 @@
 package com.collabit.auth.service;
 
 
-import com.collabit.auth.controller.dto.TokenDto;
-import com.collabit.auth.controller.dto.UserLoginRequestDto;
-import com.collabit.auth.controller.dto.UserResponseDto;
-import com.collabit.auth.jwt.TokenProvider;
+import com.collabit.auth.domain.dto.TokenDto;
+import com.collabit.auth.domain.dto.UserLoginRequestDto;
+import com.collabit.auth.domain.dto.UserResponseDto;
+import com.collabit.global.security.TokenProvider;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Service
 @RequiredArgsConstructor

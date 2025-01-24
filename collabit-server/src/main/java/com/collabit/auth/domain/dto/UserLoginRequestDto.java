@@ -1,4 +1,4 @@
-package com.collabit.auth.controller.dto;
+package com.collabit.auth.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

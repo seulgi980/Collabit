@@ -1,4 +1,4 @@
-package com.collabit.auth.jwt;
+package com.collabit.global.security;
 
 
 import jakarta.servlet.http.HttpServletRequest;

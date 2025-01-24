@@ -1,7 +1,7 @@
-package com.collabit.user.controller;
+package com.collabit.oauth.controller;
 
-import com.collabit.user.service.GithubAlreadyLinkedException;
-import com.collabit.user.service.OAuth2Service;
+import com.collabit.oauth.exception.GithubAlreadyLinkedException;
+import com.collabit.oauth.service.OAuth2Service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;

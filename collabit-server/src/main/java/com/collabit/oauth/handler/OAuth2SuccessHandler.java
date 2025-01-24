@@ -1,6 +1,6 @@
-package com.collabit.user.handler;
+package com.collabit.oauth.handler;
 
-import com.collabit.user.service.OAuth2Service;
+import com.collabit.oauth.service.OAuth2Service;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;

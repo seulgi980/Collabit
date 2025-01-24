@@ -1,4 +1,4 @@
-package com.collabit.user.service;
+package com.collabit.oauth.exception;
 
 public class GithubAlreadyLinkedException extends RuntimeException {
     public GithubAlreadyLinkedException(String message) {

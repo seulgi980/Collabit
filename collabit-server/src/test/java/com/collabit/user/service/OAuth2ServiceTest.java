@@ -1,6 +1,8 @@
 package com.collabit.user.service;
 
-import com.collabit.user.domain.dto.OAuth2UserRequestDTO;
+import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
+import com.collabit.oauth.exception.GithubAlreadyLinkedException;
+import com.collabit.oauth.service.OAuth2Service;
 import com.collabit.user.domain.entity.Role;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.repository.UserRepository;

@@ -1,6 +1,6 @@
-package com.collabit.user.service;
+package com.collabit.oauth.service;
 
-import com.collabit.user.domain.dto.OAuth2UserRequestDTO;
+import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;

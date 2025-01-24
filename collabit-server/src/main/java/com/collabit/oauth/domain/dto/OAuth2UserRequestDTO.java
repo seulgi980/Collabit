@@ -1,4 +1,4 @@
-package com.collabit.user.domain.dto;
+package com.collabit.oauth.domain.dto;
 
 import lombok.Builder;
 import lombok.Getter;

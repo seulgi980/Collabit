@@ -1,10 +1,9 @@
-package com.collabit.auth.jwt;
+package com.collabit.global.security;
 
-import com.collabit.auth.controller.dto.TokenDto;
+import com.collabit.auth.domain.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
