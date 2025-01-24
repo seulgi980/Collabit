@@ -35,7 +35,7 @@ public class TokenProvider {
     private final Key key;
 
     // 비밀키 생성하는 로직
-    public TokenProvider(@Value("${jwt.secret}") String secretKey){
+    public TokenProvider(@Value("${jwt.secret-key}") String secretKey){
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes); // 비밀키 객체 생성
     }

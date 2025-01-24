@@ -37,12 +37,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
-            .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/user/sign-up","/api/user/login").permitAll(); // 회원가입, 로그인 허용
-                auth.requestMatchers("/api/oauth/link").authenticated();
-                auth.requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll(); // OAuth 엔드포인트 허용
-                auth.anyRequest().authenticated(); // 그 외 요청은 인증 필요
-            })
+                .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/api/user/sign-up","/api/user/login", "/auth/**").permitAll();
+                    auth.requestMatchers("/api/oauth/link").authenticated();
+                    auth.requestMatchers("/api/oauth/**").permitAll();
+                    auth.requestMatchers("/oauth2/authorization/**").permitAll();
+                    auth.requestMatchers("/login/oauth2/code/**").permitAll();
+                    auth.anyRequest().authenticated();
+                })
+
             .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class) // cors필터 추가
             .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
 
@@ -56,13 +59,6 @@ public class SecurityConfig {
             // JWT는 세션 기반x -> stateless 방식으로 작동 -> 필요 없는 세션 비활성화
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
-            )
-
-            // 권한 설정
-            .authorizeHttpRequests(auth ->
-                    auth
-                            .requestMatchers("/auth/**").permitAll()
-                            .anyRequest().authenticated() // 나머지 요청은 모두 인증 필요
             )
 
             // Spring Security에서 OAuth2 로그인 기능을 활성화
