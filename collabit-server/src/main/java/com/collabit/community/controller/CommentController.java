@@ -21,21 +21,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "CommentController", description = "댓글 API")
 @RestController
-@RequestMapping("/api/post/{postCode}/comment")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class CommentController {
 
     private final CommentService commentService;
 
     @Operation(summary="댓글 등록",description = "댓글을 등록하는 API입니다.")
-    @PostMapping("/")
+    @PostMapping("/post/{postCode}")
     public ResponseEntity<?> createComment(@PathVariable("postCode") int postCode,@RequestBody CreateCommentRequestDTO requestDTO) {
         CreateCommentResponseDTO responseDTO = commentService.createComment(requestDTO,postCode,"1");
         return ResponseEntity.status(201).body(responseDTO);
     }
 
     @Operation(summary="댓글 목록 조회",description = "댓글목록을 조회하는 API입니다.")
-    @GetMapping("/")
+    @GetMapping("/post/{postCode}")
     public ResponseEntity<?> getCommentList(@PathVariable("postCode") int postCode) {
         List<GetCommentResponseDTO> list = commentService.getCommentList(postCode);
         if (list.isEmpty()) return ResponseEntity.status(204).build();
@@ -43,7 +43,7 @@ public class CommentController {
     }
 
     @Operation(summary="댓글 수정",description = "댓글을 수정하는 API입니다.")
-    @PutMapping("/{commentCode}")
+    @PutMapping("/comment/{commentCode}")
     public ResponseEntity<?> updateComment(@PathVariable("commentCode") int commentCode,@RequestBody UpdateCommentRequestDTO requestDTO) {
         // 유저 권한 확인
         String userCode = "1";
@@ -52,8 +52,8 @@ public class CommentController {
     }
 
     @Operation(summary="댓글 삭제",description = "댓글을 삭제하는 API입니다.")
-    @DeleteMapping("/{commentCode}")
-    public ResponseEntity<?> deleteComment(@PathVariable int commentCode){
+    @DeleteMapping("/comment/{commentCode}")
+    public ResponseEntity<?> deleteComment(@PathVariable("commentCode") int commentCode){
         // 유저 권한 확인
         String userCode = "1";
         commentService.deleteComment(userCode,commentCode);
