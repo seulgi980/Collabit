@@ -10,6 +10,7 @@ import {
   NavigationMenuList,
 } from "@/shared/ui/navigation-menu";
 import { HeaderProps } from "@/widget/types/Header";
+import { Dot } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,6 +21,7 @@ const HeaderDesktop = ({
   handleLogout,
   handleToMyPage,
   menuList,
+  hasNewChat,
 }: HeaderProps) => {
   const pathname = usePathname();
 
@@ -58,6 +60,9 @@ const HeaderDesktop = ({
                 <NavigationMenuLink className="text-sm" href={i.href}>
                   {i.name}
                 </NavigationMenuLink>
+                {hasNewChat && i.name === "채팅" && (
+                  <Dot className="absolute -right-1 -top-1 text-violet-700" />
+                )}
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>

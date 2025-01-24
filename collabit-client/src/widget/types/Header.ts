@@ -4,4 +4,5 @@ export interface HeaderProps {
   handleLogout: () => void;
   handleToMyPage: () => void;
   menuList?: { name: string; href: string }[];
+  hasNewChat?: boolean;
 }
