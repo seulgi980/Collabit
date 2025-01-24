@@ -9,4 +9,5 @@ import lombok.*;
 @NoArgsConstructor
 public class ChatRoomRequestDTO {
     private String nickname;
+    private String message;
 }
