@@ -1,6 +1,7 @@
 package com.collabit.chat.repository;
 
 import com.collabit.chat.domain.entity.ChatRoom;
+import com.collabit.user.domain.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,5 +15,5 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Integer> {
     Optional<ChatRoom> findByUniqueCode(String uniqueCode);
 
     //유저가 속한 모든 채팅방 확인
-    Page<ChatRoom> findByUserCode1OrUserCode2(String userCode1, String userCode2, Pageable pageable);
+    Page<ChatRoom> findByUser1OrUser2(User user1, User user2, Pageable pageable);
 }

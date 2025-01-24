@@ -28,8 +28,9 @@ public class ChatRoomListService {
 
     // 닉네임으로 사용자 찾기
     private User getUserByNickname(String nickname) {
-        return userRepository.findByNickname(nickname)
-                .orElseThrow(() -> new UserNotFoundException());
+//        return userRepository.findByNickname(nickname)
+//                .orElseThrow(() -> new UserNotFoundException());
+        return new User();
     }
 
     // 닉네임으로 채팅방 조회
@@ -89,7 +90,8 @@ public class ChatRoomListService {
         int size = 15;
         int page = requestDTO.getPageNumber();
         Pageable pageable = PageRequest.of(page, size);
-        Page<ChatRoom> chatRoomPage = chatRoomRepository.findByUserCode1OrUserCode2(userCode, userCode, pageable);
+        User user = userRepository.findById(userCode).orElseThrow();
+        Page<ChatRoom> chatRoomPage = chatRoomRepository.findByUser1OrUser2(user, user, pageable);
 
         // 채팅방 리스트 응답 DTO 변환
         List<ChatRoomListResponseDTO> chatRoomList = chatRoomPage.getContent().stream()
@@ -98,15 +100,15 @@ public class ChatRoomListService {
                     ChatMessage lastMessage = chatMessageRepository.findTopByRoomCodeOrderByTimestampDesc(chatRoom.getCode());
                     int unreadCount = getUnreadMessageCountForRoom(chatRoom.getCode());
                     // 상대 유저 조회
-                    User user = chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
+                    User otherUser = chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
                     // 채팅방 리스트 DTO 생성
                     return ChatRoomListResponseDTO.builder()
                             .roomCode(chatRoom.getCode())
                             .lastMessage(lastMessage.getMessage())
                             .lastMessageTime(lastMessage.getTimestamp())
                             .unreadMessageCount(unreadCount)
-                            .nickname(user.getNickname())
-                            .profileImage(user.getProfileImage())
+                            .nickname(otherUser.getNickname())
+                            .profileImage(otherUser.getProfileImage())
                             .build();
                 })
                 .collect(Collectors.toList());
