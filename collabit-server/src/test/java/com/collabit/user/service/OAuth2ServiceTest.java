@@ -113,7 +113,7 @@ class OAuth2ServiceTest {
 
         User normalUser = User.builder()
                 .code(userCode)
-                .id("user@test.com")
+                .email("user@test.com")
                 .nickname("normalUser")
                 .profileImage("default.jpg")
                 .role(Role.ROLE_USER)
@@ -167,7 +167,7 @@ class OAuth2ServiceTest {
         String userCode = "user123";
         User alreadyLinkedUser = User.builder()
                 .code(userCode)
-                .id("user@test.com")
+                .email("user@test.com")
                 .githubId("existingGithub")
                 .nickname("linkedUser")
                 .profileImage("profile.jpg")
@@ -199,7 +199,7 @@ class OAuth2ServiceTest {
 
         User normalUser = User.builder()
                 .code(userCode)
-                .id("user@test.com")
+                .email("user@test.com")
                 .nickname("normalUser")
                 .profileImage("profile.jpg")
                 .role(Role.ROLE_USER)

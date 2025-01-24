@@ -76,11 +76,6 @@ public class SecurityConfig {
                         response.setContentType("application/json;charset=UTF-8");
                         response.getWriter().write("OAuth 로그인 실패: " + exception.getMessage());
                     })
-            )
-
-            // JWT는 세션 기반x -> stateless 방식으로 작동 -> 필요 없는 세션 비활성화
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
             );
 
         return http.build();
