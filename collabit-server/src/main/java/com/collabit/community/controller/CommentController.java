@@ -56,7 +56,7 @@ public class CommentController {
     public ResponseEntity<?> deleteComment(@PathVariable int commentCode){
         // 유저 권한 확인
         String userCode = "1";
-        commentService.deletePost(userCode,commentCode);
+        commentService.deleteComment(userCode,commentCode);
         return ResponseEntity.status(204).build();
     }
 }

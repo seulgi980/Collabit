@@ -61,7 +61,7 @@ public class CommentService {
         return responseDTO;
     }
 
-    public void deletePost(String userCode, int commentCode) {
+    public void deleteComment(String userCode, int commentCode) {
         // commentCode에 해당하는 comment 조회
         Comment comment = commentRepository.findByCode(commentCode);
         // 해당 comment가 없으면 예외 처리
