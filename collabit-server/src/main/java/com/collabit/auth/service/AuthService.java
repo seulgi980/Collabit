@@ -42,7 +42,8 @@ public class AuthService {
         addCookie(response, "accessToken", tokenDto.getAccessToken(), tokenProvider.getAccessTokenExpireTime() / 1000);
         addCookie(response, "refreshToken", tokenDto.getRefreshToken(), tokenProvider.getRefreshTokenExpireTime() / 1000);
 
-        // 5. 데이터베이스에서 사용자 정보 조회
+        // 5. 데이터베이스에서 사용자 정보 조
+        // Todo: 이렇게 db또가지말고 authentication 에 custom해서 쓰자
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 

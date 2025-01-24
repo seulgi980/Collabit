@@ -5,6 +5,7 @@ import com.collabit.auth.domain.dto.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,17 +32,25 @@ public class TokenProvider {
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 *  30; // 30분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7; // 7일
 
+
     // 비밀키 객체: 서명 만들 때 or 검증에 사용
     private final Key key;
 
+    private final CustomUserDetailsService customUserDetailsService;
+
     // 비밀키 생성하는 로직
-    public TokenProvider(@Value("${jwt.secret}") String secretKey){
+    public TokenProvider(@Value("${jwt.secret-key}") String secretKey, CustomUserDetailsService customUserDetailsService){
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes); // 비밀키 객체 생성
+
+        this.customUserDetailsService = customUserDetailsService; // 주입
     }
 
     // 유저 정보를 넘겨받아 access token과 refresh token 생성
     public TokenDto generateTokenDto(Authentication authentication) {
+        // Authentication 에서 CustomUserDetails 추출
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
         // 권한들 가져오기
         String authorities = authentication.getAuthorities().stream() // stream으로 변환 순차접근 가능
                 .map(GrantedAuthority::getAuthority) // 권한 객체에서 이름(text) 추출
@@ -53,7 +62,7 @@ public class TokenProvider {
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName()) // payload "sub" : "name"
+                .setSubject(userDetails.getCode()) // payload "sub" : "code(PK)"
                 .claim(AUTHORITIES_KEY, authorities) // payload "auth" : "ROLE_USER"
                 .setExpiration(accessTokenExpiresIn) // payload "exp" : "~~~"
                 .signWith(key, SignatureAlgorithm.HS512) // header "alg" : "HS512"
@@ -89,8 +98,11 @@ public class TokenProvider {
                         .collect(Collectors.toList());
 
         // UserDetails 객체 생성 후 Authentication 리턴
-        // principal: 사용자 정보(username, password, authorities 등) 포함
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        // principal: 사용자 정보(code(pk), password, authorities 등) 포함
+        String userCode = claims.getSubject(); // sub에 저장된 userCode 가져오기
+
+        // DB 조회하여 추가 정보를 채움 (CustomUserDetailsService를 통해 로드)
+        UserDetails principal = customUserDetailsService.loadUserByUsername(userCode);
 
         // 반환된 Authentication 타입 객체는 SecurityContext 에 저장되어 참조됨
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
