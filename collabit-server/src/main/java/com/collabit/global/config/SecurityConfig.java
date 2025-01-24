@@ -38,7 +38,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/user/sign-up","/api/user/login", "/auth/**").permitAll();
+                auth.requestMatchers("/api/auth/sign-up","/api/auth/login", "/auth/**").permitAll();
                 auth.requestMatchers("/api/oauth/link").authenticated();
                 auth.requestMatchers("/api/oauth/**").permitAll();
                 auth.requestMatchers("/oauth2/authorization/**").permitAll();
