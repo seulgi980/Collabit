@@ -50,7 +50,6 @@ public class AuthService {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // 6. UserResponseDto 생성 및 반환
-
         return UserResponseDto.builder()
                 .nickname(userDetails.getNickname()) // CustomUserDetails에서 닉네임 가져오기
                 .profileImage(userDetails.getProfileImage()) // CustomUserDetails에서 프로필 이미지 가져오기
