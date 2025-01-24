@@ -18,7 +18,7 @@ public class ChatService {
     public void processMessage(ChatMessageSubDTO chatMessageSubDTO) {
         ChatMessagePubDTO chatMessagePubDTO = ChatMessagePubDTO.builder()
                 .roomCode(chatMessageSubDTO.getRoomCode())
-                .sender(chatMessageSubDTO.getSender())
+                .nickname(chatMessageSubDTO.getNickname())
                 .message(chatMessageSubDTO.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();

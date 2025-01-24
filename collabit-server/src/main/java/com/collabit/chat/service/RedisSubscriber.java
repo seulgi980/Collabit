@@ -22,7 +22,7 @@ public class RedisSubscriber {
             ChatMessageSubDTO chatMessageSubDTO = objectMapper.readValue(publishMessage, ChatMessageSubDTO.class);
             ChatMessagePubDTO chatMessagePubDTO = ChatMessagePubDTO.builder()
                     .roomCode(chatMessageSubDTO.getRoomCode())
-                    .sender(chatMessageSubDTO.getSender())
+                    .nickname(chatMessageSubDTO.getNickname())
                     .message(chatMessageSubDTO.getMessage())
                     .timestamp(LocalDateTime.now())
                     .build();
