@@ -38,6 +38,7 @@ public class CommentController {
     @GetMapping("/")
     public ResponseEntity<?> getCommentList(@PathVariable("postCode") int postCode) {
         List<GetCommentResponseDTO> list = commentService.getCommentList(postCode);
+        if (list.isEmpty()) return ResponseEntity.status(204).build();
         return ResponseEntity.status(200).body(list);
     }
 
@@ -45,7 +46,8 @@ public class CommentController {
     @PutMapping("/{commentCode}")
     public ResponseEntity<?> getCommentList(@PathVariable("commentCode") int commentCode,@RequestBody UpdateCommentRequestDTO requestDTO) {
         // 유저 권한 확인
-        GetCommentResponseDTO responseDTO = commentService.updateComment(commentCode,requestDTO);
+        String userCode = "1";
+        GetCommentResponseDTO responseDTO = commentService.updateComment(userCode,commentCode,requestDTO);
         return ResponseEntity.status(201).body(responseDTO);
     }
 
@@ -53,7 +55,8 @@ public class CommentController {
     @DeleteMapping("/{commentCode}")
     public ResponseEntity<?> deleteComment(@PathVariable int commentCode){
         // 유저 권한 확인
-        commentService.deletePost(commentCode);
+        String userCode = "1";
+        commentService.deletePost(userCode,commentCode);
         return ResponseEntity.status(204).build();
     }
 }
