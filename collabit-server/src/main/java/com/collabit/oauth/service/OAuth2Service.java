@@ -1,7 +1,6 @@
 package com.collabit.oauth.service;
 
 import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
-import com.collabit.oauth.exception.GithubAlreadyLinkedException;
 import com.collabit.user.domain.entity.Role;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.repository.UserRepository;
@@ -81,12 +80,12 @@ public class OAuth2Service {
 
         // 이미 GitHub 계정이 연동된 경우
         if (user.getGithubId() != null) {
-            throw new GithubAlreadyLinkedException("이미 GitHub 계정이 연동되어 있습니다.");
+            throw new RuntimeException("이미 GitHub 계정이 연동되어 있습니다.");
         }
 
         // GitHub ID가 이미 다른 계정에 연동된 경우 체크
         if (userRepository.existsByGithubId(githubUser.getGithubId())) {
-            throw new GithubAlreadyLinkedException("이미 다른 계정에 연동된 GitHub 계정입니다.");
+            throw new RuntimeException("이미 다른 계정에 연동된 GitHub 계정입니다.");
         }
 
         user.linkGithub(githubUser.getGithubId());
