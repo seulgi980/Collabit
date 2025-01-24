@@ -1,5 +1,5 @@
 "use client";
-import formSchema from "@/features/types/SignupSchema";
+import SignupSchema from "@/features/types/SignupSchema";
 import { useToast } from "@/shared/hooks/use-toast";
 import useModalStore from "@/shared/lib/stores/modalStore";
 import { Button } from "@/shared/ui/button";
@@ -34,8 +34,8 @@ export default function Page() {
   const closeModal = useModalStore((state) => state.closeModal);
 
   // 회원가입 폼 생성
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof SignupSchema>>({
+    resolver: zodResolver(SignupSchema),
     defaultValues: {
       email: "",
       code: "",
@@ -52,7 +52,6 @@ export default function Page() {
     const isEmailValid = await form.trigger("email");
     const emailValue = form.getValues("email");
     const emailError = form.getFieldState("email").error;
-
     if (!isEmailValid || !emailValue || emailError) {
       toast({
         title: emailError?.message,
@@ -85,7 +84,6 @@ export default function Page() {
     const isCodeValid = await form.trigger("code");
     const codeValue = form.getValues("code");
     const codeError = form.getFieldState("code").error;
-    console.log(isCodeValid, codeValue, codeError);
     if (!isCodeValid || !codeValue || codeError) {
       toast({
         title: codeError?.message,
@@ -112,14 +110,10 @@ export default function Page() {
   ) => {
     e.preventDefault();
 
+    // 비밀번호 검증 로직 실행
     const isPasswordValid = await form.trigger("password");
     const passwordValue = form.getValues("password");
     const passwordError = form.getFieldState("password").error;
-    const isPasswordConfirmValid = await form.trigger("passwordConfirm");
-    const passwordConfirmValue = form.getValues("passwordConfirm");
-    const passwordConfirmError = form.getFieldState("passwordConfirm").error;
-
-    // 비밀번호 검증 로직 실행
     if (!isPasswordValid || !passwordValue || passwordError) {
       toast({
         title: passwordError?.message,
@@ -129,6 +123,9 @@ export default function Page() {
     }
 
     // 비밀번호 확인 검증 로직 실행
+    const isPasswordConfirmValid = await form.trigger("passwordConfirm");
+    const passwordConfirmValue = form.getValues("passwordConfirm");
+    const passwordConfirmError = form.getFieldState("passwordConfirm").error;
     if (
       !isPasswordConfirmValid ||
       !passwordConfirmValue ||
@@ -153,7 +150,6 @@ export default function Page() {
     const isNicknameValid = await form.trigger("nickname");
     const nicknameValue = form.getValues("nickname");
     const nicknameError = form.getFieldState("nickname").error;
-
     if (!isNicknameValid || !nicknameValue || nicknameError) {
       toast({
         title: nicknameError?.message,
@@ -185,7 +181,7 @@ export default function Page() {
   };
 
   // 회원가입 폼 제출 함수
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof SignupSchema>) => {
     console.log(data);
     // 회원가입 API 호출
 
@@ -247,7 +243,6 @@ export default function Page() {
                         />
                       </FormControl>
                     </div>
-                    {/* <FormMessage /> */}
                   </FormItem>
                 )}
               />
@@ -309,7 +304,7 @@ export default function Page() {
                         <Input
                           type="password"
                           className="text-sm"
-                          placeholder="영문, 숫자 포함 8자 이상"
+                          placeholder="영문, 숫자, 특수문자 포함 8자 이상"
                           {...field}
                         />
                       </FormControl>
