@@ -1,5 +1,6 @@
 package com.collabit.chat.domain.entity;
 
+import com.collabit.user.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
