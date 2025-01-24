@@ -5,6 +5,8 @@ import Footer from "@/features/ui/footer/Footer";
 import Header from "@/widget/ui/Header";
 import QueryProviders from "../shared/lib/query/QueryProviders";
 import "./globals.css";
+import ModalContainer from "@/shared/ui/ModalContainer";
+import { Toaster } from "@/shared/ui/toaster";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,7 +30,8 @@ export default function RootLayout({
           <Header />
           <main className="w-full px-5 md:px-20">{children}</main>
           <Footer />
-
+          <ModalContainer />
+          <Toaster />
           <ReactQueryDevtools />
         </QueryProviders>
       </body>

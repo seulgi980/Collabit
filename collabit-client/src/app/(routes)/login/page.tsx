@@ -29,7 +29,7 @@ const LoginPage = () => {
           priority
         />
       </div>
-      <Button className="h-12 w-full max-w-[280px] bg-violet-700 text-white hover:bg-violet-800">
+      <Button className="h-12 w-full max-w-[280px]">
         Github 계정으로 로그인
       </Button>
       <div className="flex flex-col items-center justify-center gap-2 text-sm text-gray-500">

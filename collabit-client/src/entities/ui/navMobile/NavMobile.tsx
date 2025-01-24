@@ -1,6 +1,7 @@
 import { cn } from "@/shared/lib/shadcn/utils";
 import {
   ClipboardList,
+  Dot,
   Home,
   Layers,
   MessageSquare,
@@ -11,8 +12,10 @@ import { usePathname } from "next/navigation";
 
 const NavMobile = ({
   menuList,
+  hasNewChat,
 }: {
   menuList: { name: string; href: string }[];
+  hasNewChat: boolean;
 }) => {
   const pathname = usePathname();
   const menus = [{ name: "홈", href: "/" }, ...menuList];
@@ -24,7 +27,7 @@ const NavMobile = ({
     채팅: MessageSquare,
   };
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-20 w-full rounded-3xl bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 w-full rounded-3xl bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <ul className="flex h-full items-center justify-between px-5">
         {menus.map((i) => {
           const Icon = icons[i.name as keyof typeof icons];
@@ -38,9 +41,12 @@ const NavMobile = ({
               )}
             >
               <Link
-                className="flex flex-col items-center justify-center gap-1"
+                className="relative flex flex-col items-center justify-center gap-1"
                 href={i.href}
               >
+                {hasNewChat && i.name === "채팅" && (
+                  <Dot className="absolute -top-5 text-violet-700" />
+                )}
                 <Icon />
                 <span className="text-xs font-medium">{i.name}</span>
               </Link>
