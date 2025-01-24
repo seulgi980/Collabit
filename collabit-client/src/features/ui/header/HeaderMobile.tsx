@@ -12,8 +12,9 @@ const HeaderMobile = ({
   handleToMyPage,
 }: HeaderProps) => {
   return (
-    <header className="flex h-[72px] w-full items-center justify-between px-5">
+    <header className="flex h-[72px] w-full items-center justify-between px-5 shadow-sm">
       <Link href="/" className="flex h-[24px] w-[65px] items-center">
+        <h1 className="sr-only">Collabit</h1>
         <Image
           src="/images/logo-lg.png"
           alt="collabit"

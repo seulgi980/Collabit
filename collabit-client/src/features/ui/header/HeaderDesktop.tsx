@@ -34,6 +34,7 @@ const HeaderDesktop = ({
         href="/"
         className="flex h-[60px] w-[150px] items-center justify-center p-4"
       >
+        <h1 className="sr-only">Collabit</h1>
         <Image
           src="/images/logo-lg.png"
           alt="collabit"

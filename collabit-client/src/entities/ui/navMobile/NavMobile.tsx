@@ -24,7 +24,7 @@ const NavMobile = ({
     채팅: MessageSquare,
   };
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-20 w-full rounded-3xl bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 w-full rounded-3xl bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <ul className="flex h-full items-center justify-between px-5">
         {menus.map((i) => {
           const Icon = icons[i.name as keyof typeof icons];
