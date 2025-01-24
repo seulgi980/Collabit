@@ -23,9 +23,7 @@ public class LikeController {
     public ResponseEntity<?> likePost(@PathVariable("postCode")int postCode){
         // 유저 코드
         String userCode = "1";
-        LikeResponseDTO responseDTO = LikeResponseDTO.builder()
-            .likeCount(likeService.like(postCode, userCode))
-            .build();
+        LikeResponseDTO responseDTO = likeService.like(userCode, postCode);
         return ResponseEntity.status(201).body(responseDTO);
     }
 
@@ -33,9 +31,7 @@ public class LikeController {
     public ResponseEntity<?> cancelLikePost(@PathVariable("postCode")int postCode){
         // 유저 코드
         String userCode = "1";
-        LikeResponseDTO responseDTO = LikeResponseDTO.builder()
-            .likeCount(likeService.cancelLike(postCode, userCode))
-            .build();
-        return ResponseEntity.status(204).body(responseDTO);
+        LikeResponseDTO responseDTO = likeService.cancelLike(userCode, postCode);
+        return ResponseEntity.status(201).body(responseDTO);
     }
 }
