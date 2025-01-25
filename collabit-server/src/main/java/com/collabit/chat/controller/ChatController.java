@@ -17,7 +17,8 @@ import java.util.List;
 
 @Tag(name = "ChatController", description = "채팅 API")
 @RequiredArgsConstructor
-@RestController("/api/chat")
+@RestController
+@RequestMapping("/api/chat")
 public class ChatController {
 
     private final ChatRoomListService chatRoomListService;
@@ -26,15 +27,15 @@ public class ChatController {
     @Operation(summary = "채팅방 생성 또는 조회", description = "채팅방을 생성하거나 존재하는 채팅방을 조회합니다.")
     @PostMapping("/room")
     public ResponseEntity<?> getOrCreateChatRoom(@RequestBody ChatRoomRequestDTO requestDTO, @RequestHeader("Authorization") String token) {
-        String userCode = SecurityUtil.getCurrentUserId();
+        String userCode = "1";
         ChatRoomResponseDTO responseDTO = chatRoomListService.saveChatRoom(userCode, requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
     @Operation(summary = "채팅방 목록 조회", description = "사용자의 채팅방 목록을 조회합니다.")
-    @GetMapping("/room")
+    @PostMapping("/room/list")
     public ResponseEntity<?> getChatRoomList(@RequestBody ChatRoomListRequestDTO requestDTO, @RequestHeader("Authorization") String token) {
-        String userCode = "1";  // 실 사용시 수정 필요
+        String userCode = "1";
         PageResponseDTO responseDTO = chatRoomListService.getChatRoomList(userCode, requestDTO);
         if (((List<?>) responseDTO.getContent()).isEmpty()) return ResponseEntity.noContent().build();
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
@@ -43,7 +44,7 @@ public class ChatController {
     @Operation(summary = "채팅방 메시지 조회", description = "채팅방의 메시지를 조회합니다.")
     @GetMapping("/room/{roomCode}")
     public ResponseEntity<?> getChatMessages(@RequestBody ChatRoomDetailRequestDTO requestDTO, @RequestHeader("Authorization") String token, @PathVariable int roomCode) {
-        String userCode = "1";  // 실 사용시 수정 필요
+        String userCode = "1";
         PageResponseDTO responseDTO = chatRoomDetailService.getChatRoomDetail(userCode, requestDTO);
         if (((ChatRoomDetailResponseDTO) responseDTO.getContent()).getMessages().isEmpty())
             return ResponseEntity.noContent().build();
@@ -53,16 +54,16 @@ public class ChatController {
     @Operation(summary = "읽지 않은 메시지 조회", description = "사용자가 읽지 않은 메시지 수를 조회합니다.")
     @GetMapping("/unread")
     public ResponseEntity<?> getUnreadMessages(@RequestHeader("Authorization") String token) {
-        String userCode = "1";  // 실 사용시 수정 필요
+        String userCode = "1";
         ChatUnreadResponseDTO responseDTO = chatRoomListService.getUnreadMessagesForUser(userCode);
         return ResponseEntity.ok(responseDTO);
     }
 
     @Operation(summary = "닉네임으로 채팅방 조회", description = "닉네임을 기반으로 채팅방을 조회합니다.")
-    @GetMapping("/{nickname}")
-    public ResponseEntity<?> getChatRoomWithNickname(@RequestHeader("Authorization") String token, @PathVariable String nickname) {
-        String userCode = "1";  // 실 사용시 수정 필요
-        ChatRoomResponseDTO responseDTO = chatRoomListService.getChatRoomByNickname(userCode, nickname);
+    @PostMapping("/room/nickname")
+    public ResponseEntity<?> getChatRoomWithNickname(@RequestHeader("Authorization") String token, ChatRoomRequestDTO requestDTO) {
+        String userCode = "200c31dc-9762-4cf2-b2f5-ed96e8f1318f";
+        ChatRoomResponseDTO responseDTO = chatRoomListService.getChatRoomByNickname(userCode, requestDTO);
         if (responseDTO.getRoomCode() == 0) return ResponseEntity.noContent().build();
         return ResponseEntity.ok(responseDTO);
     }
