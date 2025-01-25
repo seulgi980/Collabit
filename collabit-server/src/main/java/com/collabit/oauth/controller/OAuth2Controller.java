@@ -1,5 +1,6 @@
 package com.collabit.oauth.controller;
 
+import com.collabit.auth.exception.InvalidTokenException;
 import com.collabit.global.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +32,7 @@ public class OAuth2Controller {
         String userCode = SecurityUtil.getCurrentUserId();
 
         if(userCode == null){
-            throw new RuntimeException("토큰 정보가 유효하지 않습니다.");
+            throw new InvalidTokenException();
         }
 
         return redirectToGithub();

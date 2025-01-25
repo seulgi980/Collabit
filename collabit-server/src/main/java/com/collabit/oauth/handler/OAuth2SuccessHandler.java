@@ -3,6 +3,7 @@ package com.collabit.oauth.handler;
 import com.collabit.auth.domain.dto.TokenDto;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.oauth.domain.enums.OAuth2Status;
+import com.collabit.oauth.exception.UnexpectedOAuthStatus;
 import com.collabit.oauth.service.OAuth2Service;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -51,7 +52,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 break;
 
             default:
-                throw new IllegalStateException("GitHub 인증으로 수행할 수 없습니다.");
+                throw new UnexpectedOAuthStatus();
         }
 
         jsonResponse.put("status", response.getStatus());

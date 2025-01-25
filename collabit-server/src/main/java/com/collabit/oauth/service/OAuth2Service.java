@@ -3,6 +3,8 @@ package com.collabit.oauth.service;
 import com.collabit.global.security.SecurityUtil;
 import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
 import com.collabit.oauth.domain.enums.OAuth2Status;
+import com.collabit.oauth.exception.GithubAlreadyLinkedException;
+import com.collabit.oauth.exception.GithubAlreadyUsedException;
 import com.collabit.user.domain.entity.Role;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.repository.UserRepository;
@@ -20,15 +22,17 @@ public class OAuth2Service {
 
     @Getter
     private OAuth2Status oAuth2Status;
-    
-    // token에서 usercode를 가져와 회원가입/로그인인지 연동인지 구분 후 해당하는 메소드 호출
+
+    // SecurityUtil에서 인증 정보가 없는 경우 바로 예외를 던짐
+    // 토큰이 없을 때는 연동 요청 제한, 토큰이 있을 때는 로그인/회원가입 요청 제한 (security 설정)
+    // 해당 메소드에서는 usercode의 유무로 로그인/회원가입과 연동을 구분하기에 로그인/회원가입의 경우 무조건 예외 발생
+    // => 예외가 발생하는 경우는 무조건 로그인/회원가입으로 처리
     @Transactional
     public void processOAuth2User(OAuth2UserRequestDTO oauth2UserRequestDTO) {
-        String userCode = SecurityUtil.getCurrentUserId();
-
-        if (userCode != null) {
+        try {
+            String userCode = SecurityUtil.getCurrentUserId();
             linkGithubAccount(userCode, oauth2UserRequestDTO);
-        } else {
+        } catch (Exception e) {
             saveOrLoginOAuth2User(oauth2UserRequestDTO);
         }
     }
@@ -70,12 +74,12 @@ public class OAuth2Service {
 
         // 이미 GitHub 계정이 연동된 경우
         if (user.getGithubId() != null) {
-            throw new RuntimeException("이미 GitHub 계정이 연동되어 있습니다.");
+            throw new GithubAlreadyLinkedException();
         }
 
         // GitHub ID가 이미 다른 계정에 연동된 경우 체크
         if (userRepository.existsByGithubId(oAuth2UserRequestDTO.getGithubId())) {
-            throw new RuntimeException("이미 다른 계정에 연동된 GitHub 계정입니다.");
+            throw new GithubAlreadyUsedException();
         }
 
         user.linkGithub(oAuth2UserRequestDTO.getGithubId());
