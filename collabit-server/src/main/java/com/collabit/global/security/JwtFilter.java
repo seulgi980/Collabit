@@ -25,6 +25,7 @@ public class JwtFilter extends OncePerRequestFilter {
     // JWT 토큰 인증 정보 검증후, SecurityContext 에 검증된 인증 정보 저장
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+
         // 1. request header 에서 토큰 추출
         String jwt = resolveToken(request);
 
