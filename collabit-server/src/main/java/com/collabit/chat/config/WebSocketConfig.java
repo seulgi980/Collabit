@@ -13,7 +13,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final StompHandler stompHanlder;
+    private final StompHandler stompHandler;
 
     //웹소켓 엔드포인트 등록
     @Override
@@ -33,6 +33,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     //token 확인 인터셉터
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(stompHanlder);
+        registration.interceptors(stompHandler);
     }
 }
