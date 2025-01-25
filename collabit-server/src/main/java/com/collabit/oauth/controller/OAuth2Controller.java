@@ -18,15 +18,10 @@ import java.net.URI;
 @RestController
 public class OAuth2Controller {
 
+    // 토큰이 있는 사용자의 경우 접근이 불가능하도록 security config에 추가
     @Operation(summary = "깃허브 로그인, 회원가입")
     @GetMapping
     public ResponseEntity<String> getGithubAccount(){
-        String userCode = SecurityUtil.getCurrentUserId();
-
-        if(userCode != null){
-            throw new RuntimeException("로그인 정보가 있습니다. GitHub 연동을 해주세요.");
-        }
-
         return redirectToGithub();
     }
 
