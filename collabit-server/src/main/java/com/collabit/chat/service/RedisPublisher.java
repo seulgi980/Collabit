@@ -1,6 +1,7 @@
 package com.collabit.chat.service;
 
 import com.collabit.chat.domain.dto.ChatMessageSubDTO;
+import com.collabit.chat.domain.dto.WebSocketMessageDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
@@ -12,7 +13,8 @@ public class RedisPublisher {
     private final ChannelTopic channelTopic;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public void publish(ChatMessageSubDTO message) {
-        redisTemplate.convertAndSend(channelTopic.getTopic(), message);
+    //channelTopic에 메시지 발행
+    public void publish(ChannelTopic topic, WebSocketMessageDTO message) {
+        redisTemplate.convertAndSend(topic.getTopic(), message);
     }
 }

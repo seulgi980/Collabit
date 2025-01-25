@@ -50,6 +50,7 @@ public class ChatRoomDetailService {
 
         User user = getUserByUserCode(userCode, roomCode);
 
+        // 채팅방 세부 정보에 메시지와 방 정보 넣기
         ChatRoomDetailResponseDTO chatRoomDetail = ChatRoomDetailResponseDTO.builder()
                 .messages(chatMessages)
                 .roomCode(roomCode)
