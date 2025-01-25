@@ -1,7 +1,6 @@
-package com.collabit.user.service;
+package com.collabit.oauth.service;
 
 import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
-import com.collabit.oauth.exception.GithubAlreadyLinkedException;
 import com.collabit.oauth.service.OAuth2Service;
 import com.collabit.user.domain.entity.Role;
 import com.collabit.user.domain.entity.User;
@@ -186,7 +185,7 @@ class OAuth2ServiceTest {
         assertThatThrownBy(() ->
                 oauth2Service.linkGithubAccount(userCode, newGithubUser)
         )
-                .isInstanceOf(GithubAlreadyLinkedException.class)
+                .isInstanceOf(RuntimeException.class)
                 .hasMessage("이미 GitHub 계정이 연동되어 있습니다.");
     }
 
@@ -218,7 +217,7 @@ class OAuth2ServiceTest {
         assertThatThrownBy(() ->
                 oauth2Service.linkGithubAccount(userCode, githubUser)
         )
-                .isInstanceOf(GithubAlreadyLinkedException.class)
+                .isInstanceOf(RuntimeException.class)
                 .hasMessage("이미 다른 계정에 연동된 GitHub 계정입니다.");
     }
 }

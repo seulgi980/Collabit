@@ -61,7 +61,6 @@ public class SecurityConfig {
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // JWT 사용 시 세션 비활성화
             )
 
-
             // Spring Security에서 OAuth2 로그인 기능을 활성화
             .oauth2Login(oauth2 ->  oauth2
                     .userInfoEndpoint(userInfo -> userInfo // 로그인 성공 후 사용자 정보를 가져오는 엔드포인트 설정
