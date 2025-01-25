@@ -1,6 +1,7 @@
 package com.collabit.oauth.service;
 
 import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -11,44 +12,32 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 
+@RequiredArgsConstructor
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final OAuth2Service oAuth2Service;
 
-    public CustomOAuth2UserService(OAuth2Service oAuth2Service) {
-        this.oAuth2Service = oAuth2Service;
-    }
-
-    // 실제 access token을 사용해 GitHub API와 통신하고 사용자 정보를 가져와 DTO mapping
-    // OAuth2UserRequest : Access Token, Client 정보 포함
-    // OAuth2User : GitHub에서 받은 사용자 정보 가짐
+    // 실제 access token을 사용해 GitHub API와 통신하고 사용자 정보를 가져와 DTO에 매핑하는 메소드
     @Override
-    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2User oauth2User = super.loadUser(userRequest);
+    public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
+        // OAuth2UserRequest : Access Token, Client 정보 포함
+        // OAuth2User : GitHub에서 받은 사용자 정보 가짐
+        OAuth2User oauth2User = super.loadUser(oAuth2UserRequest);
 
-        // Github에서 받은 사용자 정보를 OAuth2UserRequestDTO로 변환
+        // GitHub에서 받은 사용자 정보를 OAuth2UserRequestDTO에 매핑
         OAuth2UserRequestDTO oauth2UserRequestDTO = OAuth2UserRequestDTO.builder()
                 .githubId(oauth2User.getAttribute("id").toString())
                 .nickname(oauth2User.getAttribute("login"))
                 .profileImage(oauth2User.getAttribute("avatar_url"))
                 .build();
 
-        // 깃허브 연동 요청인 경우 (oAuth2Service에 임시 저장해둔 usercode가 있음)
-        String storedUserCode = oAuth2Service.getStoredUserCode();
-        if (storedUserCode != null) {
-            oAuth2Service.linkGithubAccount(storedUserCode, oauth2UserRequestDTO);
-        }
+        oAuth2Service.processOAuth2User(oauth2UserRequestDTO);
 
-        // OAuth2 로그인/회원가입인 경우
-        else {
-            oAuth2Service.saveOrLoginOAuth2User(oauth2UserRequestDTO);
-        }
-
-        // 사용자 정보와 권한을 담은 DefaultOAuth2User 반환
+        // Spring Security의 인증 객체로, SecurityContext에 저장하여 TokenProvider에서 JWT 토큰 생성할 때 사용
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), // 사용자 권한 설정
-                oauth2User.getAttributes(), // 깃허브에서 받아온 사용자 정보
+                oauth2User.getAttributes(), // GitHub에서 받아온 사용자 정보
                 "id" // 사용자 구분 Key
         );
     }
