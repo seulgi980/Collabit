@@ -1,6 +1,8 @@
 package com.collabit.oauth.service;
 
+import com.collabit.global.security.CustomUserDetails;
 import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
+import com.collabit.user.domain.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -11,6 +13,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -32,13 +36,22 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                 .profileImage(oauth2User.getAttribute("avatar_url"))
                 .build();
 
-        oAuth2Service.processOAuth2User(oauth2UserRequestDTO);
+        User user = oAuth2Service.processOAuth2User(oauth2UserRequestDTO);
+
+        // 사용자 속성을 담은 Map 생성
+        Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
+        attributes.put("code", user.getCode());  // 우리 시스템의 고유 식별자 추가
 
         // Spring Security의 인증 객체로, SecurityContext에 저장하여 TokenProvider에서 JWT 토큰 생성할 때 사용
-        return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), // 사용자 권한 설정
-                oauth2User.getAttributes(), // GitHub에서 받아온 사용자 정보
-                "id" // 사용자 구분 Key
+        return new CustomUserDetails(
+                user.getCode(),           // PK
+                user.getEmail(),          // Email은 null 가능
+                user.getPassword(),       // Password는 null 가능
+                user.getNickname(),
+                user.getGithubId(),
+                user.getProfileImage(),
+                Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())),
+                attributes  // GitHub에서 받아온 원본 정보와 함께 저장
         );
     }
 }

@@ -7,16 +7,16 @@ import com.collabit.oauth.exception.GithubAlreadyLinkedException;
 import com.collabit.oauth.exception.GithubAlreadyUsedException;
 import com.collabit.user.domain.entity.Role;
 import com.collabit.user.domain.entity.User;
+import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class OAuth2Service {
     private final UserRepository userRepository;
 
@@ -27,18 +27,22 @@ public class OAuth2Service {
     // 토큰이 없을 때는 연동 요청 제한, 토큰이 있을 때는 로그인/회원가입 요청 제한 (security 설정)
     // 해당 메소드에서는 usercode의 유무로 로그인/회원가입과 연동을 구분하기에 로그인/회원가입의 경우 무조건 예외 발생
     // => 예외가 발생하는 경우는 무조건 로그인/회원가입으로 처리
-    @Transactional
-    public void processOAuth2User(OAuth2UserRequestDTO oauth2UserRequestDTO) {
+    public User processOAuth2User(OAuth2UserRequestDTO oauth2UserRequestDTO) {
+        String userCode = null;
         try {
-            String userCode = SecurityUtil.getCurrentUserId();
+            userCode = SecurityUtil.getCurrentUserId();
             linkGithubAccount(userCode, oauth2UserRequestDTO);
+            return userRepository.findByCode(userCode)
+                    .orElseThrow(UserNotFoundException::new);
         } catch (Exception e) {
-            saveOrLoginOAuth2User(oauth2UserRequestDTO);
+            if(userCode == null) {
+                return saveOrLoginOAuth2User(oauth2UserRequestDTO);
+            }
+            throw e;
         }
     }
 
     // GitHub ID로 기존 사용자 찾아서 있으면 로그인, 없으면 회원가입
-    @Transactional
     public User saveOrLoginOAuth2User(OAuth2UserRequestDTO oAuth2UserRequestDTO) {
         return userRepository.findByGithubId(oAuth2UserRequestDTO.getGithubId())
                 // 해당 GitHub Id가 있으면 로그인 처리
@@ -56,7 +60,8 @@ public class OAuth2Service {
     // 새로운 GitHub 사용자 생성 및 저장
     private User signUpOAuth2User(OAuth2UserRequestDTO oAuth2UserRequestDTO) {
         User newGitUser = User.builder()
-                .code(UUID.randomUUID().toString()) // 고유한 사용자 코드 생성
+                .email(null)
+                .password(null)
                 .githubId(oAuth2UserRequestDTO.getGithubId())
                 .nickname(oAuth2UserRequestDTO.getNickname())
                 .profileImage(oAuth2UserRequestDTO.getProfileImage())
@@ -67,10 +72,9 @@ public class OAuth2Service {
     }
 
     // 일반회원이 GitHub 계정을 연동할 경우 해당 유저 레코드에 깃허브 계정 추가
-    @Transactional
     public void linkGithubAccount(String userCode, OAuth2UserRequestDTO oAuth2UserRequestDTO) {
         User user = userRepository.findByCode(userCode)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         // 이미 GitHub 계정이 연동된 경우
         if (user.getGithubId() != null) {
