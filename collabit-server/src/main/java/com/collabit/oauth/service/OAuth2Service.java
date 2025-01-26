@@ -86,20 +86,4 @@ public class OAuth2Service {
         userRepository.save(user);
         oAuth2Status = OAuth2Status.GITHUB_LINK_SUCCESS;
     }
-
-    // SecurityUtil을 통해 usercode를 가져오고 GitHub Id 전달
-    @Transactional(readOnly = true)
-    public Object getUserGithubId() {
-        return userRepository.findByCode(SecurityUtil.getCurrentUserId())
-                .map(User::getGithubId)
-                .orElse(null);
-    }
-
-    // SecurityUtil을 통해 usercode를 가져오고 닉네임 전달
-    @Transactional(readOnly = true)
-    public Object getUserNickname() {
-        return userRepository.findByCode(SecurityUtil.getCurrentUserId())
-                .map(User::getNickname)
-                .orElse(null);
-    }
 }

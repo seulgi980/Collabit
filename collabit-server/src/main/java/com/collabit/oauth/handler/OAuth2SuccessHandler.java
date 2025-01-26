@@ -2,15 +2,20 @@ package com.collabit.oauth.handler;
 
 import com.collabit.auth.domain.dto.TokenDto;
 import com.collabit.global.security.TokenProvider;
+import com.collabit.oauth.domain.dto.OAuth2UserRequestDTO;
 import com.collabit.oauth.domain.enums.OAuth2Status;
 import com.collabit.oauth.exception.UnexpectedOAuthStatus;
 import com.collabit.oauth.service.OAuth2Service;
+import com.collabit.user.domain.entity.User;
+import com.collabit.user.exception.UserNotFoundException;
+import com.collabit.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import net.minidev.json.JSONObject;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -28,27 +33,39 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                         Authentication authentication) throws IOException {
 
         OAuth2Status oAuth2Status = oAuth2Service.getOAuth2Status(); // 로그인, 회원가입, 연동 구분
+
+        // OAuth2SuccessHandler로 넘어올 때 SecurityContext가 초기화되어 SecurityUtil로 새로운 유저 정보 조회 불가
+        DefaultOAuth2User oAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
+        OAuth2UserRequestDTO requestDTO = new OAuth2UserRequestDTO(
+                oAuth2User.getAttribute("id").toString(),
+                oAuth2User.getAttribute("login"),
+                oAuth2User.getAttribute("avatar_url")
+        );
+
+        User user = oAuth2Service.saveOrLoginOAuth2User(requestDTO);
+
         response.setContentType("application/json;charset=UTF-8");
         JSONObject jsonResponse = new JSONObject();
 
         switch (oAuth2Status) {
             case GITHUB_LINK_SUCCESS:
                 response.setStatus(HttpServletResponse.SC_OK);
-                jsonResponse.put("githubId", oAuth2Service.getUserGithubId());
+                jsonResponse.put("githubId", user.getGithubId());
                 break;
 
             case LOGIN_SUCCESS:
                 response.setStatus(HttpServletResponse.SC_OK);
                 addAuthTokens(response, authentication);
-                jsonResponse.put("nickname", oAuth2Service.getUserNickname());
-                jsonResponse.put("githubId", oAuth2Service.getUserGithubId());
+                jsonResponse.put("nickname", user.getNickname());
+                jsonResponse.put("githubId", user.getGithubId());
                 break;
 
             case SIGNUP_SUCCESS:
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 addAuthTokens(response, authentication);
-                jsonResponse.put("nickname", oAuth2Service.getUserNickname());
-                jsonResponse.put("githubId", oAuth2Service.getUserGithubId());
+
+                jsonResponse.put("nickname", user.getNickname());
+                jsonResponse.put("githubId", user.getGithubId());
                 break;
 
             default:

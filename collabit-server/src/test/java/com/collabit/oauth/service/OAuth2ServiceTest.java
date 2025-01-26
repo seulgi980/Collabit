@@ -198,48 +198,6 @@ class OAuth2ServiceTest {
         }
     }
 
-    @Test
-    @DisplayName("GitHub ID 조회 성공")
-    void getUserGithubIdSuccessTest() {
-        // given: GitHub ID가 연동된 사용자 준비
-        String userCode = "user123";
-        String githubId = "git123";
-        User user = createMockUser(githubId);
-
-        try (MockedStatic<SecurityUtil> mockedStatic = mockStatic(SecurityUtil.class)) {
-            mockedStatic.when(SecurityUtil::getCurrentUserId).thenReturn(userCode);
-            when(userRepository.findByCode(userCode)).thenReturn(Optional.of(user));
-
-            // when: GitHub ID 조회
-            Object result = oauth2Service.getUserGithubId();
-
-            // then: 조회된 GitHub ID 검증
-            assertThat(result).isEqualTo(githubId);
-            verify(userRepository).findByCode(userCode);
-        }
-    }
-
-    @Test
-    @DisplayName("닉네임 조회 성공")
-    void getUserNicknameSuccessTest() {
-        // given: 닉네임이 설정된 사용자 준비
-        String userCode = "user123";
-        String nickname = "testUser";
-        User user = createMockUser("git123");
-
-        try (MockedStatic<SecurityUtil> mockedStatic = mockStatic(SecurityUtil.class)) {
-            mockedStatic.when(SecurityUtil::getCurrentUserId).thenReturn(userCode);
-            when(userRepository.findByCode(userCode)).thenReturn(Optional.of(user));
-
-            // when: 닉네임 조회
-            Object result = oauth2Service.getUserNickname();
-
-            // then: 조회된 닉네임 검증
-            assertThat(result).isEqualTo(nickname);
-            verify(userRepository).findByCode(userCode);
-        }
-    }
-
     private OAuth2UserRequestDTO createGitHubUserDTO(String githubId) {
         return OAuth2UserRequestDTO.builder()
                 .githubId(githubId)

@@ -42,6 +42,8 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING) // Role을 문자열로 저장
+    @Column(name = "role", nullable = false)
     private Role role;
 
     // 일반회원에 GitHub 연동을 위한 메서드
