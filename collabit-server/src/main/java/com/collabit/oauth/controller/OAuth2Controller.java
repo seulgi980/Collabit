@@ -29,12 +29,6 @@ public class OAuth2Controller {
     @Operation(summary = "일반 회원의 깃허브 연동 요청")
     @GetMapping("/link")
     public ResponseEntity<String> linkGithub(HttpServletRequest request) {
-        String userCode = SecurityUtil.getCurrentUserId();
-
-        if(userCode == null){
-            throw new InvalidTokenException();
-        }
-
         return redirectToGithub();
     }
 
