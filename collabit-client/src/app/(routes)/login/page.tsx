@@ -1,3 +1,4 @@
+import { fetchLoginGithub } from "@/entities/api/auth/login";
 import { Button } from "@/shared/ui/button";
 import { ChevronsUpIcon } from "lucide-react";
 import Image from "next/image";
@@ -29,7 +30,13 @@ const LoginPage = () => {
           priority
         />
       </div>
-      <Button className="h-12 w-full max-w-[280px]">
+      <Button
+        onClick={async () => {
+          const res = await fetchLoginGithub();
+          console.log(res);
+        }}
+        className="h-12 w-full max-w-[280px]"
+      >
         Github 계정으로 로그인
       </Button>
       <div className="flex flex-col items-center justify-center gap-2 text-sm text-gray-500">

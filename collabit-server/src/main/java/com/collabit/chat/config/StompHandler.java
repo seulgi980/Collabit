@@ -1,5 +1,6 @@
 package com.collabit.chat.config;
 
+import com.collabit.global.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -12,16 +13,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class StompHandler implements ChannelInterceptor {
 
-    // 인증/인가 로직 추가 필요
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-//        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-//            String token = accessor.getFirstNativeHeader("Authorization");
-//            if (token == null || !isValidToken(token)) {
-//                throw new IllegalArgumentException("Invalid Token");
-//            }
-//        }
+
+        // CONNECT 명령어인 경우 인증 로직 수행
+        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            String userCode = SecurityUtil.getCurrentUserCode();
+            accessor.setUser(() -> userCode); // WebSocket 세션에 사용자 정보 설정
+        }
+
         return message;
     }
 }

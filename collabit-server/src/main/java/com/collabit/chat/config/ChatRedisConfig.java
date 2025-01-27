@@ -1,6 +1,6 @@
 package com.collabit.chat.config;
 
-import com.collabit.chat.service.RedisSubscriber;
+import com.collabit.chat.redis.RedisSubscriber;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;

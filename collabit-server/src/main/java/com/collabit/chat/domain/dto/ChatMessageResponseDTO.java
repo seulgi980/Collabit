@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChatMessagePubDTO {
+public class ChatMessageResponseDTO {
     private int roomCode;
     private String nickname;
     private String message;
