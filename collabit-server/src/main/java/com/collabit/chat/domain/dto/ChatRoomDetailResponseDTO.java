@@ -13,5 +13,5 @@ public class ChatRoomDetailResponseDTO {
     int roomCode;
     String nickname;
     String profileImage;
-    List<ChatMessagePubDTO> messages;
+    List<ChatMessageResponseDTO> messages;
 }
