@@ -1,7 +1,7 @@
 package com.collabit.chat.service;
 
-import com.collabit.chat.domain.dto.ChatMessagePubDTO;
-import com.collabit.chat.domain.dto.ChatMessageSubDTO;
+import com.collabit.chat.domain.dto.ChatMessageRequestDTO;
+import com.collabit.chat.domain.dto.ChatMessageResponseDTO;
 import com.collabit.chat.domain.dto.ChatRoomDetailRequestDTO;
 import com.collabit.chat.domain.dto.ChatRoomDetailResponseDTO;
 import com.collabit.chat.domain.entity.ChatMessage;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,67 +29,79 @@ public class ChatRoomDetailService {
 
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomListService chatRoomListService;
+    private final ChatRedisService chatRedisService;
 
     // 채팅방 디테일 조회
     public PageResponseDTO getChatRoomDetail(String userCode, ChatRoomDetailRequestDTO requestDTO) {
         int roomCode = requestDTO.getRoomCode();
+
+        // 채팅방 참여 여부 확인
         if (!isUserInChatRoom(userCode, roomCode)) {
             throw new UserNotInChatRoomException();
         }
 
-        int size = 50;
-        int page = requestDTO.getPageNumber();
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByRoomCodeOrderByTimestampDesc(requestDTO.getRoomCode(), pageable);
+        Pageable pageable = PageRequest.of(requestDTO.getPageNumber(), 50);
+        Page<ChatMessage> chatMessagePage = chatMessageRepository.findByRoomCodeOrderByTimestampDesc(roomCode, pageable);
 
-        List<ChatMessagePubDTO> chatMessages = chatMessagePage.getContent().stream()
-                .map(message -> convertToPubDTO(message, roomCode))
+        List<ChatMessageResponseDTO> chatMessages = chatMessagePage.getContent().stream()
+                .map(this::convertToResponseDTO)
                 .toList();
 
-        User user = getUserByUserCode(userCode, roomCode);
-
-        // 채팅방 세부 정보에 메시지와 방 정보 넣기
-        ChatRoomDetailResponseDTO chatRoomDetail = ChatRoomDetailResponseDTO.builder()
-                .messages(chatMessages)
-                .roomCode(roomCode)
-                .nickname(user.getNickname())
-                .profileImage(user.getProfileImage())
-                .build();
-
+        // 채팅방 상세 정보 생성
+        ChatRoomDetailResponseDTO chatRoomDetail = buildChatRoomDetailResponse(userCode, roomCode, chatMessages);
         return PageResponseDTO.builder()
                 .content(chatRoomDetail)
-                .pageNumber(page)
-                .pageSize(size)
+                .pageNumber(requestDTO.getPageNumber())
+                .pageSize(50)
                 .totalElements((int) chatMessagePage.getTotalElements())
                 .totalPages(chatMessagePage.getTotalPages())
                 .last(chatMessagePage.isLast())
                 .hasNext(chatMessagePage.hasNext())
                 .build();
+    }
 
+    // 특정 채팅방 전체 메시지 읽음 처리 (Redis 연동)
+    public void markMessagesAsRead(int roomCode, String userCode) {
+        chatRedisService.updateRoomMessageStatus(roomCode, userCode, true);
     }
 
     // 메시지 저장
-    public void saveMessage(ChatMessageSubDTO chatMessageSubDTO, String userCode, int roomCode) {
+    public void saveMessage(ChatMessageRequestDTO chatMessageRequestDTO, String userCode, int roomCode) {
         ChatMessage chatMessage = ChatMessage.builder()
                 .roomCode(roomCode)
                 .userCode(userCode)
-                .message(chatMessageSubDTO.getMessage())
+                .message(chatMessageRequestDTO.getMessage())
                 .timestamp(LocalDateTime.now())
                 .isRead(false)
                 .build();
 
         chatMessageRepository.save(chatMessage);
-        log.info("메시지 저장 완료: Room {}, Message {}", roomCode, chatMessageSubDTO.getMessage());
+        log.info("메시지 저장 완료: Room {}, Message {}", roomCode, chatMessageRequestDTO.getMessage());
     }
 
-    // 엔티티 -> PubDTO 변환
-    public ChatMessagePubDTO convertToPubDTO(ChatMessage chatMessage, int roomCode) {
-        String senderNickname = getUserByUserCode(chatMessage.getUserCode(), roomCode).getNickname();
+    // 채팅방 상세 정보 생성
+    private ChatRoomDetailResponseDTO buildChatRoomDetailResponse(String userCode, int roomCode, List<ChatMessageResponseDTO> messages) {
+        User user = getUserByUserCode(userCode, roomCode);
+        return ChatRoomDetailResponseDTO.builder()
+                .messages(messages)
+                .roomCode(roomCode)
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImage())
+                .build();
+    }
 
-        return ChatMessagePubDTO.builder()
+    // 유저가 채팅방에 있는지 확인
+    private boolean isUserInChatRoom(String userCode, int roomCode) {
+        return chatRoomRepository.findById(roomCode)
+                .map(chatRoom -> chatRoom.getUser1().getCode().equals(userCode) || chatRoom.getUser2().getCode().equals(userCode))
+                .orElse(false);
+    }
+
+    // 메시지를 Response DTO로 변환
+    private ChatMessageResponseDTO convertToResponseDTO(ChatMessage chatMessage) {
+        return ChatMessageResponseDTO.builder()
                 .roomCode(chatMessage.getRoomCode())
-                .nickname(senderNickname)
+                .nickname(getUserByUserCode(chatMessage.getUserCode(), chatMessage.getRoomCode()).getNickname())
                 .message(chatMessage.getMessage())
                 .timestamp(chatMessage.getTimestamp())
                 .build();
@@ -99,27 +110,7 @@ public class ChatRoomDetailService {
     // 채팅방에서 상대방 정보 가져오기
     private User getUserByUserCode(String userCode, int roomCode) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomCode)
-                .orElseThrow(() -> new ChatRoomNotFoundException());
-        if (chatRoom.getUser1().getCode().equals(userCode)) {
-            return chatRoom.getUser2();
-        } else {
-            return chatRoom.getUser1();
-        }
+                .orElseThrow(ChatRoomNotFoundException::new);
+        return chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
     }
-
-    // 유저가 채팅방에 있는지 확인
-    public boolean isUserInChatRoom(String userCode, int roomCode) {
-        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findById(roomCode);
-        if (chatRoomOptional.isPresent()) {
-            ChatRoom chatRoom = chatRoomOptional.get();
-            return chatRoom.getUser1().getCode().equals(userCode) || chatRoom.getUser2().getCode().equals(userCode);
-        }
-        return false;
-    }
-
-    // 특정 채팅방 전체 메시지 읽음 처리
-    public void markMessagesAsRead(int roomCode, String userCode) {
-        chatMessageRepository.markMessagesAsRead(roomCode, userCode);
-    }
-
 }
