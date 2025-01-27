@@ -1,7 +1,7 @@
 "use client";
-import NavMobile from "@/entities/ui/navMobile/NavMobile";
-import HeaderDesktop from "@/features/ui/header/HeaderDesktop";
-import HeaderMobile from "@/features/ui/header/HeaderMobile";
+import NavMobile from "@/entities/common/ui/NavMobile";
+import HeaderDesktop from "@/features/common/ui/header/HeaderDesktop";
+import HeaderMobile from "@/features/common/ui/header/HeaderMobile";
 import MENU_LIST from "@/shared/constant/MENU_LIST";
 import { QUERY_SIZE } from "@/shared/constant/QUERY_SIZE";
 import { toast } from "@/shared/hooks/use-toast";

@@ -1,5 +1,3 @@
-import { ENV } from "../config/env";
-
 interface SignupRequest {
   email: string;
   password: string;
@@ -15,8 +13,10 @@ interface ValidateEmailRequest {
   email: string;
 }
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export const validateEmailAPI = async (body: ValidateEmailRequest) => {
-  const res = await fetch(`${ENV.API_URL}/auth/email-check`, {
+  const res = await fetch(`${apiUrl}/auth/email-check`, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -25,7 +25,7 @@ export const validateEmailAPI = async (body: ValidateEmailRequest) => {
 };
 
 export const signupAPI = async (body: SignupRequest) => {
-  const res = await fetch(`${ENV.API_URL}/auth/signup`, {
+  const res = await fetch(`${apiUrl}/auth/signup`, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -34,7 +34,7 @@ export const signupAPI = async (body: SignupRequest) => {
 };
 
 export const logoutAPI = async () => {
-  const res = await fetch(`${ENV.API_URL}/auth/logout`, {
+  const res = await fetch(`${apiUrl}/auth/logout`, {
     method: "POST",
   });
   const data = await res.json();
@@ -42,7 +42,7 @@ export const logoutAPI = async () => {
 };
 
 export const loginCredentialAPI = async (body: LoginRequest) => {
-  const res = await fetch(`${ENV.API_URL}/auth/login`, {
+  const res = await fetch(`${apiUrl}/auth/login`, {
     method: "POST",
     body: JSON.stringify(body),
   });
@@ -50,14 +50,8 @@ export const loginCredentialAPI = async (body: LoginRequest) => {
   return data;
 };
 
-export const loginGithubAPI = async () => {
-  const res = await fetch(`${ENV.API_URL}/auth/oauth`);
-  const data = await res.json();
-  return data;
-};
-
 export const linkGithubAccountAPI = async () => {
-  const res = await fetch(`${ENV.API_URL}/auth/oauth/link`);
+  const res = await fetch(`${apiUrl}/auth/oauth/link`);
   const data = await res.json();
   return data;
 };
