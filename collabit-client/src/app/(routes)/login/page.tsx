@@ -1,10 +1,14 @@
-import { fetchLoginGithub } from "@/entities/api/auth/login";
+"use client";
+
 import { Button } from "@/shared/ui/button";
 import { ChevronsUpIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
+const apiUri = process.env.NEXT_PUBLIC_API_URI;
 const LoginPage = () => {
+  const handleLogin = () => {
+    window.location.href = `${apiUri}/oauth2/authorization/github`;
+  };
   return (
     <div className="flex w-full flex-col items-center justify-center gap-10 py-20">
       <div className="flex flex-col items-center justify-center gap-3">
@@ -30,13 +34,7 @@ const LoginPage = () => {
           priority
         />
       </div>
-      <Button
-        onClick={async () => {
-          const res = await fetchLoginGithub();
-          console.log(res);
-        }}
-        className="h-12 w-full max-w-[280px]"
-      >
+      <Button onClick={handleLogin} className="h-12 w-full max-w-[280px]">
         Github 계정으로 로그인
       </Button>
       <div className="flex flex-col items-center justify-center gap-2 text-sm text-gray-500">

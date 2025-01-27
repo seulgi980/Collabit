@@ -1,6 +1,6 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import HeaderDropDown from "../headerDropDown/HeaderDropDown";
+import HeaderDropDown from "./HeaderDropDown";
 import { ChevronDown } from "lucide-react";
 
 interface UserAvatarProps {

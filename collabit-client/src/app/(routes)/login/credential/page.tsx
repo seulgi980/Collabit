@@ -1,6 +1,5 @@
 "use client";
-import LoginSchema from "@/features/types/LoginSchema";
-import { useToast } from "@/shared/hooks/use-toast";
+import useCredentialLogin from "@/features/auth/api/useCredentialLogin";
 import { Button } from "@/shared/ui/button";
 import {
   Form,
@@ -10,60 +9,11 @@ import {
   FormLabel,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 const LoginCredentialPage = () => {
-  const router = useRouter();
-  const { toast } = useToast();
-
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  });
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const isLoginValid = await form.trigger("email");
-    const emailValue = form.getValues("email");
-    const emailError = form.getFieldState("email").error;
-    if (!isLoginValid || !emailValue || emailError) {
-      toast({
-        title: emailError?.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const isPasswordValid = await form.trigger("password");
-    const passwordValue = form.getValues("password");
-    const passwordError = form.getFieldState("password").error;
-    if (!isPasswordValid || !passwordValue || passwordError) {
-      toast({
-        title: passwordError?.message,
-        variant: "destructive",
-      });
-      return;
-    }
-    try {
-      await onSubmit(form.getValues());
-      // 로그인 성공 시 회원정보 api 호출
-      console.log("로그인 성공");
-      router.push("/");
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  const onSubmit = async (data: z.infer<typeof LoginSchema>) => {
-    // 로그인 API 호출
-    console.log(data);
-  };
+  const { form, handleLogin } = useCredentialLogin();
 
   return (
     <div className="mx-auto flex w-full max-w-[400px] flex-col items-center justify-center gap-10 py-20">

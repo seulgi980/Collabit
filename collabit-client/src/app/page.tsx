@@ -6,7 +6,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/shared/ui/carousel";
-import CompareScoreSection from "@/widget/ui/main/CompareScoreSection";
+import CompareScoreSection from "@/features/main/CompareScoreSection";
 
 export default function Home() {
   // Todo: 유저 정보 가져오기

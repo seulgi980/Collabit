@@ -8,3 +8,4 @@ export interface User {
   createdAt: Date;
   role: string;
 }
+export type UserInfo = Pick<User, "nickname" | "profileImage" | "githubId">;

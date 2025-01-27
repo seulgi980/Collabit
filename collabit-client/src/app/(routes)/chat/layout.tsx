@@ -1,18 +1,26 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+
 const ChatLayout = ({
-  children,
-  chatList,
-  chatRoom,
+  list,
+  room,
 }: {
-  children: React.ReactNode;
-  chatList: React.ReactNode;
-  chatRoom: React.ReactNode;
+  list: React.ReactNode;
+  room: React.ReactNode;
 }) => {
+  const pathname = usePathname();
+  const isChatRoom = pathname.includes("/chat/") && pathname !== "/chat";
+
   return (
     <>
-      {children}
-      <div className="flex h-full w-full">
-        <div className="w-1/4 min-w-[200px] bg-slate-400">{chatList}</div>
-        <div className="w-3/4 bg-gray-100">{chatRoom}</div>
+      {/* 모바일 레이아웃 */}
+      <div className="md:hidden">{isChatRoom ? room : list}</div>
+
+      {/* 데스크톱 레이아웃 */}
+      <div className="hidden w-full md:flex">
+        <div className="w-1/4 min-w-[280px]">{list}</div>
+        <div className="w-3/4 bg-gray-100">{room}</div>
       </div>
     </>
   );

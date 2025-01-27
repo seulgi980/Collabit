@@ -1,6 +1,6 @@
 "use client";
 
-import UserAvatar from "@/entities/ui/userAvatar/UserAvatar";
+import UserAvatar from "@/entities/common/ui/UserAvatar";
 import { cn } from "@/shared/lib/shadcn/utils";
 import { Button } from "@/shared/ui/button";
 import {

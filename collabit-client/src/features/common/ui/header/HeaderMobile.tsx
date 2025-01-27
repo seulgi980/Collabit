@@ -1,4 +1,4 @@
-import HeaderDropDown from "@/entities/ui/headerDropDown/HeaderDropDown";
+import HeaderDropDown from "@/entities/common/ui/HeaderDropDown";
 import { Button } from "@/shared/ui/button";
 import { HeaderProps } from "@/widget/types/Header";
 import { AlignJustify } from "lucide-react";
