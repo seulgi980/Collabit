@@ -28,9 +28,6 @@ public class ChatRoomListServiceTest {
     private ChatRoomRepository chatRoomRepository;
 
     @Mock
-    private ChatMessageRepository chatMessageRepository;
-
-    @Mock
     private ChatRedisService chatRedisService;
 
     @Mock
@@ -141,20 +138,19 @@ public class ChatRoomListServiceTest {
                 .user2(user2)
                 .build();
 
-        // when userRepository and chatRoomRepository are called, return mocked user and chat room
+        // when
         when(userRepository.findById(userCode)).thenReturn(Optional.of(user1));
 
-        // Create a Page containing one chatRoom
-        Page<ChatRoom> chatRoomPage = new PageImpl<>(List.of(chatRoom), PageRequest.of(0, 15), 1); // mock PageImpl to return a valid page
+        Page<ChatRoom> chatRoomPage = new PageImpl<>(List.of(chatRoom), PageRequest.of(0, 15), 1);
         when(chatRoomRepository.findByUser1OrUser2(user1, user1, PageRequest.of(0, 15)))
-                .thenReturn(chatRoomPage);  // return page with one chat room
+                .thenReturn(chatRoomPage);
 
         // When
         PageResponseDTO responseDTO = chatRoomListService.getChatRoomList(userCode, requestDTO);
 
         // Then
-        assertNotNull(responseDTO);  // responseDTO should not be null
-        assertEquals(1, responseDTO.getTotalElements());  // Ensure there's one element in the page
+        assertNotNull(responseDTO);
+        assertEquals(1, responseDTO.getTotalElements());
         assertEquals(123, ((ChatRoomListResponseDTO)((List<?>)responseDTO.getContent()).get(0)).getRoomCode());
         assertTrue(((ChatRoomListResponseDTO)((List<?>)responseDTO.getContent()).get(0)).getLastMessage() == null);
     }
