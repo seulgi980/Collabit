@@ -11,9 +11,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WebSocketMessageDTO {
-    private String messageType;       // 메시지 타입 (ENTER, MESSAGE, EXIT)
-    private int roomCode;
+    private String messageType; // 메시지 유형: CONNECT, MESSAGE, ROOM_LIST, READ_MESSAGE 등
     private String nickname;
-    private String content;
-    private LocalDateTime timestamp;
+    private int roomCode;
+    private Object payload;
 }
