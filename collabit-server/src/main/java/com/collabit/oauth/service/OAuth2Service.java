@@ -30,7 +30,7 @@ public class OAuth2Service {
     public User processOAuth2User(OAuth2UserRequestDTO oauth2UserRequestDTO) {
         String userCode = null;
         try {
-            userCode = SecurityUtil.getCurrentUserId();
+            userCode = SecurityUtil.getCurrentUserCode();
             linkGithubAccount(userCode, oauth2UserRequestDTO);
             return userRepository.findByCode(userCode)
                     .orElseThrow(UserNotFoundException::new);

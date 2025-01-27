@@ -161,7 +161,7 @@ class OAuth2ServiceTest {
 
         try (MockedStatic<SecurityUtil> mockedStatic = mockStatic(SecurityUtil.class)) {
             // SecurityUtil이 예외를 던지지 않고 userCode를 반환하도록 설정
-            mockedStatic.when(SecurityUtil::getCurrentUserId).thenReturn(userCode);
+            mockedStatic.when(SecurityUtil::getCurrentUserCode).thenReturn(userCode);
             when(userRepository.findByCode(userCode)).thenReturn(Optional.of(normalUser));
             when(userRepository.existsByGithubId(githubDTO.getGithubId())).thenReturn(false);
             when(userRepository.save(any(User.class))).thenReturn(normalUser);
@@ -184,7 +184,7 @@ class OAuth2ServiceTest {
 
         try (MockedStatic<SecurityUtil> mockedStatic = mockStatic(SecurityUtil.class)) {
             // SecurityUtil이 예외를 던지도록 설정
-            mockedStatic.when(SecurityUtil::getCurrentUserId)
+            mockedStatic.when(SecurityUtil::getCurrentUserCode)
                     .thenThrow(new RuntimeException("인증 정보가 없습니다."));
             when(userRepository.findByGithubId(githubDTO.getGithubId())).thenReturn(Optional.empty());
             when(userRepository.save(any(User.class))).thenReturn(newUser);
