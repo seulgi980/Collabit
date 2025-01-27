@@ -7,6 +7,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class ChatUserStatusDTO {
     private String userCode;
     private boolean isOnline;
