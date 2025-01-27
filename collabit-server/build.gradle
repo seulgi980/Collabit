@@ -60,6 +60,9 @@ dependencies {
 
     // ===== Groovy =====
     implementation 'org.codehaus.groovy:groovy-all:3.0.9'
+
+    // ===== AWS S3 =====
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
 
 
