@@ -200,7 +200,7 @@ export default function Page() {
   };
 
   return (
-    <div className="mx-auto flex h-[400px] w-full max-w-[400px] flex-col justify-center gap-10 py-20 md:h-[500px]">
+    <div className="mx-auto flex h-[460px] w-full max-w-[400px] flex-col justify-center gap-10 py-20 md:h-[500px]">
       <div className="relative flex w-full items-center justify-center">
         <button
           className="absolute left-0"
