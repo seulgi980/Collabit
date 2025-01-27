@@ -38,7 +38,7 @@ public class OAuth2Service {
             if(userCode == null) {
                 return saveOrLoginOAuth2User(oauth2UserRequestDTO);
             }
-            throw e;
+            throw new UserNotFoundException();
         }
     }
 
