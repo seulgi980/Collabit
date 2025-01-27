@@ -1,7 +1,5 @@
 package com.collabit.global.config;
 
-import java.time.Duration;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -24,11 +22,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableCaching
 public class RedisConfig {
 
-	@Value("${spring.redis.host}")
-	private String host;
+    @Value("${spring.redis.host}")
+    private String host;
 
-	@Value("${spring.redis.port}")
-	private int port;
+    @Value("${spring.redis.port}")
+    private int port;
 
 	// Redis 연결 설정
 	@Bean
