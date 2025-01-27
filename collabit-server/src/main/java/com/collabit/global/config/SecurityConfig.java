@@ -38,7 +38,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/auth/sign-up","/api/auth/login", "/api/auth/**", "/error").permitAll();
+                auth.requestMatchers("/api/user/sign-up","/api/user/login", "/api/auth/**", "/error").permitAll();
+                auth.requestMatchers("/api/oauth").anonymous(); // oauth 회원가입, 로그인의 경우 토큰이 있는 사용자 거부
                 auth.requestMatchers("/api/oauth/link").authenticated();
                 auth.requestMatchers("/api/oauth/**").permitAll();
                 auth.requestMatchers("/oauth2/authorization/**").permitAll();
@@ -46,6 +47,7 @@ public class SecurityConfig {
                 auth.requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll();
                 auth.anyRequest().authenticated();
             })
+
             .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class) // cors필터 추가
             .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
 
