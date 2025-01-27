@@ -3,9 +3,7 @@ package com.collabit.chat.controller;
 import com.collabit.chat.domain.dto.*;
 import com.collabit.chat.service.ChatRoomDetailService;
 import com.collabit.chat.service.ChatRoomListService;
-import com.collabit.chat.service.ChatService;
 import com.collabit.global.common.PageResponseDTO;
-import com.collabit.global.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +61,7 @@ public class ChatController {
     @PostMapping("/room/nickname")
     public ResponseEntity<?> getChatRoomWithNickname(@RequestHeader("Authorization") String token, ChatRoomRequestDTO requestDTO) {
         String userCode = "200c31dc-9762-4cf2-b2f5-ed96e8f1318f";
-        ChatRoomResponseDTO responseDTO = chatRoomListService.getChatRoomByNickname(userCode, requestDTO);
+        ChatRoomResponseDTO responseDTO = chatRoomListService.getChatRoomByNickname(userCode, requestDTO.getNickname());
         if (responseDTO.getRoomCode() == 0) return ResponseEntity.noContent().build();
         return ResponseEntity.ok(responseDTO);
     }
