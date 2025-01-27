@@ -8,4 +8,7 @@ const getEnvVar = (key: string) => {
 
 export const ENV = {
   API_URL: getEnvVar("NEXT_PUBLIC_API_URL"),
+  AWS_S3_BUCKET: getEnvVar("NEXT_AWS_S3_BUCKET"),
+  GITHUB_CLIENT_ID: getEnvVar("NEXT_PUBLIC_GITHUB_CLIENT_ID"),
+  GITHUB_CLIENT_SECRET: getEnvVar("NEXT_PUBLIC_GITHUB_CLIENT_SECRET"),
 } as const;
