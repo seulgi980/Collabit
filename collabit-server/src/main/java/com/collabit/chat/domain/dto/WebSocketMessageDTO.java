@@ -1,5 +1,6 @@
 package com.collabit.chat.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Getter
@@ -8,8 +9,15 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class WebSocketMessageDTO {
-    private String messageType; // 메시지 유형: CONNECT, MESSAGE, ROOM_LIST, READ_MESSAGE 등
+    @JsonProperty("messageType")
+    private String messageType;
+
+    @JsonProperty("nickname")
     private String nickname;
+
+    @JsonProperty("roomCode")
     private int roomCode;
+
+    @JsonProperty("message")
     private String message;
 }
