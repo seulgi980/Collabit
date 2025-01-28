@@ -1,11 +1,13 @@
 package com.collabit.auth.controller;
 
+import com.collabit.auth.domain.dto.TokenDto;
 import com.collabit.auth.domain.dto.UserLoginRequestDto;
 import com.collabit.auth.domain.dto.UserResponseDto;
 import com.collabit.auth.domain.dto.UserSignupRequestDto;
 import com.collabit.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,13 @@ public class AuthController {
     public ResponseEntity<UserResponseDto> login(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto, HttpServletResponse response) {
         log.debug("login Request: {}", userLoginRequestDto.toString());
         return ResponseEntity.ok(authService.login(userLoginRequestDto, response));
+    }
+
+    // refresh token을 통한 access token 재발급 로직
+    @Operation(summary = "Access Token 재발급", description = "Refresh Token을 사용하여 새로운 Access Token을 발급 받는 API입니다." )
+    @PostMapping("/refresh")
+    public ResponseEntity<TokenDto> reissue(HttpServletRequest request, HttpServletResponse response) {
+        return ResponseEntity.ok(authService.refreshAccessToken(request, response));
     }
 
 
