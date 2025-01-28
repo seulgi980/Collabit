@@ -8,12 +8,14 @@ import com.collabit.user.domain.entity.User;
 import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -23,6 +25,7 @@ public class UserService {
         Optional<User> user = userRepository.findByCode(userCode);
 
         if (user.isEmpty()) {
+            log.debug("User with code {} not found", userCode);
             throw new UserNotFoundException();
         }
 

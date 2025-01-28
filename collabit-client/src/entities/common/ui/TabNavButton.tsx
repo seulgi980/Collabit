@@ -1,3 +1,4 @@
+"use client";
 import { cn } from "@/shared/lib/shadcn/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

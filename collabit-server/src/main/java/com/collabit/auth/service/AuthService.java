@@ -13,6 +13,7 @@ import com.collabit.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -20,6 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -37,13 +39,16 @@ public class AuthService {
 
         // 2. 사용자 인증
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        log.debug("Authenticated user: {}", authentication.getPrincipal());
 
         // 3. JWT 토큰 생성
         TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+        log.debug("Generated token: {}", tokenDto.toString());
 
         // 4. HttpOnly Cookie 에 Access Token 과 Refresh Token 저장
         addCookie(response, "accessToken", tokenDto.getAccessToken(), tokenProvider.getAccessTokenExpireTime() / 1000);
         addCookie(response, "refreshToken", tokenDto.getRefreshToken(), tokenProvider.getRefreshTokenExpireTime() / 1000);
+        log.debug("Add accessToken and refreshToken in Cookie");
 
         // 5. 사용자 정보 조회
         // db에 또 접근하지 말고 Authentication 객체에서 CustomUserDetails 가져오기
