@@ -11,12 +11,14 @@ import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
 @Transactional
+@Slf4j
 public class OAuth2Service {
     private final UserRepository userRepository;
 
@@ -31,14 +33,20 @@ public class OAuth2Service {
         String userCode = null;
         try {
             userCode = SecurityUtil.getCurrentUserCode();
+            log.debug("Processing user code {}", userCode);
             linkGithubAccount(userCode, oauth2UserRequestDTO);
             return userRepository.findByCode(userCode)
-                    .orElseThrow(UserNotFoundException::new);
+                    .orElseThrow(() -> {
+                        log.debug("User not found");
+                        return new UserNotFoundException();
+                    });
         } catch (Exception e) {
             if(userCode == null) {
+                log.debug("User not found and save login oauth2user");
                 return saveOrLoginOAuth2User(oauth2UserRequestDTO);
             }
-            throw e;
+            log.debug("User not found");
+            throw new UserNotFoundException();
         }
     }
 
@@ -48,11 +56,13 @@ public class OAuth2Service {
                 // 해당 GitHub Id가 있으면 로그인 처리
                 .map(user -> {
                     oAuth2Status = OAuth2Status.LOGIN_SUCCESS;
+                    log.debug("LOGIN_SUCCESS");
                     return user;
                 })
                 // 없으면 회원가입 처리
                 .orElseGet(() -> {
                     oAuth2Status = OAuth2Status.SIGNUP_SUCCESS;
+                    log.debug("SIGNUP_SUCCESS");
                     return signUpOAuth2User(oAuth2UserRequestDTO);
                 });
     }
@@ -67,6 +77,7 @@ public class OAuth2Service {
                 .profileImage(oAuth2UserRequestDTO.getProfileImage())
                 .role(Role.ROLE_USER) // 기본 사용자 권한 설정
                 .build();
+        log.debug("Saving user {}", newGitUser.toString());
 
         return userRepository.save(newGitUser);
     }
@@ -74,20 +85,27 @@ public class OAuth2Service {
     // 일반회원이 GitHub 계정을 연동할 경우 해당 유저 레코드에 깃허브 계정 추가
     public void linkGithubAccount(String userCode, OAuth2UserRequestDTO oAuth2UserRequestDTO) {
         User user = userRepository.findByCode(userCode)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.debug("User not found");
+                    return new UserNotFoundException();
+                });
 
         // 이미 GitHub 계정이 연동된 경우
         if (user.getGithubId() != null) {
+            log.debug("Github already linked");
             throw new GithubAlreadyLinkedException();
         }
 
         // GitHub ID가 이미 다른 계정에 연동된 경우 체크
         if (userRepository.existsByGithubId(oAuth2UserRequestDTO.getGithubId())) {
+            log.debug("User already linked");
             throw new GithubAlreadyUsedException();
         }
 
         user.linkGithub(oAuth2UserRequestDTO.getGithubId());
         userRepository.save(user);
+        log.debug("Linked user {}", user.toString());
+
         oAuth2Status = OAuth2Status.GITHUB_LINK_SUCCESS;
     }
 }

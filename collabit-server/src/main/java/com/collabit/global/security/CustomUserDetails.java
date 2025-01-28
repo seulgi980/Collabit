@@ -2,6 +2,7 @@ package com.collabit.global.security;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -10,6 +11,7 @@ import java.util.*;
 
 @Getter
 @Setter
+@ToString
 public class CustomUserDetails implements UserDetails, OAuth2User {
     private final String code; // PK
     private final String email; // Email

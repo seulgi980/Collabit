@@ -3,10 +3,12 @@ package com.collabit.oauth.domain.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @Getter
 @NoArgsConstructor
+@ToString
 public class OAuth2UserRequestDTO {
 
     private String githubId;      // Github의 사용자 ID

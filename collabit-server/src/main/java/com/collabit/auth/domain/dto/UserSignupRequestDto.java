@@ -3,13 +3,12 @@ package com.collabit.auth.domain.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @AllArgsConstructor
+@Builder
+@ToString
 @NoArgsConstructor
 public class UserSignupRequestDto {
 
@@ -19,8 +18,8 @@ public class UserSignupRequestDto {
 
 
     @NotBlank(message = "닉네임을 입력해주세요")
-    @Pattern(regexp = "^.{2,8}$",
-    message = "닉네임은 2자 이상 8자 이하로 입력해주세요")
+    @Pattern(regexp = "^.{2,16}$",
+    message = "닉네임은 2자 이상 16자 이하로 입력해주세요")
     private String nickname;
 
 
@@ -29,12 +28,4 @@ public class UserSignupRequestDto {
             message = "비밀번호는 영문, 숫자, 특수문자를 포함하여 8~16자여야 합니다")
     private String password;
 
-    @Override
-    public String toString() {
-        return "SignUpRequest{" +
-                "email='" + email + '\'' +
-                ", password='[PROTECTED]'" +
-                ", nickname='" + nickname + '\'' +
-                '}';
-    }
 }
