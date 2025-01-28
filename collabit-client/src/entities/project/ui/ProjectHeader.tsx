@@ -14,22 +14,22 @@ const ProjectHeader = ({ mainTitle, subTitle, isList }: ProjectHeaderProps) => {
   const handleBack = () => {
     router.push("/project");
   };
-  const handleAddProject = () => {
-    router.push("/project/add");
+  const handleCreateProject = () => {
+    router.push("/project/create");
   };
   return (
     <div className="flex items-center justify-between">
       <Button variant="ghost" className="h-8 w-8" onClick={handleBack}>
         <ArrowLeftIcon className="h-full w-full" />
       </Button>
-      <div className="justify-cente flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center justify-center gap-1">
         <h1 className="text-xl font-bold">{mainTitle}</h1>
         <h2 className="text-xs text-gray-400">{subTitle}</h2>
       </div>
       <Button
         variant="ghost"
         className={`h-8 w-8 ${isList ? "" : "invisible"}`}
-        onClick={handleAddProject}
+        onClick={handleCreateProject}
       >
         <PlusIcon className="h-full w-full" />
       </Button>
