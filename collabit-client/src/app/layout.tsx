@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko-KR">
-      <body className={`${inter.className} `}>
+      <body className={`${inter.className}`}>
         <QueryProviders>
           <Header />
           <main className="w-full px-5 md:px-20">{children}</main>

@@ -2,9 +2,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import HeaderDropDown from "./HeaderDropDown";
 import { ChevronDown } from "lucide-react";
+import { UserInfo } from "@/shared/types/model/User";
 
 interface UserAvatarProps {
-  user: { name: string };
+  user: UserInfo;
   handleLogout?: () => void;
   handleToMyPage?: () => void;
 }
@@ -16,10 +17,10 @@ const UserAvatar = ({
   return (
     <div className="flex items-center gap-2">
       <Avatar>
-        <AvatarImage src="https://github.com/shadcn.png" />
-        <AvatarFallback>CN</AvatarFallback>
+        <AvatarImage src={user.profileImage} />
+        <AvatarFallback>{user.nickname.slice(0, 2)}</AvatarFallback>
       </Avatar>
-      <span className="font-semibold">{user.name}</span>
+      <span className="font-semibold">{user.nickname}</span>
       {handleToMyPage && handleLogout && (
         <HeaderDropDown
           Icon={ChevronDown}

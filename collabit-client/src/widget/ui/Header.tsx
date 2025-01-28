@@ -1,5 +1,6 @@
 "use client";
 import NavMobile from "@/entities/common/ui/NavMobile";
+import { useAuth } from "@/features/auth/api/useAuth";
 import HeaderDesktop from "@/features/common/ui/header/HeaderDesktop";
 import HeaderMobile from "@/features/common/ui/header/HeaderMobile";
 import MENU_LIST from "@/shared/constant/MENU_LIST";
@@ -14,7 +15,8 @@ const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [hasNewChat] = useState(true);
-  console.log(pathname);
+  const { userInfo, isAuthencicated, logout } = useAuth();
+  const isChatRoom = pathname.includes("/chat/") && pathname !== "/chat";
 
   // 채팅 알림
   useEffect(() => {
@@ -28,8 +30,8 @@ const Header = () => {
   const handleToLogin = () => {
     router.push("/login");
   };
-  const handleLogout = () => {
-    alert("로그아웃");
+  const handleLogout = async () => {
+    await logout();
   };
   const handleToMyPage = () => {
     router.push("/mypage");
@@ -40,19 +42,25 @@ const Header = () => {
       {isMobile ? (
         <>
           <HeaderMobile
-            isLogin={false}
+            isLogin={isAuthencicated ?? false}
             handleToLogin={handleToLogin}
             handleLogout={handleLogout}
             handleToMyPage={handleToMyPage}
+            isChatRoom={isChatRoom}
           />
-          <NavMobile menuList={MENU_LIST} hasNewChat={hasNewChat} />
+          <NavMobile
+            menuList={MENU_LIST}
+            hasNewChat={hasNewChat}
+            isChatRoom={isChatRoom}
+          />
         </>
       ) : (
         <HeaderDesktop
-          isLogin={false}
+          isLogin={isAuthencicated ?? false}
           handleToLogin={handleToLogin}
           handleLogout={handleLogout}
           handleToMyPage={handleToMyPage}
+          userInfo={userInfo}
           menuList={MENU_LIST}
           hasNewChat={hasNewChat}
         />

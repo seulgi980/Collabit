@@ -17,7 +17,7 @@ const ChatInput = ({
     <form className="flex items-center gap-2" onSubmit={handleSendMessage}>
       <Input
         placeholder="메시지를 입력하세요"
-        className="w-full bg-white"
+        className="w-full bg-white text-sm md:text-base"
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />

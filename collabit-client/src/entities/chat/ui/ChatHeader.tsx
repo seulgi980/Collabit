@@ -10,16 +10,16 @@ const ChatHeader = () => {
     router.push("/chat");
   };
   return (
-    <div className="flex w-full items-center gap-2 rounded-lg bg-white px-5 py-2">
+    <div className="flex w-full items-center gap-2 border-b border-gray-200 bg-white px-4 py-2">
       <Button variant="ghost" className="h-8 w-8" onClick={handleBack}>
         <ArrowLeftIcon className="h-full w-full" />
       </Button>
       <div className="flex items-center gap-2">
-        <Avatar>
+        <Avatar className="h-6 w-6 md:h-8 md:w-8">
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
-        <div className="flex font-semibold">
+        <div className="flex text-sm font-semibold md:text-base">
           <p>Name</p> - <p>Last message</p>
         </div>
       </div>

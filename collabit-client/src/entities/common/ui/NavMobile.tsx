@@ -13,9 +13,11 @@ import { usePathname } from "next/navigation";
 const NavMobile = ({
   menuList,
   hasNewChat,
+  isChatRoom,
 }: {
   menuList: { name: string; href: string }[];
   hasNewChat: boolean;
+  isChatRoom: boolean;
 }) => {
   const pathname = usePathname();
   const menus = [{ name: "홈", href: "/" }, ...menuList];
@@ -26,6 +28,9 @@ const NavMobile = ({
     커뮤니티: Users,
     채팅: MessageSquare,
   };
+  if (isChatRoom) {
+    return null;
+  }
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 h-20 w-full rounded-3xl bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
       <ul className="flex h-full items-center justify-between px-5">

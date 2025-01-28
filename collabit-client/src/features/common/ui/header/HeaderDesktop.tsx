@@ -22,12 +22,9 @@ const HeaderDesktop = ({
   handleToMyPage,
   menuList,
   hasNewChat,
+  userInfo,
 }: HeaderProps) => {
   const pathname = usePathname();
-
-  const user = {
-    name: "춤추는 라이언",
-  };
 
   return (
     <header className="flex h-[92px] w-full justify-between px-20 py-4 shadow-md">
@@ -67,9 +64,9 @@ const HeaderDesktop = ({
             ))}
           </NavigationMenuList>
         </NavigationMenu>
-        {isLogin ? (
+        {isLogin && userInfo ? (
           <UserAvatar
-            user={user}
+            user={userInfo}
             handleToMyPage={handleToMyPage}
             handleLogout={handleLogout}
           />
