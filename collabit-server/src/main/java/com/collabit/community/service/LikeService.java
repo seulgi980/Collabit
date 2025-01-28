@@ -5,6 +5,9 @@ import com.collabit.community.domain.entity.PostLike;
 import com.collabit.community.domain.entity.PostLikeId;
 import com.collabit.community.exception.DuplicateLikeException;
 import com.collabit.community.repository.PostLikeRepository;
+import com.collabit.user.domain.entity.User;
+import com.collabit.user.exception.UserNotFoundException;
+import com.collabit.user.repository.UserRepository;
 import java.time.Duration;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +25,12 @@ public class LikeService {
 
     private static final String CREATE_LIKE_PREFIX = "like::";
     private static final String DELETE_LIKE_PREFIX = "cancel::";
-    
+    private final UserRepository userRepository;
+
     // 좋아요 추가 (Redis에서 증가시키기)
     public LikeResponseDTO like(String userCode, int postCode) {
+        userRepository.findByCode(userCode)
+            .orElseThrow(() -> new UserNotFoundException());
         // 좋아요가 이미 눌러져있으면 예외 처리
         if(likeCacheService.getIsLiked(userCode, postCode)) throw new DuplicateLikeException();
 
@@ -61,6 +67,8 @@ public class LikeService {
 
     // 좋아요 취소 (Redis에서 감소시키기)
     public LikeResponseDTO cancelLike(String userCode, int postCode) {
+        userRepository.findByCode(userCode)
+            .orElseThrow(() -> new UserNotFoundException());
         // 좋아요가 추가되어있지 않으면 예외 처리
         if(!likeCacheService.getIsLiked(userCode, postCode)) throw new DuplicateLikeException();
         
