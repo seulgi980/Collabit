@@ -48,11 +48,11 @@ public class AuthController {
     }
 
     // refresh token을 통한 access token 재발급 로직
-    @Operation(summary = "Access Token 재발급", description = "Refresh Token을 사용하여 새로운 Access Token을 발급 받는 API입니다." )
+    @Operation(summary = "Access Token 재발급", description = "Refresh Token 을 사용하여 새로운 Access Token을 발급 받는 API입니다." )
     @PostMapping("/reissue")
-    public ResponseEntity<Boolean> reissue(HttpServletRequest request, HttpServletResponse response) {
-        boolean success = authService.refreshAccessToken(request, response);
-        return ResponseEntity.ok(success);
+    public ResponseEntity<Void> reissue(HttpServletRequest request, HttpServletResponse response) {
+        authService.refreshAccessToken(request, response);
+        return ResponseEntity.ok().build(); // 반환값 필요 없음. 쿠키에 Access Token 이 저장
     }
 
 
