@@ -13,7 +13,6 @@ const ChatLayout = ({
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/feedback/") && pathname !== "/feedback");
-
   return (
     <>
       {/* 모바일 레이아웃 */}

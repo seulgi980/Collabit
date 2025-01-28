@@ -3,9 +3,14 @@ import { QUERY_SIZE } from "@/shared/constant/QUERY_SIZE";
 import useMediaQuery from "@/shared/hooks/useMediaQuery";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const Footer = () => {
   const isMobile = useMediaQuery(QUERY_SIZE.md);
+  const pathname = usePathname();
+  if (pathname !== "/") {
+    return null;
+  }
   const Sitemap = [
     {
       name: "리포트",
