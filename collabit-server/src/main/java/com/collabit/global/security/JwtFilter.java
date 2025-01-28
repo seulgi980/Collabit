@@ -2,6 +2,7 @@ package com.collabit.global.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -44,13 +45,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
     }
 
-    // Request Header 에서 JWT 토큰정보 추출
-    private String resolveToken(HttpServletRequest request){
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if(StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.split(" ")[1].trim();
-        }
 
+    // Request Header 에서 JWT 토큰정보 추출
+    private String resolveToken(HttpServletRequest request) {
+        // 쿠키에서 accessToken 체크
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                log.debug("Found cookie: {} = {}", cookie.getName(), cookie.getValue());
+                if ("accessToken".equals(cookie.getName())) {
+                    log.debug("Token found in cookie");
+                    return cookie.getValue();
+                }
+            }
+        }
+        log.debug("No token found");
         return null;
     }
 }
