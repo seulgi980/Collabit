@@ -36,7 +36,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 
-    // 🔥 userCode 기반 조회 추가 (토큰 검증 시 사용)
+    // userCode 기반 조회 추가 (토큰 검증 시 사용)
     public UserDetails loadUserByUserCode(String userCode) {
         log.debug("Loading user by userCode {}", userCode);
         User user =  userRepository.findByCode(userCode)
