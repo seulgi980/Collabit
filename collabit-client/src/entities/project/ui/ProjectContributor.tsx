@@ -11,7 +11,7 @@ const ProjectContributor = ({ contributors }: ProjectContributorProps) => {
   const contributorCount = contributors.length;
 
   return (
-    <div className="flex" style={{ width: '90px' }}>
+    <div className="flex w-[90px]">
       {/* 3명 이상일 때 */}
       {contributorCount > 2 ? (
         <>
