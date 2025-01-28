@@ -27,7 +27,7 @@ public class AuthController {
     // 회원가입
     @Operation(summary = "일반 회원가입", description = "일반 사이트 자체 회원가입 하는 API입니다.")
     @PostMapping("/sign-up")
-    public ResponseEntity<UserResponseDto> signUp(@Valid @RequestBody UserSignupRequestDto userSignupRequestDTO) {
+    public ResponseEntity<UserResponseDto> signUp(@RequestBody @Valid UserSignupRequestDto userSignupRequestDTO) {
         UserResponseDto userResponseDto = authService.signup(userSignupRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
     }
@@ -36,7 +36,7 @@ public class AuthController {
     // 로그인
     @Operation(summary = "일반 로그인", description = "일반 사이트 자체 로그인 하는 API입니다." )
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDto> login(@RequestBody UserLoginRequestDto userLoginRequestDto, HttpServletResponse response) {
+    public ResponseEntity<UserResponseDto> login(@RequestBody @Valid UserLoginRequestDto userLoginRequestDto, HttpServletResponse response) {
         return ResponseEntity.ok(authService.login(userLoginRequestDto, response));
     }
 
