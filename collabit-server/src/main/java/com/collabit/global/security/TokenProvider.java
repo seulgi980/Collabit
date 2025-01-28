@@ -47,7 +47,7 @@ public class TokenProvider {
         this.customUserDetailsService = customUserDetailsService; // 주입
     }
 
-    // 유저 정보를 넘겨받아 access token과 refresh token 생성
+    // (로그인 시) 유저 정보를 넘겨받아 access token과 refresh token 생성
     public TokenDto generateTokenDto(Authentication authentication) {
         // Authentication 에서 CustomUserDetails 추출
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -84,6 +84,32 @@ public class TokenProvider {
                 .refreshToken(refreshToken)
                 .build();
     }
+
+    // Refresh Token 을 이용해서 Access Token 만 재발급하는 메서드
+    public String generateAccessToken(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        long now = (new Date()).getTime();
+
+        // Access Token 만 새로 생성
+
+        log.debug("Access token and refresh token generated");
+
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        return Jwts.builder()
+                .setSubject(userDetails.getCode())
+                .claim(AUTHORITIES_KEY, authorities)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+
+
+    }
+
 
     // JWT 토큰 복호화해서 토큰에 들어있는 정보 추출
     public Authentication getAuthentication(String accessToken) {
