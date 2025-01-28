@@ -106,7 +106,7 @@ public class TokenProvider {
         String userCode = claims.getSubject(); // sub에 저장된 userCode 가져오기
 
         // DB 조회하여 추가 정보를 채움 (CustomUserDetailsService를 통해 로드)
-        UserDetails principal = customUserDetailsService.loadUserByUsername(userCode);
+        UserDetails principal = customUserDetailsService.loadUserByUserCode(userCode);
 
         // 반환된 Authentication 타입 객체는 SecurityContext 에 저장되어 참조됨
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
