@@ -114,9 +114,10 @@ public class AuthService {
 
     // refresh token을 통한 access token 재발급 메서드
     @Transactional
-    public boolean refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+    public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
         // 1. cookie 에서 refresh token 추출
         String refreshToken = extractRefreshToken(request);
+        log.debug("Extracted Refresh Token: {}", refreshToken);
 
         if(refreshToken == null || !tokenProvider.validateToken(refreshToken)) {
             throw new RuntimeException("유효하지 않은 Refresh Token 입니다. 재 로그인이 필요합니다.");
@@ -127,11 +128,11 @@ public class AuthService {
 
         // 3. 유효하다면 Access Token 재발급
         String accessToken = tokenProvider.generateAccessToken(authentication);
+        log.debug("New Access Token Generated: {}", accessToken);
 
         // 4. 새 Access Token 을 쿠키에 저장
         addCookie(response, "accessToken", accessToken, tokenProvider.getAccessTokenExpireTime() / 1000);
 
-        return true;
     }
 
     private String extractRefreshToken(HttpServletRequest request) {
