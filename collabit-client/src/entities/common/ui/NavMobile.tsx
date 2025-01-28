@@ -41,7 +41,10 @@ const NavMobile = ({
               key={i.name}
               className={cn(
                 "mx-1 flex h-[56px] items-center justify-center",
-                pathname.split("/")[1] === i.href.split("/")[1] &&
+                ((i.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(i.href)) ||
+                  (i.href === "/chat" && pathname.startsWith("/feedback"))) &&
                   "border-b-2 border-violet-700 text-violet-700",
               )}
             >

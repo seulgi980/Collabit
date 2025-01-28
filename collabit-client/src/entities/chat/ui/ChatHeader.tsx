@@ -2,15 +2,16 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { ArrowLeftIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const ChatHeader = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const handleBack = () => {
-    router.push("/chat");
+    router.push(pathname.startsWith("/feedback") ? "/feedback" : "/chat");
   };
   return (
-    <div className="flex w-full items-center gap-2 border-b border-gray-200 bg-white px-4 py-2">
+    <div className="flex w-full items-center gap-2 border-b border-gray-200 bg-white py-2">
       <Button variant="ghost" className="h-8 w-8" onClick={handleBack}>
         <ArrowLeftIcon className="h-full w-full" />
       </Button>

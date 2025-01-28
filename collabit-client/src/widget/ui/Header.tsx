@@ -16,7 +16,9 @@ const Header = () => {
   const router = useRouter();
   const [hasNewChat] = useState(true);
   const { userInfo, isAuthencicated, logout } = useAuth();
-  const isChatRoom = pathname.includes("/chat/") && pathname !== "/chat";
+  const isChatRoom =
+    (pathname.includes("/chat/") && pathname !== "/chat") ||
+    (pathname.includes("/feedback/") && pathname !== "/feedback");
 
   // 채팅 알림
   useEffect(() => {

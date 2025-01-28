@@ -51,7 +51,9 @@ const HeaderDesktop = ({
                 key={i.name}
                 className={cn(
                   "rounded-md px-4 py-2 hover:bg-slate-100",
-                  pathname.includes(i.href) && "bg-slate-100",
+                  (pathname.startsWith(i.href) ||
+                    (i.href === "/chat" && pathname.startsWith("/feedback"))) &&
+                    "bg-slate-100",
                 )}
               >
                 <NavigationMenuLink className="text-sm" href={i.href}>
