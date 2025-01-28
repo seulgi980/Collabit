@@ -6,11 +6,13 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
+@Builder
+@ToString
 public class UserSignupRequestDto {
-
 
     @NotBlank(message = "이메일을 입력해주세요")
     @Email(message = "올바른 이메일 형식이 아닙니다")
@@ -28,12 +30,4 @@ public class UserSignupRequestDto {
             message = "비밀번호는 영문, 숫자, 특수문자를 포함하여 8~16자여야 합니다")
     private final String password;
 
-    @Override
-    public String toString() {
-        return "SignUpRequest{" +
-                "email='" + email + '\'' +
-                ", password='[PROTECTED]'" +
-                ", nickname='" + nickname + '\'' +
-                '}';
-    }
 }
