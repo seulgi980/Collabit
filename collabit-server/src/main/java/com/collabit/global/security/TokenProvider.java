@@ -2,6 +2,7 @@ package com.collabit.global.security;
 
 import com.collabit.auth.domain.dto.TokenDto;
 
+import com.collabit.auth.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -74,6 +75,8 @@ public class TokenProvider {
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
 
+        log.debug("Access token and refresh token generated");
+
         return TokenDto.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
@@ -88,7 +91,8 @@ public class TokenProvider {
         Claims claims = parseClaims(accessToken);
 
         if(claims.get(AUTHORITIES_KEY) == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            log.debug("No claims found for access token");
+            throw new InvalidTokenException();
         }
 
         // claims 에서 권한 정보 가져오기
@@ -115,15 +119,16 @@ public class TokenProvider {
             Jwts.parserBuilder() // JWT token 을 파싱하기 위한 객체 생성
                     .setSigningKey(key) // 서명 검증에 사용할 키(비밀키)
                     .build().parseClaimsJws(token); // token 검증
+            log.debug("Token validated");
             return true;
         } catch (SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+            log.debug("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
+            log.debug("만료된 JWT 토큰입니다.");
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
+            log.debug("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+            log.debug("JWT 토큰이 잘못되었습니다.");
         }
         return false;
     }
