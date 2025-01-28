@@ -20,7 +20,7 @@ const ProjectInput = ({
       </span>
       <Input
         placeholder="레포지토리명을 입력하세요."
-        className="w-full bg-white py-4 pl-[35px] text-xs"
+        className="ml-2 w-full bg-white py-4 pl-[35px] text-xs"
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
       />
