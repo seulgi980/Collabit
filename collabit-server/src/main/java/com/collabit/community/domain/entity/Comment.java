@@ -1,5 +1,6 @@
 package com.collabit.community.domain.entity;
 
+import com.collabit.user.domain.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,8 +17,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Builder
@@ -31,8 +30,9 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int code;
 
-    @Column
-    private String userCode;
+    @ManyToOne
+    @JoinColumn(name = "user_code")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_code")

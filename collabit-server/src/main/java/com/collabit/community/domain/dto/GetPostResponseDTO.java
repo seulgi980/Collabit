@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class GetPostResponseDTO {
     int code;
-    String userCode;
+    String userNickname;
     String content;
     String[] images;
     LocalDateTime createdAt;

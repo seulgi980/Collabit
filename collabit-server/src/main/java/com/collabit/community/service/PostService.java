@@ -10,6 +10,10 @@ import com.collabit.community.domain.entity.Image;
 import com.collabit.community.domain.entity.Post;
 import com.collabit.community.repository.ImageRepository;
 import com.collabit.community.repository.PostRepository;
+import com.collabit.user.domain.entity.User;
+import com.collabit.user.exception.UserDiffrentException;
+import com.collabit.user.exception.UserNotFoundException;
+import com.collabit.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,22 +29,26 @@ public class PostService {
     private final S3Service s3Service;
     private final PostRepository postRepository;
     private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
     private final LikeCacheService likeCacheService;
 
     private static final String DIR_NAME = "posts";
 
     @Transactional
-    public CreatePostResponseDTO createPost(String userCode, CreatePostRequestDTO request) {
+    public CreatePostResponseDTO createPost(String userCode, CreatePostRequestDTO requestDTO) {
         // RequestDTO로 post 생성
+        User user = userRepository.findByCode(userCode)
+            .orElseThrow(() -> new UserNotFoundException());
+
         Post post = Post.builder()
-            .userCode(userCode)
-            .content(request.getContent())
+            .user(user)
+            .content(requestDTO.getContent())
             .build();
         Post savedPost = postRepository.save(post);
-        
+
         // Image가 있으면 image 업로드 및 DB저장
-        if(request.getImages() != null) {
-            Arrays.stream(request.getImages())
+        if (requestDTO.getImages() != null) {
+            Arrays.stream(requestDTO.getImages())
                 .map(file -> {
                     String url = s3Service.upload(file, DIR_NAME); // S3에 업로드 후 URL 반환
                     return Image.builder()
@@ -60,12 +68,12 @@ public class PostService {
     public List<GetPostResponseDTO> getPostList(String userCode) {
         // 게시글 목록을 담을 List
         List<GetPostResponseDTO> list = new ArrayList<>();
-        
+
         // 전체 Post 조회
         List<Post> posts = postRepository.findAll();
         for (Post post : posts) {
             // post들로 responseDTO 생성
-            GetPostResponseDTO responseDTO = buildDTO(post,userCode);
+            GetPostResponseDTO responseDTO = buildDTO(post, userCode);
             // list에 추가
             list.add(responseDTO);
         }
@@ -75,23 +83,22 @@ public class PostService {
 
     public GetPostResponseDTO getPost(String userCode, int postCode) {
         // postCode에 해당하는 post 조회
-        Post post = postRepository.findByCode(postCode);
-        // 해당 post가 없으면 예외 처리
-        if(post==null) throw new PostNotFoundException();
+        Post post = postRepository.findByCode(postCode)
+            .orElseThrow(() -> new PostNotFoundException());
         // responseDTO 생성
-        GetPostResponseDTO responseDTO = buildDTO(post,userCode);
+        GetPostResponseDTO responseDTO = buildDTO(post, userCode);
         // 반환
         return responseDTO;
     }
 
     @Transactional
-    public GetPostResponseDTO updatePost(String userCode, int postCode, UpdatePostRequestDTO requestDTO) {
+    public GetPostResponseDTO updatePost(String userCode, int postCode,
+        UpdatePostRequestDTO requestDTO) {
         // postCode에 해당하는 post 조회
-        Post post = postRepository.findByCode(postCode);
-        // 해당 post가 없으면 예외 처리
-        if(post==null) throw new PostNotFoundException();
+        Post post = postRepository.findByCode(postCode)
+            .orElseThrow(() -> new PostNotFoundException());
         // 가지고 온 post의 userCode와 요청 userCode가 일치하지 않으면 예외 처리
-        if(!post.getUserCode().equals(userCode)) throw new RuntimeException();
+        if (!post.getUser().getCode().equals(userCode)) throw new UserDiffrentException();
         // Post 내용 업데이트
         post.setContent(requestDTO.getContent());
         // 삭제할 이미지 URL 배열
@@ -108,12 +115,12 @@ public class PostService {
             // 삭제 조건에 해당하면 리스트에서 제거
             return shouldRemove;
         });
-        
+
         // 바뀐 Post update
         Post updatedPost = postRepository.save(post);
-        
+
         // updatedPost와 userCode로 responseDTO 생성
-        GetPostResponseDTO responseDTO = buildDTO(updatedPost,userCode);
+        GetPostResponseDTO responseDTO = buildDTO(updatedPost, userCode);
 
         return responseDTO;
     }
@@ -121,11 +128,10 @@ public class PostService {
     @Transactional
     public void deletePost(String userCode, int postCode) {
         // postCode에 해당하는 post 조회
-        Post post = postRepository.findByCode(postCode);
-        // 해당 post가 없으면 예외 처리
-        if(post==null) throw new PostNotFoundException();
+        Post post = postRepository.findByCode(postCode)
+            .orElseThrow(() -> new PostNotFoundException());
         // 가지고 온 post의 userCode와 요청 userCode가 일치하지 않으면 예외 처리
-        if(!post.getUserCode().equals(userCode)) throw new RuntimeException();
+        if (!post.getUser().getCode().equals(userCode)) throw new UserDiffrentException();
         // Post에 연결된 이미지 리스트 가져오기
         List<Image> images = post.getImages();
         // 삭제할 URL에 해당하는 이미지 삭제
@@ -138,9 +144,11 @@ public class PostService {
         // 해당 post 삭제
         postRepository.deleteByCode(postCode);
     }
-    
+
     // Post와 userCode로 responseDTO 만드는 메서드
-    public GetPostResponseDTO buildDTO (Post post, String userCode) {
+    public GetPostResponseDTO buildDTO(Post post, String userCode) {
+        User user = userRepository.findByCode(userCode)
+            .orElseThrow(()-> new UserNotFoundException());
         // Post에 연결된 이미지 리스트 가져오기
         List<Image> images = post.getImages();
         // 이미지에서 url 가져오기
@@ -154,7 +162,7 @@ public class PostService {
         // responseDTO를 생성 후 반환
         return GetPostResponseDTO.builder()
             .code(post.getCode())
-            .userCode(post.getUserCode())
+            .userNickname(user.getNickname())
             .content(post.getContent())
             .createdAt(post.getCreatedAt())
             .updatedAt(post.getUpdatedAt())

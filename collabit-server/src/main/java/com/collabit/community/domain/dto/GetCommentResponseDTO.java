@@ -15,7 +15,7 @@ import lombok.Setter;
 public class GetCommentResponseDTO {
     int code;
     int postCode;
-    String userCode;
+    String userNickname;
     String content;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
