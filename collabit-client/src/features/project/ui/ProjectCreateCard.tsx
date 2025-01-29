@@ -1,24 +1,22 @@
 import ProjectCotnributor from "@/entities/project/ui/ProjectContributor";
+import { ProjectCreate } from "@/shared/types/model/Project";
 import { Button } from "@/shared/ui/button";
 import { Card, CardDescription, CardTitle } from "@/shared/ui/card";
 import { LockIcon } from "lucide-react";
 
 interface ProjectCreateCardProps {
-  contributors: Array<{
-    githubId: string;
-    profileImage: string;
-  }>;
-  title: string;
-  timestamp: Date;
+  project: ProjectCreate;
+  handleCreateProject: (
+    project: ProjectCreate,
+  ) => (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const ProjectAddCard = ({
-  contributors,
-  title,
-  timestamp,
+const ProjectCreateCard = ({
+  project,
+  handleCreateProject,
 }: ProjectCreateCardProps) => {
   const now = new Date();
-  const diffInMilliseconds = now.getTime() - timestamp.getTime();
+  const diffInMilliseconds = now.getTime() - project.timestamp.getTime();
 
   const hours = Math.floor(diffInMilliseconds / 3600000);
   const days = Math.floor(hours / 24);
@@ -40,8 +38,8 @@ const ProjectAddCard = ({
   return (
     <Card className="flex h-[90px] items-center justify-between bg-violet-50 px-4 drop-shadow-lg">
       <div className="flex flex-row items-center justify-between gap-4">
-        <ProjectCotnributor contributors={contributors} />
-        <CardTitle className="text-lg md:text-xl">{title}</CardTitle>
+        <ProjectCotnributor contributor={project.contributor} />
+        <CardTitle className="text-lg md:text-xl">{project.title}</CardTitle>
       </div>
       <div className="flex items-center justify-between">
         <Button variant="ghost" className="h-4 w-4">
@@ -50,10 +48,12 @@ const ProjectAddCard = ({
         <CardDescription className="mr-4 hidden w-[50px] text-right text-gray-400 md:block">
           {timeAgo}
         </CardDescription>
-        <Button className="bg-black">선택</Button>
+        <Button className="bg-black" onClick={handleCreateProject(project)}>
+          선택
+        </Button>
       </div>
     </Card>
   );
 };
 
-export default ProjectAddCard;
+export default ProjectCreateCard;
