@@ -26,8 +26,8 @@ public class RedisSubscriber implements MessageListener {
             String body = new String(message.getBody(), StandardCharsets.UTF_8);
 
             WebSocketMessageDTO webSocketMessage = objectMapper.readValue(body, WebSocketMessageDTO.class);
-            log.error("Received message Body {}", body);
-            log.error("Received web socket message: {}", webSocketMessage);
+            log.debug("Received message Body {}", body);
+            log.debug("Received web socket message: {}", webSocketMessage);
 
             // 메시지 유형에 따라 처리 (1:1 채팅만 처리)
             if ("BROADCAST".equals(webSocketMessage.getMessageType())) {
@@ -36,10 +36,10 @@ public class RedisSubscriber implements MessageListener {
                         objectMapper.writeValueAsString(webSocketMessage)
                 );
             } else {
-                log.warn("처리할 수 없는 메시지 타입: {}", webSocketMessage.getMessageType());
+                log.debug("처리할 수 없는 메시지 타입: {}", webSocketMessage.getMessageType());
             }
         } catch (Exception e) {
-            log.error("레디스 메시지 전송에 실패했습니다. {}", e.getMessage(), e);
+            log.debug("레디스 메시지 전송에 실패했습니다. {}", e.getMessage(), e);
         }
     }
 }
