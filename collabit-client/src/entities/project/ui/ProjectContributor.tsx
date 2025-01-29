@@ -1,14 +1,12 @@
+import { Contributor } from "@/shared/types/model/Project";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 
 interface ProjectContributorProps {
-  contributors: Array<{
-    githubId: string;
-    profileImage: string;
-  }>;
+  contributor: Contributor[];
 }
 
-const ProjectContributor = ({ contributors }: ProjectContributorProps) => {
-  const contributorCount = contributors.length;
+const ProjectContributor = ({ contributor }: ProjectContributorProps) => {
+  const contributorCount = contributor.length;
 
   return (
     <div className="flex w-[90px]">
@@ -21,16 +19,16 @@ const ProjectContributor = ({ contributors }: ProjectContributorProps) => {
           <Avatar className="z-10 ml-[-15px] h-10 w-10 rounded-full">
             <AvatarImage
               className="rounded-full"
-              src={contributors[0].profileImage}
+              src={contributor[0].profileImage}
             />
-            <AvatarFallback>{contributors[0].githubId}</AvatarFallback>
+            <AvatarFallback>{contributor[0].githubId}</AvatarFallback>
           </Avatar>
           <Avatar className="z-0 ml-[-15px] h-10 w-10 rounded-full">
             <AvatarImage
               className="rounded-full"
-              src={contributors[1].profileImage}
+              src={contributor[1].profileImage}
             />
-            <AvatarFallback>{contributors[1].githubId}</AvatarFallback>
+            <AvatarFallback>{contributor[1].githubId}</AvatarFallback>
           </Avatar>
         </>
       ) : null}
@@ -41,16 +39,16 @@ const ProjectContributor = ({ contributors }: ProjectContributorProps) => {
           <Avatar className="z-10 h-10 w-10 rounded-full">
             <AvatarImage
               className="rounded-full"
-              src={contributors[0].profileImage}
+              src={contributor[0].profileImage}
             />
-            <AvatarFallback>{contributors[0].githubId}</AvatarFallback>
+            <AvatarFallback>{contributor[0].githubId}</AvatarFallback>
           </Avatar>
           <Avatar className="z-0 ml-[-15px] h-10 w-10 rounded-full">
             <AvatarImage
               className="rounded-full"
-              src={contributors[1].profileImage}
+              src={contributor[1].profileImage}
             />
-            <AvatarFallback>{contributors[1].githubId}</AvatarFallback>
+            <AvatarFallback>{contributor[1].githubId}</AvatarFallback>
           </Avatar>
         </>
       )}
@@ -60,9 +58,9 @@ const ProjectContributor = ({ contributors }: ProjectContributorProps) => {
         <Avatar className="z-10 h-10 w-10 rounded-full">
           <AvatarImage
             className="rounded-full"
-            src={contributors[0].profileImage}
+            src={contributor[0].profileImage}
           />
-          <AvatarFallback>{contributors[0].githubId}</AvatarFallback>
+          <AvatarFallback>{contributor[0].githubId}</AvatarFallback>
         </Avatar>
       )}
     </div>
