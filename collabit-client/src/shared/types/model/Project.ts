@@ -1,24 +1,21 @@
-export interface Project {
+export interface ProjectCreate {
   code: number;
   title: string;
+  contributor: Contributor[];
+  timestamp: Date;
 }
 export interface ProjectInfo {
   code: number;
-  projectCode: number;
-  userCode: string;
+  title: string;
   total: number;
   participant: number;
-  totalScore: number;
-  idDone: boolean;
+  isDone: boolean;
+  surveyUrl: string;
+  contributor: Contributor[];
 }
 
 export interface Contributor {
   code: number;
-  id: string;
+  githubId: string;
   profileImage: string;
-}
-export interface ProjectContributor {
-  projectCode: number;
-  projectInfoCode: number;
-  contributorCode: number;
 }
