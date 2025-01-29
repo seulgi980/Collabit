@@ -2,9 +2,10 @@ package com.collabit.chat.domain.dto;
 
 import lombok.*;
 
-@Builder
 @Getter
 @Setter
+@Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatRoomDetailRequestDTO {

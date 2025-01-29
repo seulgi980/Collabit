@@ -4,9 +4,10 @@ import lombok.*;
 
 import java.util.List;
 
-@Builder
 @Getter
 @Setter
+@Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatRoomDetailResponseDTO {
