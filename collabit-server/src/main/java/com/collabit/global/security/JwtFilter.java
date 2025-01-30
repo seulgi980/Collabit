@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -23,17 +24,25 @@ public class JwtFilter extends OncePerRequestFilter {
     public static final String BEARER_PREFIX = "Bearer ";
 
     private final TokenProvider tokenProvider;
+    private final RedisTemplate<String, Object> redisTemplate;
 
 
     // JWT 토큰 인증 정보 검증후, SecurityContext 에 검증된 인증 정보 저장
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. request header 에서 토큰 추출
+        // request header 에서 토큰 추출
         String jwt = resolveToken(request);
         log.debug("JWT token: {}", jwt);
 
-        // 2. validateToken 으로 토큰 유효성 검사
+        // 블랙리스트 조회 (토큰이 블랙리스트에 있으면 즉시 차단)
+        if (jwt != null && redisTemplate.hasKey("blacklist:" + jwt)) {
+            log.debug("Token is blacklisted. Access denied.");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "로그아웃된 토큰입니다.");
+            return;
+        }
+
+        // validateToken 으로 토큰 유효성 검사
         // 정상 토큰이면 해당 토큰으로 Authentication 을 가져와서 SecurityContext 에 저장
         if(StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
             log.debug("JWT token validated");
