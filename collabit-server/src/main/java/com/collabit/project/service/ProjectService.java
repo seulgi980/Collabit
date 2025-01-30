@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,7 @@ public class ProjectService {
     private final WebClient webClient;
     private static final String GITHUB_API_URL = "https://api.github.com";
 
+    // 개인, organization 레포지토리 정보를 각각 조회하여 합쳐 리스트로 반환
     public List<GetRepositoryResponseDTO> getRepositoryList(String userCode) {
         Optional<User> user = userRepository.findByCode(userCode);
 
@@ -33,14 +35,36 @@ public class ProjectService {
         }
 
         List<GetRepositoryResponseDTO> allRepositories = new ArrayList<>();
+        String githubId = user.get().getGithubId();
 
         // 개인 레포지토리 조회
-        allRepositories.addAll(getUserRepositories(user.get().getGithubId()));
+        allRepositories.addAll(getUserRepositories(githubId));
 
         // organization 레포지토리 조회
-        allRepositories.addAll(getOrganizationRepositories(user.get().getGithubId()));
+        allRepositories.addAll(getOrganizationRepositories(githubId));
 
         return allRepositories;
+    }
+
+    // contributor의 프로필 이미지 URL 리스트를 가져오는 메서드
+    private Mono<List<String>> getContributorsProfileUrl(String owner, String repoName) {
+        String url = String.format("/repos/%s/%s/contributors", owner, repoName);
+
+            return webClient.get()
+                    .uri(GITHUB_API_URL + url)
+                    .header(HttpHeaders.ACCEPT, "application/vnd.github.v3+json")
+                    .retrieve()
+                    .onStatus(status -> status.value() == 404,
+                            error -> Mono.empty()) // 404 에러(contributor 없음)의 경우 빈 결과 반환
+                    .bodyToFlux(Map.class)
+                    .map(contributor -> (String) contributor.get("avatar_url"))
+                    .collectList()
+                    .onErrorResume(WebClientResponseException.class, e -> {
+                        log.error("GitHub Contributors API 호출 중 에러 발생 - 레포지토리: {}/{}, 에러: {}",
+                                owner, repoName, e.getMessage());
+                        // return Mono.just(new ArrayList<>()); // 에러 발생 시 예외처리하지 않고 빈 리스트 반환하여 다른 리스트에 대해서 다 불러올지?
+                        throw new RuntimeException("GitHub Contributors의 프로필 이미지를 불러올 수 없습니다.");
+                    });
     }
 
     // 개인 레포지토리 리스트 반환
@@ -48,22 +72,25 @@ public class ProjectService {
         String url = String.format("/users/%s/repos", githubId);
 
         try {
-            List<GetRepositoryResponseDTO> repositories = webClient.get()
+            return webClient.get()
                     .uri(GITHUB_API_URL + url)
                     .header(HttpHeaders.ACCEPT, "application/vnd.github.v3+json")
                     .retrieve()
                     .bodyToFlux(Map.class)
-                    .map(repo -> GetRepositoryResponseDTO.builder()
-                            // .organization((String) ((Map) repo.get("owner")).get("login"))  // 해당 레포지토리 주인의 아이디
-                            .organization(githubId)  // 개인 레포지토리의 경우 사용자 이름
-                            .title((String) repo.get("name"))
-                            .contributorsProfile(new ArrayList<>())
-                            .build())
+                    .flatMap(repo -> {
+                        String repoName = (String) repo.get("name");
+                        return getContributorsProfileUrl(githubId, repoName)
+                                .map(contributorsProfile -> GetRepositoryResponseDTO.builder()
+                                        .organization(githubId)
+                                        .title(repoName)
+                                        .contributorsProfile(contributorsProfile)
+                                        .build());
+                    })
                     .collectList()
+                    .doOnSuccess(repositories -> {
+                        log.info("사용자 {}의 개인 레포지토리 {}개 조회 완료", githubId, repositories.size());
+                    })
                     .block();
-
-            log.info("사용자 {}의 개인 레포지토리 {}개 조회 완료", githubId, repositories.size());
-            return repositories;
 
         } catch (WebClientResponseException e) {
             log.error("GitHub 개인 레포지토리 API 호출 중 에러 발생: {}", e.getMessage());
@@ -71,8 +98,7 @@ public class ProjectService {
         }
     }
 
-
-    // 사용자가 해당하는 organization 조회 후 각 organization의 레포지토리 리스트 반환
+    // 사용자가 소속된 organization 조회 후 각 organization의 레포지토리 리스트 반환
     private List<GetRepositoryResponseDTO> getOrganizationRepositories(String githubId) {
         // 사용자가 속한 조직 목록 조회
         String orgsUrl = String.format("/users/%s/orgs", githubId);
@@ -88,11 +114,11 @@ public class ProjectService {
                     .collectList()
                     .block();
         } catch (WebClientResponseException e) {
-            log.error("GitHub 조직 목록 API 호출 중 에러 발생: {}", e.getMessage());
+            log.error("GitHub organization 목록 API 호출 중 에러 발생: {}", e.getMessage());
             throw new RuntimeException("GitHub organization 리스트를 불러올 수 없습니다.");
         }
 
-        // organizations이 있을 경우 각 조직의 레포지토리 조회
+        // organizations이 있을 경우 각 organization의 레포지토리 조회
         if (organizations == null || organizations.isEmpty()) {
             return new ArrayList<>();
         }
@@ -108,11 +134,15 @@ public class ProjectService {
                         .header(HttpHeaders.ACCEPT, "application/vnd.github.v3+json")
                         .retrieve()
                         .bodyToFlux(Map.class)
-                        .map(repo -> GetRepositoryResponseDTO.builder()
-                                .organization(orgName)  // 조직 레포지토리의 경우 조직 이름
-                                .title((String) repo.get("name"))
-                                .contributorsProfile(new ArrayList<>())
-                                .build())
+                        .flatMap(repo -> {
+                            String repoName = (String) repo.get("name");
+                            return getContributorsProfileUrl(orgName, repoName)
+                                    .map(contributorsProfile -> GetRepositoryResponseDTO.builder()
+                                            .organization(orgName)
+                                            .title(repoName)
+                                            .contributorsProfile(contributorsProfile)
+                                            .build());
+                        })
                         .collectList()
                         .block();
 
