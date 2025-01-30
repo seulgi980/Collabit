@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,9 @@ public class ProjectService {
                                         .organization(githubId)
                                         .title(repoName)
                                         .contributorsProfile(contributorsProfile)
+                                        .timestamp(Timestamp.valueOf(((String) repo.get("updated_at"))
+                                                .replace("T", " ")
+                                                .replace("Z", "")))  // GitHub API의 시간 형식을 Timestamp 형식으로 변환
                                         .build());
                     })
                     .collectList()
@@ -141,6 +145,9 @@ public class ProjectService {
                                             .organization(orgName)
                                             .title(repoName)
                                             .contributorsProfile(contributorsProfile)
+                                            .timestamp(Timestamp.valueOf(((String) repo.get("updated_at"))
+                                                    .replace("T", " ")
+                                                    .replace("Z", "")))
                                             .build());
                         })
                         .collectList()
