@@ -2,6 +2,7 @@ package com.collabit.project.controller;
 
 import com.collabit.global.security.SecurityUtil;
 import com.collabit.project.domain.dto.CreateProjectRequestDTO;
+import com.collabit.project.domain.dto.GetProjectListResponseDTO;
 import com.collabit.project.domain.dto.GetRepositoryResponseDTO;
 import com.collabit.project.service.GithubAPIService;
 import com.collabit.project.service.ProjectService;
@@ -37,9 +38,18 @@ public class ProjectController {
     public ResponseEntity<?> createProject(@RequestBody CreateProjectRequestDTO createProjectRequestDTO) {
         String userCode = SecurityUtil.getCurrentUserCode();
 
-        projectService.createProject(createProjectRequestDTO, userCode);
+        projectService.saveProject(createProjectRequestDTO, userCode);
 
         return ResponseEntity.status(201).build();
     }
 
+    @Operation(summary = "프로젝트 목록 조회", description = "프로젝트 목록을 조회하는 API 입니다.")
+    @GetMapping
+    public ResponseEntity<?> getProjectList() {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        List<GetProjectListResponseDTO> projectList = projectService.findProjectList(userCode);
+
+        return ResponseEntity.ok(projectList);
+    }
 }
