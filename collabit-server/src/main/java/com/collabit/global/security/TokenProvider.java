@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 5; // Todo: 5초로 테스트용
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7; // 7일
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30; // 30분
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 12; // 12시간
 
 
     // 비밀키 객체: 서명 만들 때 or 검증에 사용
@@ -112,7 +112,6 @@ public class TokenProvider {
 
     }
 
-
     // JWT 토큰 복호화해서 토큰에 들어있는 정보 추출
     public Authentication getAuthentication(String accessToken) {
         // 토큰 복호화
@@ -171,6 +170,19 @@ public class TokenProvider {
             return e.getClaims();
         }
 
+    }
+
+    // JWT 토큰의 남은 유효 시간 계산 메서드
+    public long getRemainingExpiration(String token) {
+        try {
+            Claims claims = parseClaims(token); // JWT Claims 가져오기
+            Date expiration = claims.getExpiration(); // 만료 시간
+            long now = new Date().getTime(); // 현재 시간 (밀리초)
+
+            return expiration.getTime() - now; // 남은 시간 (밀리초)
+        } catch (Exception e) {
+            return 0; // 만료되었거나 잘못된 토큰이면 0 반환
+        }
     }
 
     // Getter 메서드 추가
