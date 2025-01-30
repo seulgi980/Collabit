@@ -1,6 +1,7 @@
 package com.collabit.project.controller;
 
 import com.collabit.global.security.SecurityUtil;
+import com.collabit.project.domain.dto.GetRepositoryResponseDTO;
 import com.collabit.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,9 +26,9 @@ public class ProjectController {
     public ResponseEntity<?> getGithubRepository() {
         String userCode = SecurityUtil.getCurrentUserCode();
 
-        List<String> repositories = projectService.getRepositoryList(userCode);
+        List<GetRepositoryResponseDTO> repositoryList = projectService.getRepositoryList(userCode);
 
-        return ResponseEntity.ok(repositories);
+        return ResponseEntity.ok(repositoryList);
     }
 
 }
