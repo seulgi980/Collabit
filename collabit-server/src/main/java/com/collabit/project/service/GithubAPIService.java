@@ -20,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @Service
-public class ProjectService {
+public class GithubAPIService {
 
     private final UserRepository userRepository;
     private final WebClient webClient;
