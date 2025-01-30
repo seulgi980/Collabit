@@ -32,11 +32,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oauth2User = super.loadUser(oAuth2UserRequest);
 
         // GitHub에서 받은 사용자 정보를 OAuth2UserRequestDTO에 매핑
-        OAuth2UserRequestDTO oauth2UserRequestDTO = OAuth2UserRequestDTO.builder()
-                .githubId(oauth2User.getAttribute("id").toString())
-                .nickname(oauth2User.getAttribute("login"))
-                .profileImage(oauth2User.getAttribute("avatar_url"))
-                .build();
+        OAuth2UserRequestDTO oauth2UserRequestDTO = OAuth2UserRequestDTO.from(oauth2User);
         log.debug("Loading user {}", oauth2UserRequestDTO.toString());
 
         User user = oAuth2Service.processOAuth2User(oauth2UserRequestDTO);
