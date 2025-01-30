@@ -1,5 +1,6 @@
 package com.collabit.project.service;
 
+import com.collabit.project.domain.dto.ContributorDetailDTO;
 import com.collabit.project.domain.dto.GetRepositoryResponseDTO;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.repository.UserRepository;
@@ -163,5 +164,40 @@ public class GithubAPIService {
             }
         }
         return orgRepositories;
+    }
+
+    // 특정 레포지토리의 컨트리뷰터 상세 정보를 조회하는 메서드
+    public List<ContributorDetailDTO> getRepositoryContributors(String organization, String repository) {
+        String url = String.format("/repos/%s/%s/contributors", organization, repository); // 개인 레포지토리도 organization에 본인의 아이디가 들어가므로 상관X
+
+        log.info("GitHub API 호출 시작 - organization: {}, repository: {}", organization, repository);
+
+        try {
+            List<ContributorDetailDTO> contributors = webClient.get()
+                    .uri(GITHUB_API_URL + url)
+                    .retrieve()
+                    .bodyToFlux(Map.class)
+                    .map(contributor -> {
+                        String githubId = (String) contributor.get("login");
+                        String profileImage = (String) contributor.get("avatar_url");
+
+                        log.debug("컨트리뷰터 정보 매핑 - githubId: {}", githubId);
+
+                        return ContributorDetailDTO.builder()
+                                .githubId(githubId)
+                                .profileImage(profileImage)
+                                .build();
+                    })
+                    .collectList()
+                    .block();
+
+            log.info("GitHub API 호출 완료 - 컨트리뷰터 수: {}", contributors.size());
+            return contributors;
+
+        } catch (WebClientResponseException e) {
+            log.error("GitHub Contributors API 호출 중 에러 발생 - 레포지토리: {}/{}, 에러: {}",
+                    organization, repository, e.getMessage());
+            throw new RuntimeException("GitHub Contributors 정보를 불러올 수 없습니다.");
+        }
     }
 }
