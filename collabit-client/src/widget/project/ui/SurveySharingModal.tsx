@@ -12,20 +12,22 @@ import {
 import { Label } from "@/shared/ui/label";
 import { X } from "lucide-react";
 import { Input } from "@/shared/ui/input";
-import { ProjectInfo } from "@/shared/types/model/Project";
+import { ProjectListItem } from "@/shared/types/model/Project";
 import { useToast } from "@/shared/hooks/use-toast";
 import ProjectListCard from "@/features/project/ui/ProjectListCard";
 
 interface SurveySharingModalProps {
-  project: ProjectInfo;
+  project: ProjectListItem;
 }
 
 const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
   const { toast } = useToast();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const surveyUrl = `${apiUrl}/project/survey/${project.code}`;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(project.surveyUrl);
+      await navigator.clipboard.writeText(surveyUrl);
       toast({
         description: "링크가 복사되었습니다.",
       });
@@ -62,7 +64,7 @@ const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
                 </Label>
                 <Input
                   id="link"
-                  value={project.surveyUrl}
+                  value={surveyUrl}
                   className="select-all"
                   readOnly
                 />

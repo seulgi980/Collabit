@@ -18,12 +18,13 @@ export default function Page() {
   const projectInfo = [
     {
       code: 1,
+      organization: "ORG",
       title: "프로젝트 A",
       total: 5,
       participant: 3,
       isDone: true,
-      surveyUrl: "https://survey-link.com",
-      contributor: [
+      isUpdated: true,
+      contributors: [
         {
           code: 1,
           githubId: "id1",
@@ -53,12 +54,13 @@ export default function Page() {
     },
     {
       code: 2,
+      organization: "ORG",
       title: "프로젝트 B",
       total: 3,
       participant: 1,
       isDone: false,
-      surveyUrl: "https://survey-link.com",
-      contributor: [
+      isUpdated: false,
+      contributors: [
         {
           code: 1,
           githubId: "id1",

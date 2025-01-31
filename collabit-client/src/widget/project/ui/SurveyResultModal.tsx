@@ -10,11 +10,11 @@ import {
   DialogPortal,
 } from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { ProjectInfo } from "@/shared/types/model/Project";
+import { ProjectListItem } from "@/shared/types/model/Project";
 import ProjectListCard from "@/features/project/ui/ProjectListCard";
 
 interface SurveyResultModalProps {
-  project: ProjectInfo;
+  project: ProjectListItem;
 }
 
 const SurveyResultModal = ({ project }: SurveyResultModalProps) => {
