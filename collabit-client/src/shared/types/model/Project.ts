@@ -7,7 +7,7 @@ export interface Project {
 }
 export interface ProjectInfo {
   code: number;
-  postCode: number;
+  projectCode: number;
   userCode: string;
   projectCode: number;
   userCode: string;
@@ -37,3 +37,8 @@ export interface ProjectContributor {
   projectInfoCode: number;
   githubId: string;
 }
+export type ProjectListItem = Pick<Project, "title" | "organization"> &
+  Pick<ProjectInfo, "code" | "total" | "participant" | "isDone"> & {
+    contributors: Contributor[];
+    isUpdated: boolean;
+  };
