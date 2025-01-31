@@ -30,71 +30,10 @@ public class ProjectService {
     private final ContributorRepository contributorRepository;
     private final ProjectContributorRepository projectContributorRepository;
     private final UserRepository userRepository;
-    private final GithubAPIService githubAPIService;
 
     // Github API로 레포지토리 contributor 정보 가져와서 프로젝트 정보들과 함께 저장
     public void saveProject(CreateProjectRequestDTO createProjectRequestDTO, String userCode) {
-        log.info("프로젝트 생성 시작 - organization: {}, title: {}, userCode: {}",
-                createProjectRequestDTO.getOrganization(), createProjectRequestDTO.getTitle(), userCode);
 
-        // 1. 사용자 조회
-        User user = userRepository.findByCode(userCode)
-                .orElseThrow(UserNotFoundException::new);
-        log.debug("사용자 조회 완료 - githubId: {}", user.getGithubId());
-
-        // 2. GitHub API를 통해 컨트리뷰터 정보 조회
-        List<ContributorDetailDTO> contributors = githubAPIService.getRepositoryContributors(
-                createProjectRequestDTO.getOrganization(),
-                createProjectRequestDTO.getTitle()
-        );
-        log.debug("컨트리뷰터 정보 조회 완료 - 수: {}", contributors.size());
-
-        // 3. Project 엔티티 저장
-        Project project = Project.builder()
-                .title(createProjectRequestDTO.getTitle())
-                .organizationName(createProjectRequestDTO.getOrganization())
-                .build();
-        projectRepository.save(project);
-        log.debug("Project 엔티티 저장 완료 - code: {}", project.getCode());
-
-        // 4. ProjectInfo 엔티티 저장
-        ProjectInfo projectInfo = ProjectInfo.builder()
-                .project(project)
-                .user(user)
-                .total(contributors.size())
-                .build();
-        projectInfoRepository.save(projectInfo);
-        log.debug("ProjectInfo 엔티티 저장 완료 - code: {}", projectInfo.getCode());
-
-        // 5. Contributor 정보 저장
-        contributors.forEach(contributorDTO -> {
-            Contributor contributor = contributorRepository.findByGithubId(contributorDTO.getGithubId())
-                    .orElseGet(() -> {
-                        Contributor newContributor = Contributor.builder()
-                                .githubId(contributorDTO.getGithubId())
-                                .profileImage(contributorDTO.getProfileImage())
-                                .build();
-                        log.debug("새로운 Contributor 생성 - githubId: {}", contributorDTO.getGithubId());
-                        return contributorRepository.save(newContributor);
-                    });
-
-            // 복합키 객체 생성
-            ProjectContributorId projectContributorId = new ProjectContributorId(
-                    project.getCode(),
-                    projectInfo.getCode(),
-                    contributor.getCode()
-            );
-
-            ProjectContributor projectContributor = ProjectContributor.builder()
-                    .id(projectContributorId)
-                    .project(project)
-                    .projectInfo(projectInfo)
-                    .contributor(contributor)
-                    .build();
-            projectContributorRepository.save(projectContributor);
-            log.debug("ProjectContributor 연결 완료 - githubId: {}", contributor.getGithubId());
-        });
-        log.info("프로젝트 생성 완료 - projectCode: {}", project.getCode());
     }
 
     // 로그인 유저의 전체 프로젝트 조회
@@ -135,7 +74,7 @@ public class ProjectService {
 
                     // 4. DTO 생성
                     GetProjectListResponseDTO getProjectListResponseDTO = GetProjectListResponseDTO.builder()
-                            .projectInfoCode(projectInfo.getCode())
+                            .code(projectInfo.getCode())
                             .organization(project.getOrganizationName())
                             .title(project.getTitle())
                             .total(projectInfo.getTotal())
