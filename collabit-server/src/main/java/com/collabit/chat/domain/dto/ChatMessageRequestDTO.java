@@ -4,9 +4,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Builder
 @Getter
 @Setter
+@Builder
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatMessageRequestDTO {

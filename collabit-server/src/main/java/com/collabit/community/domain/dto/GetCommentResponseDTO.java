@@ -6,16 +6,18 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Builder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class GetCommentResponseDTO {
     int code;
     int postCode;
-    String userCode;
+    String userNickname;
     String content;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

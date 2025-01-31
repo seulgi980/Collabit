@@ -25,12 +25,22 @@ export const getUserInfoAPI = async (): Promise<UserInfoResponse> => {
   try {
     const res = await fetch(`${apiUrl}/user`, {
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
+
+    if (!res.ok) {
+      // 401, 403 등의 인증/인가 에러나 다른 HTTP 에러 발생 시
+      return { userInfo: undefined, isAuthencicated: false };
+    }
+
     const data = await res.json();
+    console.log(data);
     return { userInfo: data, isAuthencicated: true };
   } catch (error) {
-    return { userInfo: undefined, isAuthencicated: false };
     console.error(error);
+    return { userInfo: undefined, isAuthencicated: false };
   }
 };
 
