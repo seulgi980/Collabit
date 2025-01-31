@@ -2,18 +2,18 @@ import ProjectCotnributor from "@/entities/project/ui/ProjectContributor";
 import { Button } from "@/shared/ui/button";
 import { Card, CardDescription, CardTitle } from "@/shared/ui/card";
 import { LockIcon } from "lucide-react";
-import { useProjectCreate } from "../api/useCreateProject";
 import {
   GithubCollaboratorResponse,
   GithubRepoResponse,
 } from "@/shared/types/response/Project";
+import { useGithubProject } from "../api/useGithubProject";
 
 interface ProjectCreateCardProps {
   project: GithubRepoResponse & GithubCollaboratorResponse;
 }
 
 const ProjectCreateCard = ({ project }: ProjectCreateCardProps) => {
-  const { handleCreateProject } = useProjectCreate();
+  const { handleCreateProject } = useGithubProject();
 
   const now = new Date();
   const diffInMilliseconds = now.getTime() - project.updatedAt.getTime();
