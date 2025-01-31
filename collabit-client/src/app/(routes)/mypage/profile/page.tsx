@@ -7,12 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const ProfilePage = () => {
-  // const { userInfo } = useAuth();
-  const userInfo = {
-    profileImage: "https://github.com/shadcn.png",
-    nickname: "춤추는 라이언",
-    githubId: "clapsheep",
-  };
+  const { userInfo } = useAuth();
+
   const handleExit = () => {
     console.log("회원탈퇴");
   };

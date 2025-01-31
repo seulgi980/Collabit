@@ -4,11 +4,16 @@ const usePost = () => {
   const [images, setImages] = useState<File[]>([]);
   const [preview, setPreview] = useState<string[]>([]);
   const [content, setContent] = useState<string>("");
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const imageArray = Array.from(files);
-      setImages((prev) => [...prev, ...Array.from(files)]);
+      if (imageArray.length + images.length > 4) {
+        alert("이미지는 최대 4개까지 업로드 가능합니다.");
+        return;
+      }
+      setImages((prev) => [...prev, ...imageArray]);
       const newPreview = imageArray.map((file) => URL.createObjectURL(file));
       setPreview((prev) => [...prev, ...newPreview]);
       console.log(preview);

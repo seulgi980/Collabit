@@ -36,9 +36,9 @@ export const signupAPI = async (body: SignupRequest) => {
 export const logoutAPI = async () => {
   const res = await fetch(`${apiUrl}/auth/logout`, {
     method: "POST",
+    credentials: "include",
   });
-  const data = await res.json();
-  return data;
+  return res;
 };
 
 export const loginCredentialAPI = async (body: LoginRequest) => {
