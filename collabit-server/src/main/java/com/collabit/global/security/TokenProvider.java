@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 *  30; // 30분
-    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7; // 7일
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30; // 30분
+    private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 12; // 12시간
 
 
     // 비밀키 객체: 서명 만들 때 or 검증에 사용
@@ -47,7 +47,7 @@ public class TokenProvider {
         this.customUserDetailsService = customUserDetailsService; // 주입
     }
 
-    // 유저 정보를 넘겨받아 access token과 refresh token 생성
+    // (로그인 시) 유저 정보를 넘겨받아 access token과 refresh token 생성
     public TokenDto generateTokenDto(Authentication authentication) {
         // Authentication 에서 CustomUserDetails 추출
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
@@ -71,6 +71,8 @@ public class TokenProvider {
 
         // Refresh Token 생성
         String refreshToken = Jwts.builder()
+                .setSubject(userDetails.getCode())
+                .claim(AUTHORITIES_KEY, authorities) // payload "auth" : "ROLE_USER"
                 .setExpiration(new Date(now + REFRESH_TOKEN_EXPIRE_TIME))
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
@@ -83,6 +85,31 @@ public class TokenProvider {
                 .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    // Refresh Token 을 이용해서 Access Token 만 재발급하는 메서드
+    public String generateAccessToken(Authentication authentication) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        long now = (new Date()).getTime();
+
+        // Access Token 만 새로 생성
+
+        log.debug("Access token and refresh token generated");
+
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        return Jwts.builder()
+                .setSubject(userDetails.getCode())
+                .claim(AUTHORITIES_KEY, authorities)
+                .setExpiration(accessTokenExpiresIn)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+
+
     }
 
     // JWT 토큰 복호화해서 토큰에 들어있는 정보 추출
@@ -106,7 +133,7 @@ public class TokenProvider {
         String userCode = claims.getSubject(); // sub에 저장된 userCode 가져오기
 
         // DB 조회하여 추가 정보를 채움 (CustomUserDetailsService를 통해 로드)
-        UserDetails principal = customUserDetailsService.loadUserByUsername(userCode);
+        UserDetails principal = customUserDetailsService.loadUserByUserCode(userCode);
 
         // 반환된 Authentication 타입 객체는 SecurityContext 에 저장되어 참조됨
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
@@ -143,6 +170,19 @@ public class TokenProvider {
             return e.getClaims();
         }
 
+    }
+
+    // JWT 토큰의 남은 유효 시간 계산 메서드
+    public long getRemainingExpiration(String token) {
+        try {
+            Claims claims = parseClaims(token); // JWT Claims 가져오기
+            Date expiration = claims.getExpiration(); // 만료 시간
+            long now = new Date().getTime(); // 현재 시간 (밀리초)
+
+            return expiration.getTime() - now; // 남은 시간 (밀리초)
+        } catch (Exception e) {
+            return 0; // 만료되었거나 잘못된 토큰이면 0 반환
+        }
     }
 
     // Getter 메서드 추가

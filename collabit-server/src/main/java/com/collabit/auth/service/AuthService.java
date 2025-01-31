@@ -11,15 +11,20 @@ import com.collabit.user.domain.entity.Role;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.repository.UserRepository;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -29,6 +34,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
     private final UserRepository userRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
     public UserResponseDto login(UserLoginRequestDto userLoginRequestDto, HttpServletResponse response) {
@@ -109,6 +115,80 @@ public class AuthService {
 
     }
 
+    // refresh token을 통한 access token 재발급 메서드
+    @Transactional
+    public void refreshAccessToken(HttpServletRequest request, HttpServletResponse response) {
+        // 1. cookie 에서 refresh token 추출
+        String refreshToken = extractToken(request, "refreshToken");
+        log.debug("Extracted Refresh Token: {}", refreshToken);
+
+        // 2. 블랙리스트 확인 (로그아웃 된 토큰인지 검사)
+        if (redisTemplate.hasKey("blacklist:" + refreshToken)) {
+            throw new RuntimeException("유효하지 않은 Refresh Token입니다. 재로그인이 필요합니다.");
+        }
+
+        // 3. Refresh token 유효성 검사
+        if (refreshToken == null || !tokenProvider.validateToken(refreshToken)) {
+            throw new RuntimeException("유효하지 않은 Refresh Token 입니다. 재 로그인이 필요합니다.");
+        }
+
+        Authentication authentication = tokenProvider.getAuthentication(refreshToken);
+
+        // 4. 유효하다면 Access Token 재발급
+        String accessToken = tokenProvider.generateAccessToken(authentication);
+        log.debug("New Access Token Generated: {}", accessToken);
+
+        // 5. 새 Access Token 을 쿠키에 저장
+        addCookie(response, "accessToken", accessToken, tokenProvider.getAccessTokenExpireTime() / 1000);
+
+    }
+
+    // logout 메서드
+    @Transactional
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        // logout 했으니, token 들을 블랙리스트에 추가.(탈취된 token 이 있다면 사용 불가)
+        String accessToken = extractToken(request, "accessToken");
+        String refreshToken = extractToken(request, "refreshToken");
+
+        // 블랙리스트에 쿠키 추가(만료 시간까지 유지)
+        if (accessToken != null) {
+            long accessExpireTime = tokenProvider.getRemainingExpiration(accessToken);
+            redisTemplate.opsForValue().set("blacklist:" + accessToken, "LOGOUT", accessExpireTime, TimeUnit.MILLISECONDS);
+            log.debug("Access Token added to blacklist");
+        }
+
+        if (refreshToken != null) {
+            long refreshExpireTime = tokenProvider.getRemainingExpiration(refreshToken);
+            redisTemplate.opsForValue().set("blacklist:" + refreshToken, "LOGOUT", refreshExpireTime, TimeUnit.MILLISECONDS);
+            log.debug("Refresh Token added to blacklist");
+        }
+
+        // access, refresh token 을 cookie 에서 삭제
+        removeCookie(response, "accessToken");
+        removeCookie(response, "refreshToken");
+        log.debug("User logged out successfully, cookies removed.");
+    }
+
+    // cookie 삭제 메서드
+    private void removeCookie(HttpServletResponse response, String name) {
+        Cookie cookie = new Cookie(name, null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
+    // cookie에서 특정 token 추출 메서드
+    private String extractToken(HttpServletRequest request, String tokenName) {
+        if(request.getCookies() == null) return null;
+
+        return Arrays.stream(request.getCookies())
+                .filter(cookie -> tokenName.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+    }
 
     // 이메일 중복 체크
     public boolean isEmailAlreadyExists(String email) {
@@ -125,4 +205,9 @@ public class AuthService {
         return passwordEncoder.encode(password);
     }
 
+
+
 }
+
+
+
