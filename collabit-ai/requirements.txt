@@ -1,0 +1,6 @@
+flask
+huggingface_hub
+requests
+pymongo
+python-dotenv
+redis
