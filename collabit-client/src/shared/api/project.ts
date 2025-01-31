@@ -6,7 +6,7 @@ import {
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const githubUrl = "https://api.github.com/";
 
-export const githubUserReposAPI = async (githubId: string) => {
+export const getGithubUserReposAPI = async (githubId: string) => {
   const res = await fetch(`${githubUrl}/users/${githubId}/repos`, {
     method: "GET",
   });
@@ -14,7 +14,7 @@ export const githubUserReposAPI = async (githubId: string) => {
   return data;
 };
 
-export const githubUserOrgsAPI = async (githubId: string) => {
+export const getGithubUserOrgsAPI = async (githubId: string) => {
   const res = await fetch(`${githubUrl}/users/${githubId}/orgs`, {
     method: "GET",
   });
@@ -22,7 +22,7 @@ export const githubUserOrgsAPI = async (githubId: string) => {
   return data;
 };
 
-export const githubOrgReposAPI = async (organization: string) => {
+export const getGithubOrgReposAPI = async (organization: string) => {
   const res = await fetch(`${githubUrl}/orgs/${organization}/repos`, {
     method: "GET",
   });
@@ -30,7 +30,7 @@ export const githubOrgReposAPI = async (organization: string) => {
   return data;
 };
 
-export const githubCollaboratorsAPI = async (
+export const getGithubCollaboratorsAPI = async (
   organization: string,
   title: string,
 ) => {
@@ -44,7 +44,7 @@ export const githubCollaboratorsAPI = async (
   return data;
 };
 
-export const projectCreateAPI = async (body: ProjectCreateRequest) => {
+export const createProjectAPI = async (body: ProjectCreateRequest) => {
   const res = await fetch(`${apiUrl}/project`, {
     method: "POST",
     body: JSON.stringify(body),
@@ -53,7 +53,7 @@ export const projectCreateAPI = async (body: ProjectCreateRequest) => {
   return data;
 };
 
-export const projectListAPI = async () => {
+export const getProjectListAPI = async () => {
   const res = await fetch(`${apiUrl}/project`, {
     method: "GET",
   });
@@ -61,7 +61,7 @@ export const projectListAPI = async () => {
   return data;
 };
 
-export const projectRemoveAPI = async (body: ProjectRemoveRequest) => {
+export const removeProjectAPI = async (body: ProjectRemoveRequest) => {
   const res = await fetch(`${apiUrl}/project`, {
     method: "DELETE",
     body: JSON.stringify(body),
@@ -70,7 +70,7 @@ export const projectRemoveAPI = async (body: ProjectRemoveRequest) => {
   return data;
 };
 
-export const projectSearchAPI = async (keyword: string) => {
+export const searchProjectAPI = async (keyword: string) => {
   const res = await fetch(`${apiUrl}/project/search?keyword=${keyword}`, {
     method: "GET",
   });
@@ -78,7 +78,7 @@ export const projectSearchAPI = async (keyword: string) => {
   return data;
 };
 
-export const projectDoneAPI = async (code: number) => {
+export const updateProjectDoneAPI = async (code: number) => {
   const res = await fetch(`${apiUrl}/project/done/${code}`, {
     method: "GET",
   });
@@ -86,10 +86,16 @@ export const projectDoneAPI = async (code: number) => {
   return data;
 };
 
-export const projectUpdateCheck = async () => {
+export const checkProjectUpdate = async () => {
   const res = await fetch(`${apiUrl}/project/new`, {
     method: "GET",
   });
+  const data = await res.json();
+  return data;
+};
+
+export const getAddedProject = async () => {
+  const res = await fetch(`${apiUrl}/project/added`, { method: "GET" });
   const data = await res.json();
   return data;
 };
