@@ -8,7 +8,9 @@ import com.collabit.community.service.PostService;
 import com.collabit.global.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/post")
 @RequiredArgsConstructor
+@Slf4j
 public class PostController {
 
     private final PostService postService;
@@ -25,8 +28,10 @@ public class PostController {
     @Operation(summary="게시글 등록",description = "게시글을 등록하는 API입니다.")
     @PostMapping("/")
     public ResponseEntity<?> createPost(@ModelAttribute CreatePostRequestDTO requestDTO){
+        log.debug("CreatePost requestDTO: {}", requestDTO.toString());
         String userCode = SecurityUtil.getCurrentUserCode();
         CreatePostResponseDTO responseDTO = postService.createPost(userCode, requestDTO);
+        log.debug("CreatePost responseDTO: {}", responseDTO.toString());
         return ResponseEntity.status(201).body(responseDTO);
     }
 
@@ -35,6 +40,7 @@ public class PostController {
     public ResponseEntity<?> getPostList(){
         String userCode = SecurityUtil.getCurrentUserCode();
         List<GetPostResponseDTO> list = postService.getPostList(userCode);
+        log.debug("getPost List: {}", Objects.toString(list, "null"));
         if (list.isEmpty()) return ResponseEntity.status(204).build();
         return ResponseEntity.status(200).body(list);
     }
@@ -44,14 +50,17 @@ public class PostController {
     public ResponseEntity<?> getPost(@PathVariable int postCode){
         String userCode = SecurityUtil.getCurrentUserCode();
         GetPostResponseDTO responseDTO = postService.getPost(userCode, postCode);
+        log.debug("getPost responseDTO: {}", responseDTO.toString());
         return ResponseEntity.status(200).body(responseDTO);
     }
 
     @Operation(summary="게시글 수정",description = "게시글을 수정하는 API입니다.")
     @PutMapping("/{postCode}")
     public ResponseEntity<?> updatePost(@PathVariable int postCode,@RequestBody UpdatePostRequestDTO requestDTO){
+        log.debug("updatePost requestDTO: {}", requestDTO.toString());
         String userCode = SecurityUtil.getCurrentUserCode();
         GetPostResponseDTO responseDTO = postService.updatePost(userCode, postCode, requestDTO);
+        log.debug("updatePost responseDTO: {}", responseDTO.toString());
         return ResponseEntity.status(201).body(responseDTO);
     }
 
