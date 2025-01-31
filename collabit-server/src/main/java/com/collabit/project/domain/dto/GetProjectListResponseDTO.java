@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class GetProjectListResponseDTO {
-    private final int projectInfoCode;
+    private final int code;
     private final String organization;
     private final String title;
     private final int total;
