@@ -3,14 +3,14 @@
 import ProjectHeader from "@/entities/project/ui/ProjectHeader";
 import ProjectInput from "@/entities/project/ui/ProjectInput";
 import { useState } from "react";
-import ProjectCardDone from "@/widget/project/ui/ProjectCardDone";
-import ProjectCardNotDone from "@/widget/project/ui/ProjectCardNotDone";
+import SurveySharingModal from "@/widget/project/ui/SurveySharingModal";
+import SurveyResultModal from "@/widget/project/ui/SurveyResultModal";
 
 export default function Page() {
   const [keyword, setKeyword] = useState("");
 
   const handleSearchKeyword = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault;
+    e.preventDefault();
     console.log(keyword);
     setKeyword("");
   };
@@ -93,9 +93,9 @@ export default function Page() {
       </div>
       {projectInfo.map((project) =>
         project.isDone ? (
-          <ProjectCardDone key={project.code} project={project} />
+          <SurveyResultModal key={project.code} project={project} />
         ) : (
-          <ProjectCardNotDone key={project.code} project={project} />
+          <SurveySharingModal key={project.code} project={project} />
         ),
       )}
     </div>

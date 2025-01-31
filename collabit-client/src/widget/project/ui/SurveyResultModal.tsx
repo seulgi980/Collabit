@@ -13,11 +13,11 @@ import { X } from "lucide-react";
 import { ProjectInfo } from "@/shared/types/model/Project";
 import ProjectCardContent from "@/features/project/ui/ProjectListCard";
 
-interface ProjectCardDoneProps {
+interface SurveyResultModalProps {
   project: ProjectInfo;
 }
 
-const ProjectCardDone = ({ project }: ProjectCardDoneProps) => {
+const SurveyResultModal = ({ project }: SurveyResultModalProps) => {
   return (
     <>
       <Dialog>
@@ -65,4 +65,4 @@ const ProjectCardDone = ({ project }: ProjectCardDoneProps) => {
   );
 };
 
-export default ProjectCardDone;
+export default SurveyResultModal;

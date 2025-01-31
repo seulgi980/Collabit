@@ -16,11 +16,11 @@ import { ProjectInfo } from "@/shared/types/model/Project";
 import { useToast } from "@/shared/hooks/use-toast";
 import ProjectCardContent from "@/features/project/ui/ProjectListCard";
 
-interface ProjectCardNotDoneProps {
+interface SurveySharingModalProps {
   project: ProjectInfo;
 }
 
-const ProjectCardNotDone = ({ project }: ProjectCardNotDoneProps) => {
+const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
   const { toast } = useToast();
 
   const handleCopy = async () => {
@@ -34,6 +34,7 @@ const ProjectCardNotDone = ({ project }: ProjectCardNotDoneProps) => {
         variant: "destructive",
         description: "링크 복사에 실패했습니다.",
       });
+      console.log(err);
     }
   };
 
@@ -88,4 +89,4 @@ const ProjectCardNotDone = ({ project }: ProjectCardNotDoneProps) => {
   );
 };
 
-export default ProjectCardNotDone;
+export default SurveySharingModal;
