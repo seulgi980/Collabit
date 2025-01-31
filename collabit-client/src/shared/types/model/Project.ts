@@ -37,7 +37,10 @@ export interface ProjectContributor {
   projectInfoCode: number;
   githubId: string;
 }
-export type ProjectListItem = Pick<Project, "title" | "organization"> &
+export type ProjectListItem = Pick<
+  Project,
+  "title" | "organization" | "organizationImage"
+> &
   Pick<ProjectInfo, "code" | "total" | "participant" | "isDone"> & {
     contributors: Contributor[];
     isUpdated: boolean;
