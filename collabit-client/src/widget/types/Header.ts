@@ -1,3 +1,5 @@
+import { UserInfo } from "@/shared/types/model/User";
+
 export interface HeaderProps {
   isLogin: boolean;
   handleToLogin: () => void;
@@ -5,4 +7,6 @@ export interface HeaderProps {
   handleToMyPage: () => void;
   menuList?: { name: string; href: string }[];
   hasNewChat?: boolean;
+  userInfo?: UserInfo;
+  isChatRoom?: boolean;
 }

@@ -10,7 +10,9 @@ const ChatLayout = ({
   room: React.ReactNode;
 }) => {
   const pathname = usePathname();
-  const isChatRoom = pathname.includes("/chat/") && pathname !== "/chat";
+  const isChatRoom =
+    (pathname.includes("/chat/") && pathname !== "/chat") ||
+    (pathname.includes("/feedback/") && pathname !== "/feedback");
 
   return (
     <>
@@ -18,9 +20,9 @@ const ChatLayout = ({
       <div className="md:hidden">{isChatRoom ? room : list}</div>
 
       {/* 데스크톱 레이아웃 */}
-      <div className="hidden w-full md:flex">
-        <div className="w-1/4 min-w-[280px]">{list}</div>
-        <div className="w-3/4 bg-gray-100">{room}</div>
+      <div className="hidden w-full border-b border-gray-200 md:flex">
+        <div className="w-1/4 min-w-[280px] border-r">{list}</div>
+        <div className="w-3/4">{room}</div>
       </div>
     </>
   );

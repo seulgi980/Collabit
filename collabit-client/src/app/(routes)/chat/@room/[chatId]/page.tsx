@@ -6,9 +6,7 @@ const ChatRoomPage = async ({
   params: Promise<{ chatId: number }>;
 }) => {
   const { chatId } = await params;
-  console.log(chatId, "server");
-
-  return <ChattingRoom chatId={chatId} />;
+  return <ChattingRoom id={chatId} />;
 };
 
 export default ChatRoomPage;

@@ -1,5 +1,6 @@
 package com.collabit.community.domain.entity;
 
+import com.collabit.user.domain.entity.User;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -10,8 +11,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.ToString;
 
 @Entity
 @Getter
@@ -19,14 +19,16 @@ import org.hibernate.annotations.UpdateTimestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int code;
 
-    @Column
-    private String userCode;
+    @ManyToOne
+    @JoinColumn(name = "user_code")
+    private User user;
 
     @Column
     private String content;

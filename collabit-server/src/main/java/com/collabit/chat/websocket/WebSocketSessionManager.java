@@ -31,8 +31,10 @@ public class WebSocketSessionManager {
     public int getRoomCodeFromSession(String userCode) {
         WebSocketSession session = getSession(userCode);
         if (session != null) {
+            log.debug("Get room code from session {}", session.getAttributes().get("roomCode"));
             return (Integer) session.getAttributes().get("roomCode");
         }
+        log.debug("Get room code from session null");
         return -1;  // roomCode가 없는 경우 기본값 -1 반환
     }
 
@@ -41,6 +43,7 @@ public class WebSocketSessionManager {
         String destination = "/topic/room/" + messageDTO.getRoomCode();
         try {
             messagingTemplate.convertAndSend(destination, messageDTO);
+            log.debug("Message {} sent to {}", messageDTO.toString(), destination);
         } catch (Exception e) {
             log.error("Failed to send direct message to user: {}", messageDTO.getNickname(), e);
         }
@@ -58,6 +61,7 @@ public class WebSocketSessionManager {
                 WebSocketMessageDTO messageDTO = new WebSocketMessageDTO();
                 messageDTO.setMessageType("BROADCAST");
                 messageDTO.setMessage(messageContent);
+                log.debug("Sending message {} to {}", messageDTO.toString(), destination);
                 messagingTemplate.convertAndSend(destination, messageDTO);
             } catch (Exception e) {
                 log.error("Failed to broadcast message to room: {}", roomCode, e);
@@ -72,14 +76,14 @@ public class WebSocketSessionManager {
         if (session != null) {
             int oldRoomCode = getRoomCodeFromSession(userCode);
             session.getAttributes().put("roomCode", newRoomCode);
-
+            log.debug("Switch room code {} to new room code {}", oldRoomCode, newRoomCode);
             // Redis에서 사용자 상태 업데이트
             chatRedisService.removeUserFromRoom(oldRoomCode, userCode);
             chatRedisService.addUserToRoom(newRoomCode, userCode);
         }
 
         // 새로운 방에 대한 상태 업데이트
-        log.info("User {} switched to room {}", userCode, newRoomCode);
+        log.debug("User {} switched to room {}", userCode, newRoomCode);
 
         // STOMP로 상태 업데이트 전송
         String destination = "/topic/room/" + newRoomCode;
