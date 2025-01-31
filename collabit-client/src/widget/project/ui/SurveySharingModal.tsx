@@ -15,6 +15,10 @@ import {
   DialogTrigger,
 } from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { Input } from "@/shared/ui/input";
+import { ProjectListItem } from "@/shared/types/model/Project";
+import { useToast } from "@/shared/hooks/use-toast";
+import ProjectListCard from "@/features/project/ui/ProjectListCard";
 
 interface SurveySharingModalProps {
   project: ProjectResponse;
@@ -27,6 +31,7 @@ const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
 
   const handleCopy = async () => {
     try {
+      await navigator.clipboard.writeText(surveyUrl);
       await navigator.clipboard.writeText(surveyUrl);
       toast({
         description: "링크가 복사되었습니다.",
