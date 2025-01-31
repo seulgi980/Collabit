@@ -168,7 +168,7 @@ def chat():
     # Redis에서 메시지 히스토리 조회
     messages = get_from_redis(f"messages_{session_id}")
     if not messages:
-      return jsonify({"error": "세션이 만료되었거나 존재하지 않습니다."}), 400
+      return jsonify({"error": "세션이 만료되었거나 존재하지 않습니다."}), 404
 
     messages.append(create_message("user", content))
 
@@ -219,7 +219,7 @@ def chat():
           return jsonify({
             "response": "설문을 종료합니다.",
             "timestamp": assistant_message["timestamp"]
-          }), 200
+          }), 204
 
         except Exception as e:
           print(f"설문 종료 처리 중 오류 발생: {str(e)}")
