@@ -14,7 +14,7 @@ import { X } from "lucide-react";
 import { Input } from "@/shared/ui/input";
 import { ProjectInfo } from "@/shared/types/model/Project";
 import { useToast } from "@/shared/hooks/use-toast";
-import ProjectCardContent from "@/features/project/ui/ProjectListCard";
+import ProjectListCard from "@/features/project/ui/ProjectListCard";
 
 interface SurveySharingModalProps {
   project: ProjectInfo;
@@ -43,7 +43,7 @@ const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
       <Dialog>
         <DialogTrigger asChild>
           <div>
-            <ProjectCardContent project={project} />
+            <ProjectListCard project={project} />
           </div>
         </DialogTrigger>
         <DialogPortal>

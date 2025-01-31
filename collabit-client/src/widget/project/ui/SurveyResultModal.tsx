@@ -11,7 +11,7 @@ import {
 } from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { ProjectInfo } from "@/shared/types/model/Project";
-import ProjectCardContent from "@/features/project/ui/ProjectListCard";
+import ProjectListCard from "@/features/project/ui/ProjectListCard";
 
 interface SurveyResultModalProps {
   project: ProjectInfo;
@@ -23,7 +23,7 @@ const SurveyResultModal = ({ project }: SurveyResultModalProps) => {
       <Dialog>
         <DialogTrigger asChild>
           <div>
-            <ProjectCardContent project={project} />
+            <ProjectListCard project={project} />
           </div>
         </DialogTrigger>
         <DialogPortal>
