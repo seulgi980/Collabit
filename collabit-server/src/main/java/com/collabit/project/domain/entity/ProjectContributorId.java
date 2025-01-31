@@ -17,6 +17,6 @@ public class ProjectContributorId {
     @Column(name = "project_info_code")  // 추가
     private int projectInfoCode;
 
-    @Column(name = "contributor_code")  // 추가
-    private int contributorCode;
+    @Column(name = "github_id")
+    private String githubId;
 }

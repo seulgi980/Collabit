@@ -37,9 +37,6 @@ public class ProjectInfo {
     @Column(name = "is_done", nullable = false)
     private boolean isDone = false;
 
-    @Column(name = "survey_link")
-    private String surveyLink;
-
     @Column(nullable = false)
     private int sympathy = 0;
 

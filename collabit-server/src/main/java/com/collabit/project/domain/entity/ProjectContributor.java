@@ -26,7 +26,7 @@ public class ProjectContributor{
     private ProjectInfo projectInfo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "contributor_code", insertable = false, updatable = false)
+    @JoinColumn(name = "github_id", insertable = false, updatable = false)
     private Contributor contributor;
 
 }
