@@ -27,3 +27,4 @@ export type ProjectListItem = Pick<Project, "title" | "organization"> &
     contributors: Contributor[];
     isUpdated: boolean;
   };
+export type ProjectTitle = Pick<Project, "title" | "organization">;
