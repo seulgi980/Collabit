@@ -1,3 +1,4 @@
+import { UserInfo } from "@/shared/types/model/User";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
@@ -10,16 +11,11 @@ import {
 } from "@/shared/ui/carousel";
 import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
+
 import TextareaAutosize from "react-textarea-autosize";
-const Post = ({
-  images,
-  preview,
-  content,
-  handleImageChange,
-  handleContentChange,
-  handleDeleteImage,
-  handleSubmit,
-}: {
+
+interface PostProps {
+  userInfo?: UserInfo;
   images: File[];
   preview: string[];
   content: string;
@@ -27,23 +23,35 @@ const Post = ({
   handleContentChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   handleDeleteImage: (index: number) => void;
   handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-}) => {
+}
+
+const Post = ({
+  userInfo,
+  images,
+  preview,
+  content,
+  handleImageChange,
+  handleContentChange,
+  handleDeleteImage,
+  handleSubmit,
+}: PostProps) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col items-center gap-4 border-b p-4"
+      className="flex w-full flex-col items-center gap-4 border-b p-4"
     >
       <div className="flex w-full gap-1">
         <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage src={userInfo?.profileImage} />
+          <AvatarFallback>{userInfo?.nickname.slice(0, 2)}</AvatarFallback>
         </Avatar>
 
         <TextareaAutosize
           className="mt-1 w-full resize-none rounded-md border border-none bg-transparent px-3 py-1 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
           placeholder="무슨 생각을 하고 계신가요?"
           minRows={1}
-          value={content}
+          readOnly={!userInfo}
+          value={userInfo ? content : "로그인 후 이용해주세요."}
           onChange={handleContentChange}
         />
         <div className="group relative h-9 w-9 rounded-lg hover:bg-gray-100">
@@ -52,25 +60,29 @@ const Post = ({
             multiple
             className="absolute inset-0 cursor-pointer opacity-0"
             aria-label="파일 업로드"
-            disabled={images.length === 4}
+            disabled={images.length === 4 || !userInfo}
             onChange={handleImageChange}
           />
-          <Button
-            variant="ghost"
-            type="button"
-            disabled={images.length === 4}
-            className="h-9 w-9 p-0"
-          >
-            <ImagePlus className="h-full w-full text-gray-900" />
-          </Button>
-          <span className="invisible absolute -bottom-8 left-1/2 z-[9999] -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:visible">
-            {images.length === 4
-              ? "이미지는 최대 4개까지 업로드 가능합니다"
-              : `이미지 업로드 (${images.length}/4)`}
-          </span>
+          {userInfo ? (
+            <>
+              <Button
+                variant="ghost"
+                type="button"
+                disabled={images.length === 4}
+                className="h-9 w-9 p-0"
+              >
+                <ImagePlus className="h-full w-full text-gray-900" />
+              </Button>
+              <span className="invisible absolute -bottom-8 left-1/2 z-[9999] -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white group-hover:visible">
+                {images.length === 4
+                  ? "이미지는 최대 4개까지 업로드 가능합니다"
+                  : `이미지 업로드 (${images.length}/4)`}
+              </span>
+            </>
+          ) : null}
         </div>
 
-        <Button type="submit" variant="outline">
+        <Button disabled={!userInfo} type="submit" variant="outline">
           게시
         </Button>
       </div>
