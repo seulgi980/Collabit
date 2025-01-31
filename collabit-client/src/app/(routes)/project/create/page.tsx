@@ -13,16 +13,6 @@ export default function Page() {
   const [selectType, setSelectType] = useState("");
   const [keyword, setKeyword] = useState("");
 
-  {
-    /* TODO: 선택 버튼 눌렀을 때 프로젝트 추가하는 API 연결 필요 */
-  }
-  const handleCreateProject =
-    (project: ProjectCreate) =>
-    (event: React.MouseEvent<HTMLButtonElement>): void => {
-      event.preventDefault();
-      console.log("Creating project", project);
-    };
-
   const projectCreate = [
     {
       code: 1,
@@ -153,13 +143,7 @@ export default function Page() {
         />
       </div>
       {projectCreate.map((project) => {
-        return (
-          <ProjectCreateCard
-            key={project.code}
-            project={project}
-            handleCreateProject={handleCreateProject}
-          />
-        );
+        return <ProjectCreateCard key={project.code} project={project} />;
       })}
     </div>
   );

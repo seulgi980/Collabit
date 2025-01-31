@@ -6,15 +6,9 @@ import { LockIcon } from "lucide-react";
 
 interface ProjectCreateCardProps {
   project: ProjectCreate;
-  handleCreateProject: (
-    project: ProjectCreate,
-  ) => (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const ProjectCreateCard = ({
-  project,
-  handleCreateProject,
-}: ProjectCreateCardProps) => {
+const ProjectCreateCard = ({ project }: ProjectCreateCardProps) => {
   const now = new Date();
   const diffInMilliseconds = now.getTime() - project.timestamp.getTime();
 
@@ -35,6 +29,13 @@ const ProjectCreateCard = ({
     timeAgo = `${hours}시간 전`;
   }
 
+  {
+    /* TODO: 선택 버튼 눌렀을 때 프로젝트 추가하는 API 연결 필요 */
+  }
+  const handleCreateProject = (project: ProjectCreate) => {
+    console.log("Creating project", project);
+  };
+
   return (
     <Card className="flex h-[90px] items-center justify-between bg-violet-50 px-4 drop-shadow-lg">
       <div className="flex flex-row items-center justify-between gap-4">
@@ -48,7 +49,10 @@ const ProjectCreateCard = ({
         <CardDescription className="mr-4 hidden w-[50px] text-right text-gray-400 md:block">
           {timeAgo}
         </CardDescription>
-        <Button className="bg-black" onClick={handleCreateProject(project)}>
+        <Button
+          className="bg-black"
+          onClick={() => handleCreateProject(project)}
+        >
           선택
         </Button>
       </div>
