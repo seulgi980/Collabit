@@ -20,7 +20,7 @@ public class Project {
     private String title;
 
     @Column(name = "organization")
-    private String organizationName;
+    private String organization;
 
     @OneToMany(mappedBy = "project")
     private List<ProjectInfo> projectInfos;
