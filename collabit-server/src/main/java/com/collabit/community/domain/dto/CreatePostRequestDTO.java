@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class CreatePostRequestDTO {
     String content;
     MultipartFile[] images;

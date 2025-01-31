@@ -6,6 +6,7 @@ import com.collabit.global.security.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/post/{postCode}/like")
 @RequiredArgsConstructor
+@Slf4j
 public class LikeController {
 
     private final LikeService likeService;
@@ -26,6 +28,7 @@ public class LikeController {
     public ResponseEntity<?> likePost(@PathVariable("postCode")int postCode){
         String userCode = SecurityUtil.getCurrentUserCode();
         LikeResponseDTO responseDTO = likeService.like(userCode, postCode);
+        log.debug("PostLike responseDTO: {}", responseDTO.toString());
         return ResponseEntity.status(201).body(responseDTO);
     }
 
@@ -34,6 +37,7 @@ public class LikeController {
     public ResponseEntity<?> cancelLikePost(@PathVariable("postCode")int postCode){
         String userCode = SecurityUtil.getCurrentUserCode();
         LikeResponseDTO responseDTO = likeService.cancelLike(userCode, postCode);
+        log.debug("DeleteLike responseDTO: {}", responseDTO.toString());
         return ResponseEntity.status(201).body(responseDTO);
     }
 }
