@@ -19,8 +19,11 @@ public class Project {
     @Column(nullable = false)
     private String title;
 
-    @Column(name = "organization")
+    @Column(nullable = false)
     private String organization;
+
+    @Column(name = "organization_image", nullable = false)
+    private String organizationImage;
 
     @OneToMany(mappedBy = "project")
     private List<ProjectInfo> projectInfos;
