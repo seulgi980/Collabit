@@ -1,15 +1,13 @@
 package com.collabit.project.domain.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 import java.sql.Timestamp;
 import java.util.List;
 
 @Builder
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ProjectDetailDTO {
     private final int code;
     private final String title;
