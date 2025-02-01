@@ -58,7 +58,7 @@ const Post = ({
           <input
             type="file"
             multiple
-            className="absolute inset-0 cursor-pointer opacity-0"
+            className="absolute inset-0 z-10 h-9 w-9 cursor-pointer opacity-0"
             aria-label="파일 업로드"
             disabled={images.length === 4 || !userInfo}
             onChange={handleImageChange}
