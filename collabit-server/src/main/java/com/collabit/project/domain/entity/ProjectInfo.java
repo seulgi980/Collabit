@@ -70,4 +70,8 @@ public class ProjectInfo {
 
     @OneToMany(mappedBy = "projectInfo")
     private List<ProjectContributor> projectContributors;
+
+    public void completeSurvey() {
+        this.isDone = true;
+    }
 }
