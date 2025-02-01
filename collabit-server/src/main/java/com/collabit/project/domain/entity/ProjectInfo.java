@@ -41,7 +41,6 @@ public class ProjectInfo {
     @Column(name = "is_done", nullable = false)
     private boolean isDone = false;
 
-    @Builder.Default
     @Column(name = "create_at", nullable = false, insertable = false)
     private Timestamp createAt;
 
