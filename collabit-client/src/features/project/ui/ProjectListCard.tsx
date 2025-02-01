@@ -80,8 +80,9 @@ const ProjectListCard = ({ project }: ProjectListCardProps) => {
       </div>
       <div className="items-left flex w-full flex-col justify-center gap-2">
         <span className="text-sm">
-          <span className="font-semibold">{project.participant}</span>명 참여 /{" "}
-          <span className="font-semibold">{participantsRatio}</span>%
+          <span className="font-semibold">{project.contributors.length}</span>명
+          중 <span className="font-semibold">{project.participant}</span>명 참여
+          / <span className="font-semibold">{participantsRatio}</span>%
         </span>
         <Progress
           className="h-1 bg-white [&>div]:rounded-full [&>div]:bg-black [&>div]:transition-all"
