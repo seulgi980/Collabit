@@ -246,4 +246,30 @@ public class ProjectService {
         return result;
     }
 
+    public void updateProjectSurveyState(String userCode, int code) {
+        // 해당 projectInfo가 현재 로그인된 user의 소유가 맞는지 검증
+        ProjectInfo projectInfo = projectInfoRepository.findByCode(code);
+
+        if(projectInfo == null) {
+            log.error("code로 projectInfo를 조회할 수 없음");
+            throw new RuntimeException("해당 프로젝트가 존재하지 않습니다.");
+        }
+
+        if (projectInfo.isDone()) {
+            log.error("isDone이 이미 true인 경우 - 해당 ProjectInfo의 isDone: {}", projectInfo.isDone());
+            throw new RuntimeException("해당 프로젝트의 설문조사는 이미 마감되었습니다.");
+        }
+
+       if(!projectInfo.getUser().getCode().equals(userCode)) {
+           log.error("로그인 유저가 해당 프로젝트의 등록자가 아님 - 로그인 유저: {}, 프로젝트의 유저: {}", userCode, projectInfo.getUser().getCode());
+           throw new RuntimeException("해당 프로젝트를 변경할 권한이 없습니다.");
+       }
+
+       log.debug("해당 프로젝트 설문조사 마감 시작 - 해당 ProjectInfo의 isDone: {}", projectInfo.isDone());
+       projectInfo.completeSurvey();
+       projectInfoRepository.save(projectInfo);
+       log.debug("해당 프로젝트 설문조사 마감 완료");
+
+       // 포트폴리오 개발 시 isUpdate 함께 변경
+    }
 }

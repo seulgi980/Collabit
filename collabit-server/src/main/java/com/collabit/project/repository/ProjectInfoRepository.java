@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Integer> {
 
-    List<ProjectInfo> findByUserCode(String userCode);
+    ProjectInfo findByCode(int code);
 
     ProjectInfo findByProjectCodeAndUserCode(int code, String userCode);
 
@@ -19,4 +19,5 @@ public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Intege
             "JOIN FETCH pi.project p " +
             "WHERE pi.user.code = :userCode")
     List<ProjectInfo> findByUserCodeWithProject(@Param("userCode") String userCode);
+
 }

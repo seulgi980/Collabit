@@ -63,4 +63,15 @@ public class ProjectController {
 
         return ResponseEntity.ok(addedProjectList);
     }
+
+    @Operation(summary = "프로젝트 설문 마감", description = "로그인된 사용자의 특정 프로젝트를 마감하는 API 입니다.")
+    @PatchMapping("/done/{code}")
+    public ResponseEntity<?> closeProjectSurvey(@PathVariable int code) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        projectService.updateProjectSurveyState(userCode, code);
+        log.debug("해당 프로젝트 설문 마감 완료");
+
+        return ResponseEntity.ok().build();
+    }
 }
