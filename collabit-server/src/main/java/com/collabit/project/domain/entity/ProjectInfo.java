@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.sql.Timestamp;
+
 import java.util.List;
 
 @Entity
@@ -31,27 +33,39 @@ public class ProjectInfo {
     @Column(nullable = false)
     private int total;
 
+    @Builder.Default
     @Column(nullable = false)
     private int participant = 0;
 
+    @Builder.Default
     @Column(name = "is_done", nullable = false)
     private boolean isDone = false;
 
+    @Builder.Default
+    @Column(name = "create_at", nullable = false, insertable = false)
+    private Timestamp createAt;
+
+    @Builder.Default
     @Column(nullable = false)
     private int sympathy = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     private int listening = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     private int expression = 0;
 
+    @Builder.Default
     @Column(name = "problem_solving", nullable = false)
     private int problemSolving = 0;
 
+    @Builder.Default
     @Column(name = "conflict_resolution", nullable = false)
     private int conflictResolution = 0;
 
+    @Builder.Default
     @Column(nullable = false)
     private int leadership = 0;
 

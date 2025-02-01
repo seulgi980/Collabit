@@ -10,4 +10,7 @@ import java.util.List;
 public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Integer> {
 
     List<ProjectInfo> findByUserCode(String userCode);
+
+    ProjectInfo findByProjectCodeAndUserCode(int code, String userCode);
+
 }
