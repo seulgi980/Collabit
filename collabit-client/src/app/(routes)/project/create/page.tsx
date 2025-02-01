@@ -1,7 +1,7 @@
 "use client";
 
-import ProjectHeader from "@/entities/project/ui/ProjectHeader";
-import ProjectInput from "@/entities/project/ui/ProjectInput";
+import ProjectHeader from "@/entities/common/ui/PageHeader";
+import ProjectInput from "@/entities/common/ui/SearchBar";
 import ProjectSelect from "@/entities/project/ui/ProjectSelect";
 import ProjectCreateCard from "@/features/project/ui/ProjectCreateCard";
 import { ProjectCreate } from "@/shared/types/model/Project";
