@@ -22,19 +22,19 @@ interface SurveySharingModalProps {
 
 const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
   const { toast } = useToast();
-  const surveyUrl = `https://www.survey.com/s/${project.code}`;
+  const DEPLOY_URL = process.env.NEXT_PUBLIC_DEPLOY_URL;
+  const surveyUrl = `${DEPLOY_URL}/feedback/${project.code}`;
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(surveyUrl);
       toast({
         description: "링크가 복사되었습니다.",
       });
-    } catch (err) {
+    } catch {
       toast({
         variant: "destructive",
         description: "링크 복사에 실패했습니다.",
       });
-      console.log(err);
     }
   };
 

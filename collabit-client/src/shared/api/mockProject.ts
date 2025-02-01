@@ -121,6 +121,28 @@ const mockProjectList: ProjectListResponse = [
           },
         ],
       },
+      {
+        title: "네이버 블로그 리디자인",
+        code: 2035,
+        total: 3,
+        participant: 0,
+        isDone: false,
+        createdAt: "2024-03-28",
+        contributor: [
+          {
+            githubId: "blogdev1",
+            profileImage: `https://www.gravatar.com/avatar/blogdev1?d=identicon&f=y`,
+          },
+          {
+            githubId: "uidesigner",
+            profileImage: `https://www.gravatar.com/avatar/uidesigner?d=identicon&f=y`,
+          },
+          {
+            githubId: "frontmaster",
+            profileImage: `https://www.gravatar.com/avatar/frontmaster?d=identicon&f=y`,
+          },
+        ],
+      },
     ],
   },
   {
@@ -202,6 +224,32 @@ const mockProjectList: ProjectListResponse = [
           {
             githubId: "taxiapi",
             profileImage: `https://www.gravatar.com/avatar/taxiapi?d=identicon&f=y`,
+          },
+        ],
+      },
+      {
+        title: "카카오 게임 플랫폼 개선",
+        code: 2036,
+        total: 4,
+        participant: 0,
+        isDone: false,
+        createdAt: "2024-03-27",
+        contributor: [
+          {
+            githubId: "gamedev1",
+            profileImage: `https://www.gravatar.com/avatar/gamedev1?d=identicon&f=y`,
+          },
+          {
+            githubId: "platformeng",
+            profileImage: `https://www.gravatar.com/avatar/platformeng?d=identicon&f=y`,
+          },
+          {
+            githubId: "unitymaster",
+            profileImage: `https://www.gravatar.com/avatar/unitymaster?d=identicon&f=y`,
+          },
+          {
+            githubId: "gamelead",
+            profileImage: `https://www.gravatar.com/avatar/gamelead?d=identicon&f=y`,
           },
         ],
       },
@@ -336,6 +384,36 @@ const mockProjectList: ProjectListResponse = [
           {
             githubId: "productivitypro",
             profileImage: `https://www.gravatar.com/avatar/productivitypro?d=identicon&f=y`,
+          },
+        ],
+      },
+      {
+        title: "Google Maps API 업데이트",
+        code: 2037,
+        total: 5,
+        participant: 0,
+        isDone: false,
+        createdAt: "2024-03-26",
+        contributor: [
+          {
+            githubId: "mapsdev",
+            profileImage: `https://www.gravatar.com/avatar/mapsdev?d=identicon&f=y`,
+          },
+          {
+            githubId: "apimaster",
+            profileImage: `https://www.gravatar.com/avatar/apimaster?d=identicon&f=y`,
+          },
+          {
+            githubId: "geoexpert",
+            profileImage: `https://www.gravatar.com/avatar/geoexpert?d=identicon&f=y`,
+          },
+          {
+            githubId: "locationpro",
+            profileImage: `https://www.gravatar.com/avatar/locationpro?d=identicon&f=y`,
+          },
+          {
+            githubId: "mapslead",
+            profileImage: `https://www.gravatar.com/avatar/mapslead?d=identicon&f=y`,
           },
         ],
       },

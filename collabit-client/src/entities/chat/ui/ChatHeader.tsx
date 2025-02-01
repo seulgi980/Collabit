@@ -11,7 +11,7 @@ const ChatHeader = () => {
     router.push(pathname.startsWith("/feedback") ? "/feedback" : "/chat");
   };
   return (
-    <div className="flex w-full items-center gap-2 border-b border-gray-200 bg-white py-2">
+    <div className="flex w-full items-center gap-2 border-b border-gray-200 bg-white py-3">
       <Button variant="ghost" className="h-8 w-8" onClick={handleBack}>
         <ArrowLeftIcon className="h-full w-full" />
       </Button>
