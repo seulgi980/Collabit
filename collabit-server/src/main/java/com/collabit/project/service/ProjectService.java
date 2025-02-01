@@ -1,9 +1,6 @@
 package com.collabit.project.service;
 
-import com.collabit.project.domain.dto.ContributorDetailDTO;
-import com.collabit.project.domain.dto.CreateProjectRequestDTO;
-import com.collabit.project.domain.dto.GetProjectListResponseDTO;
-import com.collabit.project.domain.dto.ProjectDetailDTO;
+import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
 import com.collabit.project.repository.ContributorRepository;
 import com.collabit.project.repository.ProjectContributorRepository;
@@ -195,7 +192,7 @@ public class ProjectService {
                                         .title(project.getTitle())
                                         .participant(projectInfo.getParticipant())
                                         .isDone(projectInfo.isDone())
-                                        .createdAt(projectInfo.getCreateAt())
+                                        .createdAt(projectInfo.getCreatedAt())
                                         .contributors(contributors)
                                         .participationRate(calculateParticipationRate(projectInfo))
                                         .build();
@@ -230,4 +227,23 @@ public class ProjectService {
                 (double) projectInfo.getParticipant() / projectInfo.getTotal() * 100;
         return Math.round(rate * 10.0) / 10.0; // 소수점 첫째자리 반올림
     }
+
+    // 로그인 유저가 저장한 프로젝트 리스트 조회
+    public List<GetAddedProjectListResponseDTO> findAddedProjectList(String userCode) {
+        // 1. 로그인 유저의 ProjectInfo 리스트 조회
+        List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
+        log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
+
+        // 2. ProjectInfo로 Project 정보 추출해 DTO에 매핑 후 반환
+        List<GetAddedProjectListResponseDTO> result = projectInfoList.stream()
+                .map(pi -> GetAddedProjectListResponseDTO.builder()
+                        .organization(pi.getProject().getOrganization())
+                        .title(pi.getProject().getTitle())
+                        .build()
+                ).toList();
+        log.debug("사용자의 ProjectInfo 정보로 Project 정보 조회 후 매핑 완료 - 매핑된 Project 수: {}", result.size());
+
+        return result;
+    }
+
 }
