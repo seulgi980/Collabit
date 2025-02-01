@@ -17,4 +17,5 @@ public class ProjectDetailDTO {
     private final boolean isDone;
     private final Timestamp createdAt;
     private final List<ContributorDetailDTO> contributors;
+    private double participationRate;
 }

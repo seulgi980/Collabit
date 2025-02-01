@@ -140,13 +140,23 @@ public class ProjectService {
 
     // 로그인 유저의 전체 프로젝트 조회
     @Transactional(readOnly = true)
-    public List<GetProjectListResponseDTO> findProjectList(String userCode) {
-        log.info("프로젝트 목록 조회 시작 - userCode: {}", userCode);
+    public List<GetProjectListResponseDTO> findProjectList(String userCode, String keyword, SortOrder sortOrder) {
+        log.info("프로젝트 목록 조회 시작 - userCode: {}, keyword: {}, sortOrder: {}",
+                userCode, keyword, sortOrder);
 
         // 1. 로그인 유저의 ProjectInfo 리스트 조회
         // project와 함께 조회하여 N+1 문제 방지 (후에 project 테이블에 있는 정보 조회 시 발생)
         List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
         log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
+
+        // 키워드 검색 적용
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            projectInfoList = projectInfoList.stream()
+                    .filter(pi -> pi.getProject().getTitle().toLowerCase()
+                            .contains(keyword.toLowerCase()))
+                    .toList();
+            log.debug("키워드 검색 적용 후 ProjectInfo 수: {}", projectInfoList.size());
+        }
 
         // 2. organization별로 그룹핑
         Map<String, List<ProjectInfo>> groupedByOrg = projectInfoList.stream()
@@ -187,13 +197,19 @@ public class ProjectService {
                                         .isDone(projectInfo.isDone())
                                         .createdAt(projectInfo.getCreateAt())
                                         .contributors(contributors)
+                                        .participationRate(calculateParticipationRate(projectInfo))
                                         .build();
                             })
 
                             // isDone=false인 것이 앞에 오도록 정렬, isDone이 같을 때 code 내림차순 정렬
                             .sorted(Comparator
                                     .comparing(ProjectDetailDTO::isDone)
-                                    .thenComparing(ProjectDetailDTO::getCode, Comparator.reverseOrder()))
+                                    .thenComparing((p1, p2) -> {
+                                        if (sortOrder == SortOrder.PARTICIPATION) {
+                                            return Double.compare(p2.getParticipationRate(), p1.getParticipationRate());
+                                        }
+                                        return Integer.compare(p2.getCode(), p1.getCode());
+                                    }))
                             .collect(Collectors.toList());
 
                     return GetProjectListResponseDTO.builder()
@@ -206,5 +222,12 @@ public class ProjectService {
 
         log.info("프로젝트 목록 조회 완료 - 조회된 organization 수: {}", result.size());
         return result;
+    }
+
+    // 참여율 계산 메소드
+    private double calculateParticipationRate(ProjectInfo projectInfo) {
+        double rate = projectInfo.getTotal() == 0 ? 0 :
+                (double) projectInfo.getParticipant() / projectInfo.getTotal() * 100;
+        return Math.round(rate * 10.0) / 10.0; // 소수점 첫째자리 반올림
     }
 }
