@@ -49,6 +49,7 @@ public class ProjectService {
             project = Project.builder()
                     .title(createProjectRequestDTO.getTitle())
                     .organization(createProjectRequestDTO.getOrganization())
+                    .organizationImage(createProjectRequestDTO.getOrganizationImage())
                     .build();
             project = projectRepository.save(project);
             log.debug("새 프로젝트 저장 완료 - projectCode: {}", project.getCode());

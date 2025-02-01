@@ -10,7 +10,8 @@ import java.util.List;
 @Getter
 @RequiredArgsConstructor
 public class CreateProjectRequestDTO {
-    private String organization;
     private String title;
+    private String organization;
+    private String organizationImage;
     private List<ContributorDetailDTO> contributors;
 }
