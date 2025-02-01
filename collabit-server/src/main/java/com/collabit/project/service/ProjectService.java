@@ -3,6 +3,7 @@ package com.collabit.project.service;
 import com.collabit.project.domain.dto.ContributorDetailDTO;
 import com.collabit.project.domain.dto.CreateProjectRequestDTO;
 import com.collabit.project.domain.dto.GetProjectListResponseDTO;
+import com.collabit.project.domain.dto.ProjectDetailDTO;
 import com.collabit.project.domain.entity.*;
 import com.collabit.project.repository.ContributorRepository;
 import com.collabit.project.repository.ProjectContributorRepository;
@@ -16,7 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -140,56 +143,68 @@ public class ProjectService {
     public List<GetProjectListResponseDTO> findProjectList(String userCode) {
         log.info("프로젝트 목록 조회 시작 - userCode: {}", userCode);
 
-        // 1. userCode로 ProjectInfo 리스트 조회
-        List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCode(userCode);
+        // 1. 로그인 유저의 ProjectInfo 리스트 조회
+        // project와 함께 조회하여 N+1 문제 방지 (후에 project 테이블에 있는 정보 조회 시 발생)
+        List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
         log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
 
-        // 2. ProjectInfo를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
-        List<GetProjectListResponseDTO> result = projectInfoList.stream()
-                .map(projectInfo -> {
-                    Project project = projectInfo.getProject();
-                    log.debug("Project 정보 조회 - projectCode: {}, title: {}, organization: {}",
-                            project.getCode(), project.getTitle(), project.getOrganization());
+        // 2. organization별로 그룹핑
+        Map<String, List<ProjectInfo>> groupedByOrg = projectInfoList.stream()
+                .collect(Collectors.groupingBy(pi -> pi.getProject().getOrganization()));
 
-                    // 3. projectContributorRepository(인덱싱 테이블)를 통해 프로젝트의 contributor 목록 조회
-                    List<ProjectContributor> projectContributors = projectContributorRepository
-                            .findByProjectCodeAndProjectInfoCodeLessThanEqual(
-                                    project.getCode(),
-                                    projectInfo.getCode()
-                            );
-                    log.debug("ProjectContributor 조회 완료 - projectCode: {}, currentProjectInfoCode: {}, contributorCount: {}",
-                            project.getCode(), projectInfo.getCode(), projectContributors.size());
+        // 2. organizaion으로 묶은 ProjectInfo 리스트를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
+        List<GetProjectListResponseDTO> result = groupedByOrg.entrySet().stream()
+                .map(entry -> {
+                    String org = entry.getKey();
+                    List<ProjectInfo> orgProjects = entry.getValue();
+                    Project firstProject = orgProjects.get(0).getProject(); // 그룹내 organization은 모두 동일하여 1개만 저장
 
-                    List<ContributorDetailDTO> contributors = projectContributors.stream()
-                            .map(projectContributor -> {
-                                Contributor contributor = projectContributor.getContributor();
-                                log.trace("Contributor 정보 변환 - githubId: {}", contributor.getGithubId());
-                                return ContributorDetailDTO.builder()
-                                        .githubId(contributor.getGithubId())
-                                        .profileImage(contributor.getProfileImage())
+                    List<ProjectDetailDTO> projects = orgProjects.stream()
+                            .map(projectInfo -> {
+                                Project project = projectInfo.getProject();
+
+                                // contributor 정보 조회 (같은 project의 해당 projectInfo 이전의 모든 contributor 조회)
+                                List<String> contributorsGithubId = projectContributorRepository
+                                        .findByProjectCodeAndProjectInfoCodeLessThanEqual(
+                                                project.getCode(),
+                                                projectInfo.getCode()
+                                        );
+
+                                // 조회한 contributor들의 githubId, 프로필 이미지 조회
+                                List<ContributorDetailDTO> contributors = contributorRepository
+                                        .findByGithubIdIn(contributorsGithubId)
+                                        .stream()
+                                        .map(contributor -> ContributorDetailDTO.builder()
+                                                .githubId(contributor.getGithubId())
+                                                .profileImage(contributor.getProfileImage())
+                                                .build())
+                                        .collect(Collectors.toList());
+
+                                return ProjectDetailDTO.builder()
+                                        .code(projectInfo.getCode())
+                                        .title(project.getTitle())
+                                        .participant(projectInfo.getParticipant())
+                                        .isDone(projectInfo.isDone())
+                                        .createdAt(projectInfo.getCreateAt())
+                                        .contributors(contributors)
                                         .build();
                             })
+
+                            // isDone=false인 것이 앞에 오도록 정렬, isDone이 같을 때 code 내림차순 정렬
+                            .sorted(Comparator
+                                    .comparing(ProjectDetailDTO::isDone)
+                                    .thenComparing(ProjectDetailDTO::getCode, Comparator.reverseOrder()))
                             .collect(Collectors.toList());
 
-                    // 4. DTO 생성
-                    GetProjectListResponseDTO getProjectListResponseDTO = GetProjectListResponseDTO.builder()
-                            .code(projectInfo.getCode())
-                            .organization(project.getOrganization())
-                            .title(project.getTitle())
-                            .total(projectInfo.getTotal())
-                            .participant(projectInfo.getParticipant())
-                            .isDone(projectInfo.isDone())
-                            .contributors(contributors)
+                    return GetProjectListResponseDTO.builder()
+                            .organization(org)
+                            .organizationImage(firstProject.getOrganizationImage())
+                            .projects(projects)
                             .build();
-
-                    log.debug("프로젝트 DTO 생성 완료 - projectInfoCode: {}, contributorCount: {}",
-                            projectInfo.getCode(), contributors.size());
-
-                    return getProjectListResponseDTO;
                 })
                 .collect(Collectors.toList());
 
-        log.info("프로젝트 목록 조회 완료 - 조회된 프로젝트 수: {}", result.size());
+        log.info("프로젝트 목록 조회 완료 - 조회된 organization 수: {}", result.size());
         return result;
     }
 }
