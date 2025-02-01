@@ -7,12 +7,14 @@ import com.collabit.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Tag(name = "ProjectController", description = "프로젝트 API")
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/project")
 @RestController
@@ -25,6 +27,7 @@ public class ProjectController {
     public ResponseEntity<?> createProject(@RequestBody CreateProjectRequestDTO createProjectRequestDTO) {
         String userCode = SecurityUtil.getCurrentUserCode();
 
+        log.info("프로젝트 등록 서비스 전달 - CreateProjectRequestDTO: {}, userCode: {}", createProjectRequestDTO.toString(), userCode);
         projectService.saveProject(createProjectRequestDTO, userCode);
 
         return ResponseEntity.status(201).build();
@@ -36,6 +39,7 @@ public class ProjectController {
         String userCode = SecurityUtil.getCurrentUserCode();
 
         List<GetProjectListResponseDTO> projectList = projectService.findProjectList(userCode);
+        log.info("프로젝트 목록 데이터 반환 - 반환할 프로젝트 수: {}", projectList.size());
 
         return ResponseEntity.ok(projectList);
     }

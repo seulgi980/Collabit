@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Integer> {
 
+    Project findByTitleAndOrganization(String title, String title1);
 }
