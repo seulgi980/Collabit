@@ -31,14 +31,48 @@ public class ProjectService {
     private final ProjectContributorRepository projectContributorRepository;
     private final UserRepository userRepository;
 
+    // User 검증 메소드
+    private User findUserByCode(String userCode) {
+        User user = userRepository.findByCode(userCode)
+                .orElseThrow(UserNotFoundException::new);
+        log.debug("사용자 조회 완료 - userCode: {}", userCode);
+        return user;
+    }
+
+    // ProjectInfo 검증 메소드
+    private ProjectInfo validateProjectInfo(String userCode, int code) {
+        ProjectInfo projectInfo = projectInfoRepository.findByCode(code);
+
+        if(projectInfo == null) {
+            log.error("code로 projectInfo를 조회할 수 없음");
+            throw new RuntimeException("해당 프로젝트가 존재하지 않습니다.");
+        }
+
+        if(!projectInfo.getUser().getCode().equals(userCode)) {
+            log.error("로그인 유저가 해당 프로젝트의 등록자가 아님 - 로그인 유저: {}, 프로젝트의 유저: {}",
+                    userCode, projectInfo.getUser().getCode());
+            throw new RuntimeException("해당 프로젝트에 대한 권한이 없습니다.");
+        }
+
+        return projectInfo;
+    }
+
+    // ProjectInfo 중복 검증 메소드
+    private void validateProjectInfoNotExists(int projectCode, String userCode) {
+        ProjectInfo existingProjectInfo = projectInfoRepository.findByProjectCodeAndUserCode(projectCode, userCode);
+        if(existingProjectInfo != null) {
+            log.warn("이미 등록된 프로젝트 정보 발견 - projectCode: {}, projectInfoCode: {}, userCode: {}",
+                    projectCode, existingProjectInfo.getCode(), userCode);
+            throw new RuntimeException("이미 등록하신 레포지토리입니다.");
+        }
+    }
+
     // 프론트에서 받은 프로젝트 정보 검증 후 프로젝트 저장
     public void saveProject(CreateProjectRequestDTO createProjectRequestDTO, String userCode) {
         log.info("프로젝트 등록 시작 - CreateProjectRequestDTO: {}, userCode: {}", createProjectRequestDTO.toString(), userCode);
 
         // 1. 시용자 조회
-        User user = userRepository.findByCode(userCode)
-                .orElseThrow(UserNotFoundException::new);
-        log.debug("사용자 조회 완료 - userCode: {}", userCode);
+        User user = findUserByCode(userCode);
 
         // 2. Project가 없는 경우 저장
         Project project = projectRepository.findByTitleAndOrganization(
@@ -61,14 +95,7 @@ public class ProjectService {
 
         // 3. ProjectInfo 저장
         // 현재 로그인 유저가 해당 레포지토리를 저장한적 있는지 검증 (projectCode, userCode로 조회)
-        ProjectInfo existingProjectInfo = projectInfoRepository
-                    .findByProjectCodeAndUserCode(project.getCode(), userCode);
-
-        if(existingProjectInfo != null) {
-            log.warn("이미 등록된 프로젝트 정보 발견 - projectCode: {}, projectInfoCode: {}, userCode: {}",
-                    project.getCode(), existingProjectInfo.getCode(), userCode);
-            throw new RuntimeException("이미 등록하신 레포지토리입니다.");
-        }
+        validateProjectInfoNotExists(project.getCode(), userCode);
 
         // 등록되지 않은 레포지토리의 정보를 ProjectInfo에 저장
         ProjectInfo projectInfo = ProjectInfo.builder()
@@ -229,6 +256,7 @@ public class ProjectService {
     }
 
     // 로그인 유저가 저장한 프로젝트 리스트 조회
+    @Transactional(readOnly = true)
     public List<GetAddedProjectListResponseDTO> findAddedProjectList(String userCode) {
         // 1. 로그인 유저의 ProjectInfo 리스트 조회
         List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
@@ -248,22 +276,12 @@ public class ProjectService {
 
     public void updateProjectSurveyState(String userCode, int code) {
         // 해당 projectInfo가 현재 로그인된 user의 소유가 맞는지 검증
-        ProjectInfo projectInfo = projectInfoRepository.findByCode(code);
-
-        if(projectInfo == null) {
-            log.error("code로 projectInfo를 조회할 수 없음");
-            throw new RuntimeException("해당 프로젝트가 존재하지 않습니다.");
-        }
+        ProjectInfo projectInfo = validateProjectInfo(userCode, code);
 
         if (projectInfo.isDone()) {
             log.error("isDone이 이미 true인 경우 - 해당 ProjectInfo의 isDone: {}", projectInfo.isDone());
             throw new RuntimeException("해당 프로젝트의 설문조사는 이미 마감되었습니다.");
         }
-
-       if(!projectInfo.getUser().getCode().equals(userCode)) {
-           log.error("로그인 유저가 해당 프로젝트의 등록자가 아님 - 로그인 유저: {}, 프로젝트의 유저: {}", userCode, projectInfo.getUser().getCode());
-           throw new RuntimeException("해당 프로젝트를 변경할 권한이 없습니다.");
-       }
 
        log.debug("해당 프로젝트 설문조사 마감 시작 - 해당 ProjectInfo의 isDone: {}", projectInfo.isDone());
        projectInfo.completeSurvey();
@@ -271,5 +289,92 @@ public class ProjectService {
        log.debug("해당 프로젝트 설문조사 마감 완료");
 
        // 포트폴리오 개발 시 isUpdate 함께 변경
+    }
+
+    public void removeProject(String userCode, int code) {
+        // 삭제할 projectInfo가 현재 로그인된 user의 소유가 맞는지 검증
+        ProjectInfo projectInfo = validateProjectInfo(userCode, code);
+
+        // 설문 참여자가 있거나 마감됐을 경우 삭제 불가
+        if(projectInfo.isDone() || projectInfo.getParticipant() >= 1) {
+            log.error("설문 참여자가 있거나 설문이 마감됐을 경우 삭제 불가");
+            throw new RuntimeException("설문 참여자가 있거나 설문을 마감하였을 경우 삭제가 불가능합니다.");
+        }
+
+        // projectInfo에 해당하는 contributor 조회
+        List<ProjectContributor> contributors = projectContributorRepository.findByProjectInfoCode(code);
+
+        // 해당 projectInfo와 같은 project에 소속된 projectInfo 조회 (없을 경우 삭제 시 project 정보도 함께 삭제)
+        List<ProjectInfo> projectInfoList = projectInfoRepository.findByProjectCodeOrderByCodeAsc(projectInfo.getProject().getCode());
+
+        // contributor의 경우 다른 프로젝트에서 사용될 수 있으므로 보존
+        // 1. project에 해당 projectInfo만 있는 경우 -> project, projectInfo 삭제
+        if (projectInfoList.size() <= 1) {
+            log.info("project에 해당 projectInfo만 있는 경우 - projectInfo 수: {}", projectInfoList.size());
+            projectContributorRepository.deleteByProjectCode(projectInfo.getProject().getCode()); // 관계 삭제
+            projectInfoRepository.delete(projectInfo);
+            projectRepository.delete(projectInfo.getProject());
+            log.debug("project, projectInfo 삭제 완료");
+        }
+        // 2. project에 다른 projectInfo도 있는 경우 (projectInfo만 삭제)
+        else {
+            log.info("project에 다른 projectInfo도 있는 경우 - projectInfo 수: {}", projectInfoList.size());
+
+            // 2-1. 해당 projectInfo에 contributor가 없으면 그냥 삭제
+            if(contributors.isEmpty()) {
+                projectContributorRepository.deleteByProjectInfoCode(projectInfo.getCode());
+                projectInfoRepository.delete(projectInfo);
+                log.debug("해당 projectInfo에 소속된 contributor가 없는 삭제 완료");
+            }
+
+            // 2-2. contributor가 있는 경우
+            else {
+                // 2-2-1. 해당 projectInfo가 마지막으로 등록됐을 때 그냥 삭제
+                if(projectInfoList.get(projectInfoList.size()-1).equals(projectInfo)) {
+                    projectContributorRepository.deleteByProjectInfoCode(projectInfo.getCode());
+                    projectInfoRepository.delete(projectInfo);
+                    log.debug("해당 projectInfo가 마지막으로 등록되어 소속된 contributor가 있어도 바로 삭제 완료");
+                }
+
+                // 2-2-2. 마지막에 등록된게 아니면 다음 projectInfo에 contributor 위임 후 삭제
+                else {
+                    log.info("contributor 위임 시작");
+
+                    int currentIndex = projectInfoList.indexOf(projectInfo);
+                    ProjectInfo nextProjectInfo = projectInfoList.get(currentIndex + 1);
+
+                    // 현재 contributor들을 순회하면서 새로운 ProjectContributor 생성
+                    for(ProjectContributor oldContributor : contributors) {
+                        // 기존 contributor 삭제
+                        projectContributorRepository.delete(oldContributor);
+
+                        // 새로운 ID 생성
+                        ProjectContributorId newId = new ProjectContributorId(
+                                oldContributor.getId().getProjectCode(),
+                                nextProjectInfo.getCode(),
+                                oldContributor.getId().getGithubId()
+                        );
+
+                        // 새로운 ProjectContributor 생성
+                        ProjectContributor newContributor = ProjectContributor.builder()
+                                .id(newId)
+                                .project(oldContributor.getProject())
+                                .projectInfo(nextProjectInfo)
+                                .contributor(oldContributor.getContributor())
+                                .build();
+
+                        // 새로운 contributor 저장
+                        projectContributorRepository.save(newContributor);
+                    }
+
+                    log.debug("contributor 위임 완료 - 이전 projectInfo: {}, 다음 projectInfo: {}",
+                            projectInfo.getCode(), nextProjectInfo.getCode());
+
+                    // projectInfo 삭제
+                    projectInfoRepository.delete(projectInfo);
+                    log.debug("위임 후 projectInfo 삭제 완료");
+                }
+            }
+        }
     }
 }

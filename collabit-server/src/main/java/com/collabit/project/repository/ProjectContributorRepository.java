@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface ProjectContributorRepository extends JpaRepository<ProjectContributor, ProjectContributorId> {
 
-    // 해당 프로젝트의 contributor, projectInfo 리스트 조회
+    // project로 ProjectContributor 리스트 조회
     List<ProjectContributor> findByProject(Project project);
 
     // project_code가 같고, project_info_code가 현재 코드보다 작거나 같은 모든 contributor 조회
@@ -23,4 +23,11 @@ public interface ProjectContributorRepository extends JpaRepository<ProjectContr
     List<String> findByProjectCodeAndProjectInfoCodeLessThanEqual(
             @Param("projectCode") int projectCode,
             @Param("currentProjectInfoCode") int currentProjectInfoCode);
+
+    // projectInfo 코드로 ProjectContributor 리스트 조회
+    List<ProjectContributor> findByProjectInfoCode(int code);
+
+    void deleteByProjectCode(int code);
+
+    void deleteByProjectInfoCode(int code);
 }

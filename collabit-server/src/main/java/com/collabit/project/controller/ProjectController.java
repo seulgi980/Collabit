@@ -70,7 +70,18 @@ public class ProjectController {
         String userCode = SecurityUtil.getCurrentUserCode();
 
         projectService.updateProjectSurveyState(userCode, code);
-        log.debug("해당 프로젝트 설문 마감 완료");
+        log.debug("해당 프로젝트 설문 마감 완료 - 설문 마감한 프로젝트 code: {}", code);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "프로젝트 삭제", description = "설문 참여자가 없는 특정 프로젝트를 삭제하는 API 입니다.")
+    @DeleteMapping("/{code}")
+    public ResponseEntity<?> deleteProject(@PathVariable int code) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        projectService.removeProject(userCode, code);
+        log.debug("프로젝트 삭제 완료 - 삭제된 프로젝트 code: {}", code);
 
         return ResponseEntity.ok().build();
     }
