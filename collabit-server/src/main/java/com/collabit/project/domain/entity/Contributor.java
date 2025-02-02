@@ -13,10 +13,7 @@ import java.util.List;
 public class Contributor {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private int code;
-
-    @Column(name = "github_id", nullable = false)
+    @Column(name = "github_id")
     private String githubId;
 
     @Column(name = "profile_image", nullable = false)
@@ -30,4 +27,5 @@ public class Contributor {
         this.githubId = githubId;
         this.profileImage = profileImage;
     }
+
 }
