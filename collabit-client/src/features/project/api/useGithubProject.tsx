@@ -5,10 +5,10 @@ import {
   getGithubCollaboratorsAPI,
   getGithubUserOrgsAPI,
   getGithubUserReposAPI,
-  getAddedProject,
+  getAddedProjectAPI,
   createProjectAPI,
 } from "@/shared/api/project";
-import { ProjectCreateRequest } from "@/shared/types/request/Project";
+import { ProjectCreateRequest } from "@/shared/types/request/project";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -26,11 +26,12 @@ export const useGithubProject = () => {
     enabled: !!searchKeyword,
   });
 
-  const { data: githubCollaborators, isLoading: isCollaboratorsLoading } = useQuery({
-    queryKey: ["githubCollaborators"],
-    queryFn: () => getGithubCollaboratorsAPI(searchKeyword, "repo-title"),
-    enabled: !!searchKeyword,
-  });
+  const { data: githubCollaborators, isLoading: isCollaboratorsLoading } =
+    useQuery({
+      queryKey: ["githubCollaborators"],
+      queryFn: () => getGithubCollaboratorsAPI(searchKeyword, "repo-title"),
+      enabled: !!searchKeyword,
+    });
 
   const { data: githubUserOrgs, isLoading: isUserOrgsLoading } = useQuery({
     queryKey: ["githubUserOrgs"],
@@ -46,14 +47,15 @@ export const useGithubProject = () => {
 
   const { data: addedProjects, isLoading: isAddedLoading } = useQuery({
     queryKey: ["addedProjects"],
-    queryFn: getAddedProject,
+    queryFn: getAddedProjectAPI,
   });
 
   useEffect(() => {
     if (addedProjects && searchKeyword) {
       const isAlreadyAdded = addedProjects.some(
         (project: { organization: string; title: string }) =>
-          project.organization === searchKeyword && project.title === "repo-title"
+          project.organization === searchKeyword &&
+          project.title === "repo-title",
       );
       setIsAdded(isAlreadyAdded);
     }
@@ -88,7 +90,12 @@ export const useGithubProject = () => {
     githubCollaborators,
     githubUserOrgs,
     githubUserRepos,
-    isLoading: isOrgReposLoading || isCollaboratorsLoading || isUserOrgsLoading || isUserReposLoading || isAddedLoading,
+    isLoading:
+      isOrgReposLoading ||
+      isCollaboratorsLoading ||
+      isUserOrgsLoading ||
+      isUserReposLoading ||
+      isAddedLoading,
     isAdded,
     searchKeyword,
     setSearchKeyword,
