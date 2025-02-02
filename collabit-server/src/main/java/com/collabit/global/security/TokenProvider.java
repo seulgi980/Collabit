@@ -1,19 +1,17 @@
 package com.collabit.global.security;
 
-import com.collabit.auth.domain.dto.TokenDto;
+import com.collabit.auth.domain.dto.TokenDTO;
 
 import com.collabit.auth.exception.InvalidTokenException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -48,7 +46,7 @@ public class TokenProvider {
     }
 
     // (로그인 시) 유저 정보를 넘겨받아 access token과 refresh token 생성
-    public TokenDto generateTokenDto(Authentication authentication) {
+    public TokenDTO generateTokenDto(Authentication authentication) {
         // Authentication 에서 CustomUserDetails 추출
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
@@ -79,7 +77,7 @@ public class TokenProvider {
 
         log.debug("Access token and refresh token generated");
 
-        return TokenDto.builder()
+        return TokenDTO.builder()
                 .grantType(BEARER_TYPE)
                 .accessToken(accessToken)
                 .accessTokenExpiresIn(accessTokenExpiresIn.getTime())
