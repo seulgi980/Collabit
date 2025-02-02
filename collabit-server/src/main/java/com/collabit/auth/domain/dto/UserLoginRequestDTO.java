@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 @NoArgsConstructor
-public class UserLoginRequestDto {
+public class UserLoginRequestDTO {
 
     @NotBlank
     @Email
