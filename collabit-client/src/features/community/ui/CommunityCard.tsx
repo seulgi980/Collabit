@@ -21,38 +21,27 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-interface Post {
-  id: number;
-  user: {
-    nickname: string;
-    profileImage: string;
-  };
-  content: string;
-  images: string[];
-  likeCount: number;
-  commentCount: number;
-  isLiked: boolean;
-  createdAt: string;
-}
-const CommunityCard = ({ post }: { post: Post }) => {
+import { PostListResponse } from "@/shared/types/response/post";
+
+const CommunityCard = ({ post }: { post: PostListResponse }) => {
   const { userInfo } = useAuth();
   return (
     <Link
-      href={`/community/${post.id}`}
+      href={`/community/${post.code}`}
       className="flex w-full flex-col gap-2 border-b border-b-border px-2 py-5"
     >
       <div className="flex w-full items-center justify-between">
         <div className="flex w-full items-center gap-2">
           <Avatar>
-            <AvatarImage src={post.user.profileImage} />
-            <AvatarFallback>{post.user.nickname.slice(0, 2)}</AvatarFallback>
+            <AvatarImage src={post.author.profileImage} />
+            <AvatarFallback>{post.author.nickname.slice(0, 2)}</AvatarFallback>
           </Avatar>
-          <span className="text-base font-medium">{post.user.nickname}</span>
+          <span className="text-base font-medium">{post.author.nickname}</span>
           <span className="text-sm text-muted-foreground">
-            {formatRelativeTime(post.createdAt)}
+            {formatRelativeTime(post.createdAt.toString())}
           </span>
         </div>
-        {userInfo?.nickname === post.user.nickname ? (
+        {userInfo?.nickname === post.author.nickname ? (
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-2 py-1">
               <Ellipsis
@@ -113,7 +102,7 @@ const CommunityCard = ({ post }: { post: Post }) => {
       <div className="flex items-center gap-1 text-muted-foreground">
         <div className="flex items-center gap-1 px-2 py-1">
           <MessageCircle className="size-4" />
-          <span className="text-sm">{post.commentCount}</span>
+          <span className="text-sm">{post.comments}</span>
         </div>
         <div className="flex items-center">
           <Button variant="ghost" className="flex items-center px-2 py-1">
@@ -123,7 +112,7 @@ const CommunityCard = ({ post }: { post: Post }) => {
                 post.isLiked && "fill-red-500 text-red-500",
               )}
             />
-            <span className="text-sm">{post.likeCount}</span>
+            <span className="text-sm">{post.likes}</span>
           </Button>
         </div>
         <Button variant="ghost" className="flex items-center px-2 py-1">

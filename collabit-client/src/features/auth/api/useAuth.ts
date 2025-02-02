@@ -12,8 +12,15 @@ export const useAuth = () => {
     queryFn: getUserInfoAPI,
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 60,
-    retry: 3,
+    retry: false,
   });
+
+  if (isError) {
+    queryClient.setQueryData(["auth"], {
+      userInfo: null,
+      isAuthenticated: false,
+    });
+  }
 
   const logout = async () => {
     try {

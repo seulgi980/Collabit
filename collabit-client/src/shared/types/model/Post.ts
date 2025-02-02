@@ -2,8 +2,8 @@ export interface Post {
   code: number;
   userCode: string;
   content: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 export interface Image {
   code: number;
