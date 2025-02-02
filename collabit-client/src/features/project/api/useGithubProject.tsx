@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  getGithubOrgReposAPI,
   getGithubCollaboratorsAPI,
   getGithubUserOrgsAPI,
   getGithubUserReposAPI,
@@ -13,36 +12,32 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
-export const useGithubProject = () => {
+export const useGithubProject = (
+  org?: string,
+  title?: string,
+  userId?: string,
+) => {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [searchKeyword, setSearchKeyword] = useState("");
   const [isAdded, setIsAdded] = useState(false);
-
-  // 🔹 깃허브 조직의 저장소 목록 가져오기
-  const { data: githubOrgRepos, isLoading: isOrgReposLoading } = useQuery({
-    queryKey: ["githubOrgRepos"],
-    queryFn: () => getGithubOrgReposAPI(searchKeyword),
-    enabled: !!searchKeyword,
-  });
 
   const { data: githubCollaborators, isLoading: isCollaboratorsLoading } =
     useQuery({
-      queryKey: ["githubCollaborators"],
-      queryFn: () => getGithubCollaboratorsAPI(searchKeyword, "repo-title"),
-      enabled: !!searchKeyword,
+      queryKey: ["githubCollaborators", org, title],
+      queryFn: () =>
+        org && title
+          ? getGithubCollaboratorsAPI(org, title)
+          : Promise.resolve([]),
+      enabled: !!title,
     });
 
-  const { data: githubUserOrgs, isLoading: isUserOrgsLoading } = useQuery({
-    queryKey: ["githubUserOrgs"],
-    queryFn: () => getGithubUserOrgsAPI(searchKeyword),
-    enabled: !!searchKeyword,
-  });
+
 
   const { data: githubUserRepos, isLoading: isUserReposLoading } = useQuery({
-    queryKey: ["githubUserRepos"],
-    queryFn: () => getGithubUserReposAPI(searchKeyword),
-    enabled: !!searchKeyword,
+    queryKey: ["githubUserRepos", userId],
+    queryFn: () =>
+      userId ? getGithubUserReposAPI(userId) : Promise.resolve([]),
+    enabled: !!userId,
   });
 
   const { data: addedProjects, isLoading: isAddedLoading } = useQuery({
@@ -51,15 +46,14 @@ export const useGithubProject = () => {
   });
 
   useEffect(() => {
-    if (addedProjects && searchKeyword) {
+    if (addedProjects?.length && org && title) {
       const isAlreadyAdded = addedProjects.some(
         (project: { organization: string; title: string }) =>
-          project.organization === searchKeyword &&
-          project.title === "repo-title",
+          project.organization === org && project.title === title,
       );
       setIsAdded(isAlreadyAdded);
     }
-  }, [addedProjects, searchKeyword]);
+  }, [addedProjects, org, title]);
 
   const createProjectMutation = useMutation({
     mutationFn: (project: ProjectCreateRequest) => createProjectAPI(project),
@@ -86,19 +80,13 @@ export const useGithubProject = () => {
   };
 
   return {
-    githubOrgRepos,
     githubCollaborators,
-    githubUserOrgs,
     githubUserRepos,
     isLoading:
-      isOrgReposLoading ||
       isCollaboratorsLoading ||
-      isUserOrgsLoading ||
       isUserReposLoading ||
       isAddedLoading,
     isAdded,
-    searchKeyword,
-    setSearchKeyword,
     handleCreateProject,
   };
 };

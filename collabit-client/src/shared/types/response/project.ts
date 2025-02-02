@@ -23,10 +23,12 @@ export type ProjectListResponse = {
 export type ProjectUpdateCheckResponse = {
   isUpdated: boolean;
 };
-export type GithubRepoResponse = ProjectTitle & {
-  updatedAt: Date;
+export type GithubOrgResponse = {
+  login: string;
+  avatar_url: string;
 };
-export type GithubOrgResponse = Pick<Project, "organization">;
+
+export type GithubRepoResponse = Pick<Project, "organization">;
 export type GithubCollaboratorResponse = {
   contributors: Contributor[];
 };

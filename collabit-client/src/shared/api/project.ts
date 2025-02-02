@@ -5,7 +5,7 @@ import {
 import { ProjectListResponse } from "../types/response/project";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-const githubUrl = "https://api.github.com/";
+const githubUrl = "https://api.github.com";
 
 export const getGithubUserReposAPI = async (githubId: string) => {
   const res = await fetch(`${githubUrl}/users/${githubId}/repos`, {

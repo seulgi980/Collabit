@@ -3,33 +3,16 @@
 import {
   getProjectListAPI,
   removeProjectAPI,
-  searchProjectAPI,
   updateProjectDoneAPI,
 } from "@/shared/api/project";
 import useModalStore from "@/shared/lib/stores/modalStore";
 import TwoButtonModal from "@/widget/ui/modals/TwoButtonModal";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 export const useProjectList = () => {
   const queryClient = useQueryClient();
   const { openModal, closeModal } = useModalStore();
-  const [searchKeyword, setSearchKeyword] = useState("");
-
-  const {
-    data: projectList,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["project"],
-    queryFn: getProjectListAPI,
-  });
-
-  const { data: searchResults, isFetching: isSearching } = useQuery({
-    queryKey: ["searchProject", searchKeyword],
-    queryFn: () => searchProjectAPI(searchKeyword),
-    enabled: !!searchKeyword,
-  });
 
   const removeProjectMutation = useMutation({
     mutationFn: removeProjectAPI,
@@ -76,11 +59,6 @@ export const useProjectList = () => {
   };
 
   return {
-    project: searchKeyword ? searchResults : projectList,
-    isLoading: isLoading || isSearching,
-    isError,
-    searchKeyword,
-    setSearchKeyword,
     handleFinishSurvey,
     handleRemoveProject,
   };
