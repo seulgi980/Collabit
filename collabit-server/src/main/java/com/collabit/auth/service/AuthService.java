@@ -1,10 +1,10 @@
 package com.collabit.auth.service;
 
 
-import com.collabit.auth.domain.dto.TokenDto;
-import com.collabit.auth.domain.dto.UserLoginRequestDto;
-import com.collabit.auth.domain.dto.UserResponseDto;
-import com.collabit.auth.domain.dto.UserSignupRequestDto;
+import com.collabit.auth.domain.dto.TokenDTO;
+import com.collabit.auth.domain.dto.UserLoginRequestDTO;
+import com.collabit.auth.domain.dto.UserResponseDTO;
+import com.collabit.auth.domain.dto.UserSignupRequestDTO;
 import com.collabit.global.security.CustomUserDetails;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.user.domain.entity.Role;
@@ -37,7 +37,7 @@ public class AuthService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
-    public UserResponseDto login(UserLoginRequestDto userLoginRequestDto, HttpServletResponse response) {
+    public UserResponseDTO login(UserLoginRequestDTO userLoginRequestDto, HttpServletResponse response) {
         // 1. Login ID/PW를 기반으로 AuthenticationToken 생성
         String email = userLoginRequestDto.getEmail();
         String password = userLoginRequestDto.getPassword();
@@ -48,7 +48,7 @@ public class AuthService {
         log.debug("Authenticated user: {}", authentication.getPrincipal());
 
         // 3. JWT 토큰 생성
-        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+        TokenDTO tokenDto = tokenProvider.generateTokenDto(authentication);
         log.debug("Generated token: {}", tokenDto.toString());
 
         // 4. HttpOnly Cookie 에 Access Token 과 Refresh Token 저장
@@ -61,7 +61,7 @@ public class AuthService {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // 6. UserResponseDto 생성 및 반환
-        return UserResponseDto.builder()
+        return UserResponseDTO.builder()
                 .nickname(userDetails.getNickname()) // CustomUserDetails에서 닉네임 가져오기
                 .profileImage(userDetails.getProfileImage()) // CustomUserDetails에서 프로필 이미지 가져오기
                 .isGithub(userDetails.getGithubId() != null) // CustomUserDetails에서 GitHub 연동 여부 가져오기
@@ -80,7 +80,7 @@ public class AuthService {
     }
 
     // 회원가입 메서드
-    public UserResponseDto signup(UserSignupRequestDto userSignupRequestDto) {
+    public UserResponseDTO signup(UserSignupRequestDTO userSignupRequestDto) {
         // 이메일 중복 체크
         if (isEmailAlreadyExists(userSignupRequestDto.getEmail())) {
             throw new IllegalStateException("이미 등록된 이메일입니다.");
@@ -107,7 +107,7 @@ public class AuthService {
 
         // UserResponseDto 생성(FE 에게 정보 전달 용)
         // isGithub 은 회원가입시에는 false. 로그인 때 확인
-        return UserResponseDto.builder()
+        return UserResponseDTO.builder()
                 .nickname(user.getNickname())
                 .profileImage(user.getProfileImage())
                 .isGithub(false)
