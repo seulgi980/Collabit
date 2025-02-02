@@ -3,6 +3,7 @@ import {
   ProjectRemoveRequest,
 } from "../types/request/project";
 import { ProjectListResponse } from "../types/response/project";
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const githubUrl = "https://api.github.com/";
 
@@ -92,14 +93,6 @@ export const removeProjectAPI = async (body: ProjectRemoveRequest) => {
   return data;
 };
 
-export const searchProjectAPI = async (keyword: string) => {
-  const res = await fetch(`${apiUrl}/project/search?keyword=${keyword}`, {
-    method: "GET",
-  });
-  const data = await res.json();
-  return data;
-};
-
 export const updateProjectDoneAPI = async (code: number) => {
   const res = await fetch(`${apiUrl}/project/done/${code}`, {
     method: "GET",
@@ -108,7 +101,7 @@ export const updateProjectDoneAPI = async (code: number) => {
   return data;
 };
 
-export const checkProjectUpdate = async () => {
+export const checkProjectUpdateAPI = async () => {
   const res = await fetch(`${apiUrl}/project/new`, {
     method: "GET",
   });
@@ -116,7 +109,7 @@ export const checkProjectUpdate = async () => {
   return data;
 };
 
-export const getAddedProject = async () => {
+export const getAddedProjectAPI = async () => {
   const res = await fetch(`${apiUrl}/project/added`, { method: "GET" });
   const data = await res.json();
   return data;

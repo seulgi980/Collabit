@@ -10,7 +10,7 @@ export interface ProjectInfo {
   userCode: string;
   total: number;
   participant: number;
-  isDone: boolean;
+  done: boolean;
   createdAt: string;
   sympathy: number;
   listening: number;
@@ -27,7 +27,7 @@ export type ProjectListItem = Pick<
   Project,
   "title" | "organization" | "organizationImage"
 > &
-  Pick<ProjectInfo, "code" | "total" | "participant" | "isDone"> & {
+  Pick<ProjectInfo, "code" | "total" | "participant" | "done"> & {
     contributors: Contributor[];
     isUpdated: boolean;
   };

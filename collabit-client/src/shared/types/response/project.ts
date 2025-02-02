@@ -1,10 +1,17 @@
-import { Contributor, Project, ProjectInfo, ProjectTitle } from "../model/Project";
+import {
+  Contributor,
+  Project,
+  ProjectInfo,
+  ProjectTitle,
+} from "../model/Project";
 
 type ProjectInfoResponse = Pick<
   ProjectInfo,
-  "code" | "total" | "participant" | "isDone" | "createdAt"
+  "code" | "participant" | "done" | "createdAt"
 > &
-  Pick<Project, "title">;
+  Pick<Project, "title"> & {
+    participationRate: number;
+  };
 export type ProjectResponse = ProjectInfoResponse & {
   contributors: Contributor[];
 };
