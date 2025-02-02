@@ -22,7 +22,7 @@ const OneButtonModal = ({
         type="button"
         variant="ghost"
         className="absolute right-2 top-2"
-        onClick={closeModal}
+        onClick={() => closeModal}
       >
         <X />
       </Button>
