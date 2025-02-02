@@ -15,14 +15,15 @@ import TwoButtonModal from "@/widget/ui/modals/TwoButtonModal";
 import { DeleteIcon, Ellipsis, GithubIcon } from "lucide-react";
 
 interface ProjectListCardProps {
+  organization: string;
   project: ProjectResponse;
   onClick?: () => void;
 }
 
-const ProjectListCard2 = ({ project }: ProjectListCardProps) => {
+const ProjectListCard2 = ({ project, organization }: ProjectListCardProps) => {
   const { openModal } = useModalStore();
 
-  const contributorsCount = project.contributor.length;
+  const contributorsCount = project.contributors.length;
   const participantsRatio = Math.floor(
     (project.participant * 100) / contributorsCount,
   );
@@ -83,7 +84,11 @@ const ProjectListCard2 = ({ project }: ProjectListCardProps) => {
               </DropdownMenuItem>
             )}
             <DropdownMenuItem
-              onClick={() => window.open(`https://github.com/${project.title}`)}
+              onClick={() =>
+                window.open(
+                  `https://github.com/${organization}/${project.title}`,
+                )
+              }
               className="cursor-pointer"
             >
               <GithubIcon />
@@ -95,14 +100,11 @@ const ProjectListCard2 = ({ project }: ProjectListCardProps) => {
       <div className="flex w-full items-center justify-between gap-10">
         <div className="items-left flex w-full flex-col justify-center gap-2">
           <div className="flex items-center">
-            <ProjectCotnributor size="sm" contributor={project.contributor} />
+            <ProjectCotnributor size="sm" contributor={project.contributors} />
             <span className="text-sm">
-              <span className="font-semibold">
-                {project.contributor.length}
-              </span>
-              명 중 <span className="font-semibold">{project.participant}</span>
-              명 참여 /{" "}
-              <span className="font-semibold">{participantsRatio}</span>%
+              <span className="font-semibold">{contributorsCount}</span>명 중{" "}
+              <span className="font-semibold">{project.participant}</span>명
+              참여 / <span className="font-semibold">{participantsRatio}</span>%
             </span>
           </div>
           <Progress

@@ -131,7 +131,6 @@ export default function Page() {
       <ProjectHeader
         mainTitle="프로젝트 등록"
         subTitle="프로젝트를 등록하고, 동료들에게 피드백을 요청해보세요."
-        isList={false}
       />
       <div className="flex items-center justify-between gap-2">
         <ProjectSelect
@@ -140,11 +139,7 @@ export default function Page() {
           selectType={selectType}
           setSelectType={setSelectType}
         />
-        <ProjectInput
-          keyword={keyword}
-          setKeyword={setKeyword}
-          handleSearchKeyword={handleSearchKeyword}
-        />
+        <ProjectInput keyword={keyword} setKeyword={setKeyword} />
       </div>
       {projectCreate.map((project) => {
         return <ProjectCreateCard key={project.code} project={project} />;

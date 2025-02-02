@@ -1,5 +1,18 @@
-import { Contributor, Project, ProjectTitle } from "../model/Project";
+import { Contributor, Project, ProjectInfo, ProjectTitle } from "../model/Project";
 
+type ProjectInfoResponse = Pick<
+  ProjectInfo,
+  "code" | "total" | "participant" | "isDone" | "createdAt"
+> &
+  Pick<Project, "title">;
+export type ProjectResponse = ProjectInfoResponse & {
+  contributors: Contributor[];
+};
+export type ProjectListResponse = {
+  organization: Project["organization"];
+  organizationImage: Project["organizationImage"];
+  projects: ProjectResponse[];
+}[];
 export type ProjectUpdateCheckResponse = {
   isUpdated: boolean;
 };

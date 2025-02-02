@@ -41,11 +41,17 @@ const ProjectList = ({ keyword, sort }: { keyword: string; sort: string }) => {
                 {org.projects.map((project) =>
                   project.isDone ? (
                     <div key={`${org.organization}-${project.code}`}>
-                      <SurveyResultModal project={project} />
+                      <SurveyResultModal
+                        project={project}
+                        organization={org.organization}
+                      />
                     </div>
                   ) : (
                     <div key={`${org.organization}-${project.code}`}>
-                      <SurveySharingModal project={project} />
+                      <SurveySharingModal
+                        project={project}
+                        organization={org.organization}
+                      />
                     </div>
                   ),
                 )}

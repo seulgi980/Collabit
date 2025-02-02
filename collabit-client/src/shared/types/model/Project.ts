@@ -1,5 +1,4 @@
 export interface Project {
-export interface Project {
   code: number;
   title: string;
   organization: string;
@@ -7,8 +6,6 @@ export interface Project {
 }
 export interface ProjectInfo {
   code: number;
-  projectCode: number;
-  userCode: string;
   projectCode: number;
   userCode: string;
   total: number;
@@ -25,17 +22,6 @@ export interface ProjectInfo {
 export interface Contributor {
   githubId: string;
   profileImage: string;
-}
-export type ProjectListItem = Pick<Project, "title" | "organization"> &
-  Pick<ProjectInfo, "code" | "total" | "participant" | "isDone"> & {
-    contributors: Contributor[];
-    isUpdated: boolean;
-  };
-export type ProjectTitle = Pick<Project, "title" | "organization">;
-export interface ProjectContributor {
-  projectCode: number;
-  projectInfoCode: number;
-  githubId: string;
 }
 export type ProjectListItem = Pick<
   Project,

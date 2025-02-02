@@ -1,13 +1,8 @@
 import {
   ProjectCreateRequest,
   ProjectRemoveRequest,
-} from "../types/request/Project";
-import { ProjectListResponse } from "../types/response/project";
-import {
-  ProjectCreateRequest,
-  ProjectRemoveRequest,
 } from "../types/request/project";
-
+import { ProjectListResponse } from "../types/response/project";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const githubUrl = "https://api.github.com/";
 

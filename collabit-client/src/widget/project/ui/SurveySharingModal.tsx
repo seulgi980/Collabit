@@ -4,6 +4,8 @@ import { ProjectResponse } from "@/shared/types/response/project";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
+import { X } from "lucide-react";
+
 import {
   Dialog,
   DialogClose,
@@ -14,17 +16,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
-import { Input } from "@/shared/ui/input";
-import { ProjectListItem } from "@/shared/types/model/Project";
-import { useToast } from "@/shared/hooks/use-toast";
-import ProjectListCard from "@/features/project/ui/ProjectListCard";
 
 interface SurveySharingModalProps {
   project: ProjectResponse;
+  organization: string
 }
 
-const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
+const SurveySharingModal = ({ project, organization }: SurveySharingModalProps) => {
   const { toast } = useToast();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const surveyUrl = `${apiUrl}/project/survey/${project.code}`;
@@ -49,7 +47,7 @@ const SurveySharingModal = ({ project }: SurveySharingModalProps) => {
     <Dialog>
       <DialogTrigger asChild>
         <div>
-          <ProjectListCard2 project={project} />
+          <ProjectListCard2 organization={organization} project={project} />
         </div>
       </DialogTrigger>
       <DialogPortal>
