@@ -6,11 +6,11 @@ export interface Project {
 }
 export interface ProjectInfo {
   code: number;
-  postCode: number;
+  projectCode: number;
   userCode: string;
   total: number;
   participant: number;
-  isDone: boolean;
+  done: boolean;
   createdAt: string;
   sympathy: number;
   listening: number;
@@ -19,13 +19,16 @@ export interface ProjectInfo {
   conflictResolution: number;
   leadership: number;
 }
-
 export interface Contributor {
   githubId: string;
   profileImage: string;
 }
-export interface ProjectContributor {
-  projectCode: number;
-  projectInfoCode: number;
-  githubId: string;
-}
+export type ProjectListItem = Pick<
+  Project,
+  "title" | "organization" | "organizationImage"
+> &
+  Pick<ProjectInfo, "code" | "total" | "participant" | "done"> & {
+    contributors: Contributor[];
+    isUpdated: boolean;
+  };
+export type ProjectTitle = Pick<Project, "title" | "organization">;

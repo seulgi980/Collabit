@@ -12,7 +12,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 6,
         isDone: false,
         createdAt: "2024-03-15",
-        contributor: [
+        contributors: [
           {
             githubId: "github1",
             profileImage: `https://www.gravatar.com/avatar/github1?d=identicon&f=y`,
@@ -54,7 +54,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 4,
         isDone: true,
         createdAt: "2024-02-20",
-        contributor: [
+        contributors: [
           {
             githubId: "github3",
             profileImage: `https://www.gravatar.com/avatar/github3?d=identicon&f=y`,
@@ -88,7 +88,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 2,
         isDone: true,
         createdAt: "2024-01-05",
-        contributor: [
+        contributors: [
           {
             githubId: "searchmaster",
             profileImage: `https://www.gravatar.com/avatar/searchmaster?d=identicon&f=y`,
@@ -106,7 +106,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 3,
         isDone: false,
         createdAt: "2024-03-25",
-        contributor: [
+        contributors: [
           {
             githubId: "cloudsec",
             profileImage: `https://www.gravatar.com/avatar/cloudsec?d=identicon&f=y`,
@@ -134,7 +134,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 5,
         isDone: false,
         createdAt: "2024-03-10",
-        contributor: [
+        contributors: [
           {
             githubId: "github4",
             profileImage: `https://www.gravatar.com/avatar/github4?d=identicon&f=y`,
@@ -172,7 +172,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 2,
         isDone: true,
         createdAt: "2024-02-01",
-        contributor: [
+        contributors: [
           {
             githubId: "fintech1",
             profileImage: `https://www.gravatar.com/avatar/fintech1?d=identicon&f=y`,
@@ -190,7 +190,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 3,
         isDone: false,
         createdAt: "2024-03-18",
-        contributor: [
+        contributors: [
           {
             githubId: "mobilepro",
             profileImage: `https://www.gravatar.com/avatar/mobilepro?d=identicon&f=y`,
@@ -218,7 +218,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 8,
         isDone: false,
         createdAt: "2024-03-20",
-        contributor: [
+        contributors: [
           {
             githubId: "cloudmaster",
             profileImage: `https://www.gravatar.com/avatar/cloudmaster?d=identicon&f=y`,
@@ -268,7 +268,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 5,
         isDone: true,
         createdAt: "2024-02-15",
-        contributor: [
+        contributors: [
           {
             githubId: "androidsec",
             profileImage: `https://www.gravatar.com/avatar/androidsec?d=identicon&f=y`,
@@ -302,7 +302,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 2,
         isDone: true,
         createdAt: "2024-01-15",
-        contributor: [
+        contributors: [
           {
             githubId: "chromesec",
             profileImage: `https://www.gravatar.com/avatar/chromesec?d=identicon&f=y`,
@@ -320,7 +320,7 @@ const mockProjectList: ProjectListResponse = [
         participant: 4,
         isDone: false,
         createdAt: "2024-03-22",
-        contributor: [
+        contributors: [
           {
             githubId: "aidev",
             profileImage: `https://www.gravatar.com/avatar/aidev?d=identicon&f=y`,
