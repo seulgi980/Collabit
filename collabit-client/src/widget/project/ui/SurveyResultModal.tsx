@@ -15,14 +15,18 @@ import { X } from "lucide-react";
 
 interface SurveyResultModalProps {
   project: ProjectResponse;
+  organization: string;
 }
 
-const SurveyResultModal = ({ project }: SurveyResultModalProps) => {
+const SurveyResultModal = ({
+  project,
+  organization,
+}: SurveyResultModalProps) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <div>
-          <ProjectListCard2 project={project} />
+          <ProjectListCard2 organization={organization} project={project} />
         </div>
       </DialogTrigger>
       <DialogPortal>

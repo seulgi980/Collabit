@@ -91,7 +91,10 @@ const Post = ({
         <Carousel className="w-full px-10">
           <CarouselContent>
             {preview.map((prev, index) => (
-              <CarouselItem key={index} className={"basis-1/2"}>
+              <CarouselItem
+                key={index}
+                className={preview.length > 1 ? "basis-1/2" : "basis-full"}
+              >
                 <div className="p-1">
                   <Card className="">
                     <CardContent className="relative flex h-[100px] items-center justify-center p-6 md:h-[300px]">
