@@ -37,6 +37,35 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
     }
 
+    // 닉네임 중복 체크
+    @Operation(summary = "회원가입시 닉네임 중복 체크", description = "회원가입 시 닉네임 중복체크 여부를 확인하는 API입니다.")
+    @PostMapping("/check-nickname")
+    public ResponseEntity<ApiTextResponseDTO> checkNickname(@Valid @RequestBody CheckNicknameRequestDTO checkNicknameRequestDTO) {
+        String nickname = checkNicknameRequestDTO.getNickname();
+        log.debug("checkNickname Request: {}", nickname);
+
+        if(authService.isNicknameAlreadyExists(nickname)){
+            return ResponseEntity.ok(new ApiTextResponseDTO("이미 사용중인 닉네임입니다."));
+        } else {
+            return ResponseEntity.ok(new ApiTextResponseDTO("사용가능한 닉네임입니다."));
+        }
+        
+    }
+
+    // 이메일 중복 체크
+    @Operation(summary = "회원가입시 이메일 중복 체크", description = "회원가입 시 이메일 중복체크 여부를 확인하는 API입니다.")
+    @PostMapping("/check-email")
+    public ResponseEntity<ApiTextResponseDTO> checkEmail(@Valid @RequestBody CheckEmailRequestDTO checkEmailRequestDTO) {
+        String email = checkEmailRequestDTO.getEmail();
+        log.debug("checkEmail Request: {}", email);
+
+        if(authService.isEmailAlreadyExists(email)){
+            return ResponseEntity.ok(new ApiTextResponseDTO("이미 사용중인 이메일입니다."));
+        } else {
+            return ResponseEntity.ok(new ApiTextResponseDTO("사용가능한 이메일입니다."));
+        }
+    }
+
     // 로그인
     @Operation(summary = "일반 로그인", description = "일반 사이트 자체 로그인 하는 API입니다." )
     @PostMapping("/login")
