@@ -7,5 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EmailRequestDto {
     private String email;
-    private String code;
+    private int code;
 }
