@@ -36,7 +36,7 @@ export const getGithubCollaboratorsAPI = async (
   title: string,
 ) => {
   const res = await fetch(
-    `${githubUrl}/repos/${organization}/${title}/collaborators`,
+    `${githubUrl}/repos/${organization}/${title}/contributors`,
     {
       method: "GET",
     },
