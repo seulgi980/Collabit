@@ -23,12 +23,4 @@ export interface Contributor {
   githubId: string;
   profileImage: string;
 }
-export type ProjectListItem = Pick<
-  Project,
-  "title" | "organization" | "organizationImage"
-> &
-  Pick<ProjectInfo, "code" | "total" | "participant" | "done"> & {
-    contributors: Contributor[];
-    isUpdated: boolean;
-  };
 export type ProjectTitle = Pick<Project, "title" | "organization">;
