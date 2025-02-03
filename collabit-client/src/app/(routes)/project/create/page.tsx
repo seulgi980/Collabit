@@ -1,10 +1,9 @@
 "use client";
 
-import ProjectHeader from "@/entities/project/ui/ProjectHeader";
-import ProjectInput from "@/entities/project/ui/ProjectInput";
+import ProjectHeader from "@/entities/common/ui/PageHeader";
+import ProjectInput from "@/entities/common/ui/SearchBar";
 import ProjectSelect from "@/entities/project/ui/ProjectSelect";
 import ProjectCreateCard from "@/features/project/ui/ProjectCreateCard";
-import { ProjectCreate } from "@/shared/types/model/Project";
 import { useState } from "react";
 
 export default function Page() {
@@ -16,8 +15,9 @@ export default function Page() {
   const projectCreate = [
     {
       code: 1,
+      organization: "ORG",
       title: "프로젝트 A",
-      contributor: [
+      contributors: [
         {
           code: 1,
           githubId: "id1",
@@ -34,12 +34,13 @@ export default function Page() {
           profileImage: "https://github.com/shadcn.png",
         },
       ],
-      timestamp: new Date("2024-01-28T10:00:00Z"),
+      updatedAt: new Date("2024-01-28T10:00:00Z"),
     },
     {
       code: 2,
+      organization: "ORG",
       title: "프로젝트 B",
-      contributor: [
+      contributors: [
         {
           code: 4,
           githubId: "id4",
@@ -51,12 +52,13 @@ export default function Page() {
           profileImage: "https://github.com/shadcn.png",
         },
       ],
-      timestamp: new Date("2024-12-25T14:30:00Z"),
+      updatedAt: new Date("2024-12-25T14:30:00Z"),
     },
     {
       code: 3,
+      organization: "ORG",
       title: "프로젝트 C",
-      contributor: [
+      contributors: [
         {
           code: 6,
           githubId: "id6",
@@ -78,24 +80,26 @@ export default function Page() {
           profileImage: "https://github.com/shadcn.png",
         },
       ],
-      timestamp: new Date("2025-01-20T09:15:00Z"),
+      updatedAt: new Date("2025-01-20T09:15:00Z"),
     },
     {
       code: 4,
+      organization: "ORG",
       title: "프로젝트 D",
-      contributor: [
+      contributors: [
         {
           code: 10,
           githubId: "id10",
           profileImage: "https://github.com/shadcn.png",
         },
       ],
-      timestamp: new Date("2025-01-22T16:45:00Z"),
+      updatedAt: new Date("2025-01-22T16:45:00Z"),
     },
     {
       code: 5,
+      organization: "ORG",
       title: "프로젝트 E",
-      contributor: [
+      contributors: [
         {
           code: 11,
           githubId: "id11",
@@ -112,7 +116,7 @@ export default function Page() {
           profileImage: "https://github.com/shadcn.png",
         },
       ],
-      timestamp: new Date("2025-01-18T08:00:00Z"),
+      updatedAt: new Date("2025-01-18T08:00:00Z"),
     },
   ];
 
@@ -127,7 +131,6 @@ export default function Page() {
       <ProjectHeader
         mainTitle="프로젝트 등록"
         subTitle="프로젝트를 등록하고, 동료들에게 피드백을 요청해보세요."
-        isList={false}
       />
       <div className="flex items-center justify-between gap-2">
         <ProjectSelect
@@ -136,11 +139,7 @@ export default function Page() {
           selectType={selectType}
           setSelectType={setSelectType}
         />
-        <ProjectInput
-          keyword={keyword}
-          setKeyword={setKeyword}
-          handleSearchKeyword={handleSearchKeyword}
-        />
+        <ProjectInput keyword={keyword} setKeyword={setKeyword} />
       </div>
       {projectCreate.map((project) => {
         return <ProjectCreateCard key={project.code} project={project} />;

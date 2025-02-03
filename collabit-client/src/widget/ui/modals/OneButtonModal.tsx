@@ -17,27 +17,46 @@ const OneButtonModal = ({
 }: OneButtonModalProps) => {
   const closeModal = useModalStore((state) => state.closeModal);
   return (
-    <div className="relative flex min-w-[300px] flex-col items-center justify-center gap-4 rounded-lg bg-white px-12 py-8 shadow-xl md:min-w-[400px] md:py-10">
-      <Button
-        type="button"
-        variant="ghost"
-        className="absolute right-2 top-2"
-        onClick={closeModal}
+    <>
+      <div
+        className="fixed inset-0 z-10 bg-black/50"
+        onClick={(e) => {
+          e.stopPropagation();
+          closeModal();
+        }}
+      />
+      <div
+        className="fixed left-1/2 top-1/2 z-20 min-w-[320px] -translate-x-1/2 -translate-y-1/2 transform flex-col items-center justify-center rounded-xl bg-white p-8 shadow-2xl transition-all md:min-w-[440px]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        onClick={(e) => e.stopPropagation()}
       >
-        <X />
-      </Button>
-      <div className="flex flex-col items-center justify-center gap-2 p-4">
-        <h1 className="text-lg font-bold md:text-2xl">{title}</h1>
-        <p className="text-xs text-gray-500 md:text-sm">{description}</p>
+        <Button
+          type="button"
+          variant="ghost"
+          className="absolute right-2 top-2"
+          onClick={closeModal}
+        >
+          <X />
+        </Button>
+        <div className="flex flex-col items-center justify-center gap-1 px-6">
+          <h1 id="modal-title" className="text-xl font-bold text-gray-800">
+            {title}
+          </h1>
+          <p className="text-center text-sm text-gray-600">{description}</p>
+        </div>
+        <div className="mt-8 flex w-full justify-center">
+          <Button
+            type="button"
+            className="h-11 w-32 font-medium transition-colors md:h-12 md:w-40"
+            onClick={handleButtonClick}
+          >
+            {buttonText}
+          </Button>
+        </div>
       </div>
-      <Button
-        type="button"
-        className="h-10 w-full md:h-12"
-        onClick={handleButtonClick}
-      >
-        {buttonText}
-      </Button>
-    </div>
+    </>
   );
 };
 

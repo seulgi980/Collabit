@@ -9,18 +9,39 @@ interface LoginRequest {
   password: string;
 }
 
-interface ValidateEmailRequest {
-  email: string;
-}
-
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-export const validateEmailAPI = async (body: ValidateEmailRequest) => {
+export const sendEmailCodeAPI = async (email: string) => {
+  const res = await fetch(`${apiUrl}/auth/send-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+  console.log(res);
+
+  const data = await res.json();
+
+  return data;
+};
+
+export const validateEmailCodeAPI = async ({
+  email,
+  code,
+}: {
+  email: string;
+  code: string;
+}) => {
   const res = await fetch(`${apiUrl}/auth/email-check`, {
     method: "POST",
-    body: JSON.stringify(body),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, code }),
   });
   const data = await res.json();
+
   return data;
 };
 
@@ -36,9 +57,9 @@ export const signupAPI = async (body: SignupRequest) => {
 export const logoutAPI = async () => {
   const res = await fetch(`${apiUrl}/auth/logout`, {
     method: "POST",
+    credentials: "include",
   });
-  const data = await res.json();
-  return data;
+  return res;
 };
 
 export const loginCredentialAPI = async (body: LoginRequest) => {

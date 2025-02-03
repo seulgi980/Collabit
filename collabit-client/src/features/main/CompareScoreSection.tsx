@@ -1,13 +1,17 @@
-import { Button } from "@/shared/ui/button";
+"use client";
 
-const CompareScoreSection = ({ user }: { user: { name: string } }) => {
+import { Button } from "@/shared/ui/button";
+import { useAuth } from "../auth/api/useAuth";
+
+const CompareScoreSection = () => {
+  const { userInfo } = useAuth();
   return (
     <section className="flex w-full flex-wrap items-center gap-4 border-b-2 border-gray-200 pb-10 sm:flex-nowrap md:px-14">
       <h3 className="sr-only">사용자 평균 협업 점수</h3>
       <div className="flex h-full w-full flex-col items-center justify-center gap-4 md:items-start md:gap-8">
         <span className="text-center text-2xl font-bold sm:text-3xl md:text-left">
           안녕하세요,
-          <span>{user.name}님!</span>
+          <span>{userInfo?.nickname}님!</span>
         </span>
         <span className="text-center text-sm sm:text-left sm:text-base">
           협업했던 팀원들에게 피드백을 받고, <br />

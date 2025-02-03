@@ -16,8 +16,7 @@ const useLoginCallback = () => {
         queryKey: ["auth"],
         queryFn: () => getUserInfoAPI(),
       });
-      console.log(auth);
-      if (auth.isAuthencicated) {
+      if (auth.isAuthenticated) {
         router.push("/");
       } else {
         openModal(

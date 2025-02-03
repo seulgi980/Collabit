@@ -27,7 +27,7 @@ public class EmailService {
 
     // 이메일 전송 메서드
     public void sendMail(String email){
-        String verificationCode = generateVerificationCode();
+        int verificationCode = generateVerificationCode();
         setCode(email, verificationCode);
 
         try {
@@ -47,29 +47,28 @@ public class EmailService {
     }
 
     // 인증 코드 검증
-    public String verifyCode(String email, String code) {
-        String storedCode = redisService.get(email);
-        if (storedCode != null) {
+    public String verifyCode(String email, int code) {
+        Object storedCode = redisService.get(email);
+        if (storedCode == null) {
             return "만료";
         }
 
-        if (storedCode.equals(code)) {
+        Integer IntStoredCode = (Integer) storedCode;
+        if (IntStoredCode.equals(code)) {
             redisService.delete(email); // 인증 성공 시 Redis 에서 삭제
             return "성공";
         } else {
             return "틀림";
         }
-
-
     }
 
     // 랜덤 6자리 인증 코드 생성 메서드
-    private String generateVerificationCode() {
-        return String.valueOf(new Random().nextInt(900000) + 100000);
+    private int generateVerificationCode() {
+        return new Random().nextInt(900000) + 100000;
     }
 
     // email : code redis 저장 메서드(5분)
-    private void setCode(String email,String code){
+    private void setCode(String email,int code){
         redisTemplate.opsForValue().set(email,code,300, TimeUnit.SECONDS);;
 
     }

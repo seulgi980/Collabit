@@ -1,103 +1,57 @@
 "use client";
-
-import ProjectHeader from "@/entities/project/ui/ProjectHeader";
-import ProjectInput from "@/entities/project/ui/ProjectInput";
-import { useState } from "react";
-import SurveySharingModal from "@/widget/project/ui/SurveySharingModal";
-import SurveyResultModal from "@/widget/project/ui/SurveyResultModal";
+import SearchBar from "@/entities/common/ui/SearchBar";
+import { useAuth } from "@/features/auth/api/useAuth";
+import { Button } from "@/shared/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+import ProjectList from "@/widget/project/ui/ProjectList";
+import ProjectListSkeleton from "@/widget/project/ui/ProjectListSkeleton";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 export default function Page() {
-  const [keyword, setKeyword] = useState("");
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
-  const handleSearchKeyword = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log(keyword);
-    setKeyword("");
+  const [keyword, setKeyword] = useState("");
+  const [sort, setSort] = useState("recent");
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  const handleSort = (value: string) => {
+    setSort(value);
+  };
+  const handleCreateProject = () => {
+    router.push("/project/create");
   };
 
-  const projectInfo = [
-    {
-      code: 1,
-      title: "프로젝트 A",
-      total: 5,
-      participant: 3,
-      isDone: true,
-      surveyUrl: "https://survey-link.com",
-      contributor: [
-        {
-          code: 1,
-          githubId: "id1",
-          profileImage: "https://github.com/shadcn.png",
-        },
-        {
-          code: 2,
-          githubId: "id2",
-          profileImage: "https://github.com/shadcn.png",
-        },
-        {
-          code: 3,
-          githubId: "id3",
-          profileImage: "https://github.com/shadcn.png",
-        },
-        {
-          code: 4,
-          githubId: "id4",
-          profileImage: "https://github.com/shadcn.png",
-        },
-        {
-          code: 5,
-          githubId: "id5",
-          profileImage: "https://github.com/shadcn.png",
-        },
-      ],
-    },
-    {
-      code: 2,
-      title: "프로젝트 B",
-      total: 3,
-      participant: 1,
-      isDone: false,
-      surveyUrl: "https://survey-link.com",
-      contributor: [
-        {
-          code: 1,
-          githubId: "id1",
-          profileImage: "https://github.com/shadcn.png",
-        },
-        {
-          code: 2,
-          githubId: "id2",
-          profileImage: "https://github.com/shadcn.png",
-        },
-        {
-          code: 3,
-          githubId: "id3",
-          profileImage: "https://github.com/shadcn.png",
-        },
-      ],
-    },
-  ];
   return (
-    <div className="mx-auto flex w-full flex-col justify-center gap-5 py-10 md:w-[540px]">
-      <ProjectHeader
-        mainTitle="나의 프로젝트"
-        subTitle="동료들에게 피드백 받은 현황을 확인할 수 있어요."
-        isList={true}
-      />
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <ProjectInput
-          keyword={keyword}
-          setKeyword={setKeyword}
-          handleSearchKeyword={handleSearchKeyword}
-        />
+        <SearchBar keyword={keyword} setKeyword={setKeyword} />
+        <Select defaultValue={sort} onValueChange={handleSort}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="정렬" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="recent">최신순</SelectItem>
+            <SelectItem value="participantRatio">참여율 높은순</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button onClick={handleCreateProject}>프로젝트 생성</Button>
       </div>
-      {projectInfo.map((project) =>
-        project.isDone ? (
-          <SurveyResultModal key={project.code} project={project} />
-        ) : (
-          <SurveySharingModal key={project.code} project={project} />
-        ),
-      )}
+      <Suspense fallback={<ProjectListSkeleton />}>
+        <ProjectList keyword={keyword} sort={sort} />
+      </Suspense>
     </div>
   );
 }

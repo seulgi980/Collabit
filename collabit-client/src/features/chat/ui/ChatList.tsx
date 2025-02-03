@@ -11,7 +11,7 @@ export default function ChatList({
 }) {
   return (
     <div className="flex flex-col items-center gap-3 px-2 md:py-4">
-      <div className="flex w-full justify-evenly py-3">
+      <div className="flex w-full justify-evenly border-b border-b-border pb-[14px] pt-3">
         <TabNavButton href="/chat">일반</TabNavButton>
         <TabNavButton href="/feedback">프로젝트</TabNavButton>
       </div>

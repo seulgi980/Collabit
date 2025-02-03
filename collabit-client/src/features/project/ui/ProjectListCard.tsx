@@ -1,5 +1,4 @@
 import ProjectCotnributor from "@/entities/project/ui/ProjectContributor";
-import { ProjectInfo } from "@/shared/types/model/Project";
 import { Button } from "@/shared/ui/button";
 import { Card, CardTitle } from "@/shared/ui/card";
 import { Progress } from "@/shared/ui/progress";
@@ -10,52 +9,26 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { DeleteIcon, EllipsisVertical, GithubIcon } from "lucide-react";
-import TwoButtonModal from "@/widget/ui/modals/TwoButtonModal";
-import useModalStore from "@/shared/lib/stores/modalStore";
+import { useProjectList } from "../api/useProjectList";
+import { ProjectListItem } from "@/shared/types/model/Project";
 
 interface ProjectListCardProps {
-  project: ProjectInfo;
+  project: ProjectListItem;
   onClick?: () => void;
 }
 
 const ProjectListCard = ({ project }: ProjectListCardProps) => {
-  const contributorsCount = project.contributor.length;
+  const { handleFinishSurvey, handleRemoveProject } = useProjectList();
+
+  const contributorsCount = project.contributors.length;
   const participantsRatio = Math.floor(
     (project.participant * 100) / contributorsCount,
   );
 
-  const { openModal } = useModalStore();
-
-  const handleRemoveProject = (code: number) => {
-    console.log(code);
-    openModal(
-      <TwoButtonModal
-        title="설문을 삭제하시겠습니까?"
-        description="이 프로젝트의 설문에 더이상 참여할 수 없습니다."
-        confirmText="설문 삭제"
-        cancelText="취소"
-        handleConfirm={() => handleFinishSurvey(project.code)}
-      />,
-    );
-  };
-
-  const handleFinishSurvey = (code: number) => {
-    console.log(code);
-    openModal(
-      <TwoButtonModal
-        title="설문을 종료하시겠습니까?"
-        description="이 프로젝트의 설문에 더이상 참여할 수 없습니다."
-        confirmText="설문 종료"
-        cancelText="취소"
-        handleConfirm={() => handleFinishSurvey(project.code)}
-      />,
-    );
-  };
-
   return (
     <Card className="flex cursor-pointer flex-col items-center justify-between gap-4 bg-violet-50 px-4 py-6 drop-shadow-lg">
       <div className="flex w-full items-center justify-between gap-10">
-        <ProjectCotnributor contributor={project.contributor} />
+        <ProjectCotnributor contributor={project.contributors} />
         <DropdownMenu>
           <DropdownMenuTrigger
             className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-300"
@@ -107,8 +80,9 @@ const ProjectListCard = ({ project }: ProjectListCardProps) => {
       </div>
       <div className="items-left flex w-full flex-col justify-center gap-2">
         <span className="text-sm">
-          <span className="font-semibold">{project.participant}</span>명 참여 /{" "}
-          <span className="font-semibold">{participantsRatio}</span>%
+          <span className="font-semibold">{project.contributors.length}</span>명
+          중 <span className="font-semibold">{project.participant}</span>명 참여
+          / <span className="font-semibold">{participantsRatio}</span>%
         </span>
         <Progress
           className="h-1 bg-white [&>div]:rounded-full [&>div]:bg-black [&>div]:transition-all"
