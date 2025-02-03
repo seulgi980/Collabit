@@ -5,7 +5,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class EmailRequestDto {
+public class EmailSendRequestDTO {
     private String email;
-    private String code;
 }

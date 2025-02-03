@@ -18,7 +18,7 @@ const CommunityLayout = ({
       <div className="md:hidden">{isPostPage ? post : list}</div>
 
       {/* 데스크톱 레이아웃 */}
-      <div className="hidden w-full max-w-5xl items-center py-5 md:flex md:flex-col md:py-10">
+      <div className="mx-auto hidden w-full max-w-5xl items-center py-5 md:flex md:flex-col md:py-10">
         {post}
         {isPostPage ? null : list}
       </div>

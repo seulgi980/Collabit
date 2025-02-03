@@ -19,14 +19,16 @@ import {
 
 interface SurveySharingModalProps {
   project: ProjectResponse;
-  organization: string
+  organization: string;
 }
 
-const SurveySharingModal = ({ project, organization }: SurveySharingModalProps) => {
+const SurveySharingModal = ({
+  project,
+  organization,
+}: SurveySharingModalProps) => {
   const { toast } = useToast();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const surveyUrl = `${apiUrl}/project/survey/${project.code}`;
-
+  const DEPLOY_URL = process.env.NEXT_PUBLIC_DEPLOY_URL;
+  const surveyUrl = `${DEPLOY_URL}/feedback/${project.code}`;
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(surveyUrl);
@@ -34,12 +36,11 @@ const SurveySharingModal = ({ project, organization }: SurveySharingModalProps) 
       toast({
         description: "링크가 복사되었습니다.",
       });
-    } catch (err) {
+    } catch {
       toast({
         variant: "destructive",
         description: "링크 복사에 실패했습니다.",
       });
-      console.log(err);
     }
   };
 

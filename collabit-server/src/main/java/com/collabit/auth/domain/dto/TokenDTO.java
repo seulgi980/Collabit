@@ -7,7 +7,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class TokenDto {
+public class TokenDTO {
     private String grantType;             // 토큰 유형 (Bearer)
     private String accessToken;           // Access Token
     private Long accessTokenExpiresIn;    // Access Token 만료 시간
