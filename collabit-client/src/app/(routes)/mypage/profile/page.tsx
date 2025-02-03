@@ -5,13 +5,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const ProfilePage = () => {
-  const { userInfo } = useAuth();
+  const { userInfo, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   const handleExit = () => {
     console.log("회원탈퇴");
   };
+
   return (
     <div className="flex w-full max-w-[400px] flex-col">
       <div className="border-b py-4">

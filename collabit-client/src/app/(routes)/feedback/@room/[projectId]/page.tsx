@@ -3,10 +3,10 @@ import ChattingRoom from "@/features/chat/ui/ChattingRoom";
 const ChatRoomPage = async ({
   params,
 }: {
-  params: Promise<{ feedbackId: number }>;
+  params: Promise<{ projectId: number }>;
 }) => {
-  const { feedbackId } = await params;
-  return <ChattingRoom id={feedbackId} />;
+  const { projectId } = await params;
+  return <ChattingRoom id={projectId} />;
 };
 
 export default ChatRoomPage;

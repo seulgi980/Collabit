@@ -20,9 +20,9 @@ export const useAuth = () => {
       await logoutAPI();
       queryClient.setQueryData(["auth"], {
         userInfo: undefined,
-        isAuthencicated: false,
+        isAuthenticated: false,
       });
-      router.push("/");
+      router.refresh();
     } catch (error) {
       console.error(error);
     }
@@ -30,7 +30,7 @@ export const useAuth = () => {
 
   return {
     userInfo: data?.userInfo,
-    isAuthencicated: data?.isAuthencicated,
+    isAuthenticated: data?.isAuthenticated,
     isLoading,
     isError,
     logout,
