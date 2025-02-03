@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  getProjectListAPI,
-  removeProjectAPI,
-  updateProjectDoneAPI,
-} from "@/shared/api/project";
+import { removeProjectAPI, updateProjectDoneAPI } from "@/shared/api/project";
 import useModalStore from "@/shared/lib/stores/modalStore";
 import TwoButtonModal from "@/widget/ui/modals/TwoButtonModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 
 export const useProjectList = () => {
   const queryClient = useQueryClient();
@@ -17,7 +12,7 @@ export const useProjectList = () => {
   const removeProjectMutation = useMutation({
     mutationFn: removeProjectAPI,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project"] });
+      queryClient.invalidateQueries({ queryKey: ["projectList"] });
       closeModal();
     },
   });
@@ -25,7 +20,7 @@ export const useProjectList = () => {
   const finishSurveyMutation = useMutation({
     mutationFn: updateProjectDoneAPI,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["project"] });
+      queryClient.invalidateQueries({ queryKey: ["projectList"] });
       closeModal();
     },
   });
@@ -38,7 +33,7 @@ export const useProjectList = () => {
         confirmText="삭제"
         cancelText="취소"
         handleConfirm={async () => {
-          await removeProjectMutation.mutateAsync({ code });
+          await removeProjectMutation.mutateAsync(code);
         }}
       />,
     );
