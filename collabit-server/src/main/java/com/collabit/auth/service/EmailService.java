@@ -49,23 +49,17 @@ public class EmailService {
     // 인증 코드 검증
     public String verifyCode(String email, int code) {
         Object storedCode = redisService.get(email);
-        log.debug("인증코드: {}", storedCode);
-
         if (storedCode == null) {
-            log.debug("인증코드: 만료");
             return "만료";
         }
 
-        Integer intStoredCode = (Integer) storedCode;
-        if (storedCode.equals(code)) {
+        Integer IntStoredCode = (Integer) storedCode;
+        if (IntStoredCode.equals(code)) {
             redisService.delete(email); // 인증 성공 시 Redis 에서 삭제
-            log.debug("인증코드: 성공");
             return "성공";
         } else {
-            log.debug("인증코드: 틀림");
             return "틀림";
         }
-
     }
 
     // 랜덤 6자리 인증 코드 생성 메서드
@@ -75,7 +69,7 @@ public class EmailService {
 
     // email : code redis 저장 메서드(5분)
     private void setCode(String email,int code){
-        redisTemplate.opsForValue().set(email,code,300, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(email,code,300, TimeUnit.SECONDS);;
 
     }
 
