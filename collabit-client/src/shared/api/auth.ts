@@ -76,3 +76,12 @@ export const linkGithubAccountAPI = async () => {
   const data = await res.json();
   return data;
 };
+export const checkNicknameAPI = async (nickname: string) => {
+  const res = await fetch(`${apiUrl}/auth/check-nickname`, {
+    method: "POST",
+    body: JSON.stringify({ nickname }),
+  });
+  const data = await res.json();
+  console.log(data);
+  return data;
+};

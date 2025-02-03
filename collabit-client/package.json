@@ -30,6 +30,7 @@
     "@shadcn/ui": "^0.0.4",
     "@tanstack/react-query": "^5.64.2",
     "@tanstack/react-query-devtools": "^5.64.2",
+    "chart.js": "^4.4.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "collabit-client": "file:",
@@ -45,6 +46,8 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "vitest": "^3.0.4",
+    "zingchart": "^2.9.16-1",
+    "zingchart-react": "^3.2.0",
     "zod": "^3.24.1",
     "zustand": "^5.0.3"
   },
