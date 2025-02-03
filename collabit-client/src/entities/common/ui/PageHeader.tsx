@@ -28,8 +28,8 @@ const PageHeader = ({
       )}
 
       <div className="flex flex-col items-center justify-center gap-1">
-        <h1 className="text-3xl font-bold">{mainTitle}</h1>
-        <h2 className="text-lg text-gray-400">{subTitle}</h2>
+        <h1 className="text-center text-3xl font-bold">{mainTitle}</h1>
+        <h2 className="text-center text-lg text-gray-400">{subTitle}</h2>
       </div>
       {/* <Button
         variant="ghost"
