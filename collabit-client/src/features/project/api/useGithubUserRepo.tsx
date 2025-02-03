@@ -1,4 +1,4 @@
-import { getGithubUserReposAPI } from "@/shared/api/project";
+import { getGithubUserReposAPI } from "@/shared/api/github";
 import { GithubRepo, formatGithubRepo } from "@/shared/types/response/github";
 import { useQuery } from "@tanstack/react-query";
 

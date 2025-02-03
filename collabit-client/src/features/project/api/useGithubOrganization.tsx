@@ -1,4 +1,4 @@
-import { getGithubUserOrgsAPI } from "@/shared/api/project";
+import { getGithubUserOrgsAPI } from "@/shared/api/github";
 import { GithubOrg } from "@/shared/types/response/github";
 import { useQuery } from "@tanstack/react-query";
 

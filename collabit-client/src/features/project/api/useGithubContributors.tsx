@@ -1,4 +1,4 @@
-import { getGithubCollaboratorsAPI } from "@/shared/api/project";
+import { getGithubCollaboratorsAPI } from "@/shared/api/github";
 import { GithubUser } from "@/shared/types/response/github";
 import { useQuery } from "@tanstack/react-query";
 
@@ -7,14 +7,14 @@ interface Contributor {
   profileImage: string;
 }
 
-export const useGithubContributors = (org: string, title: string) => {
+export const useGithubContributors = (organization: string, title: string) => {
   const { data: contributors, isLoading } = useQuery({
-    queryKey: ["githubContributors", org, title],
+    queryKey: ["githubContributors", organization, title],
     queryFn: () =>
-      org && title
-        ? getGithubCollaboratorsAPI(org, title)
+      organization && title
+        ? getGithubCollaboratorsAPI(organization, title)
         : Promise.resolve([]),
-    enabled: !!org && !!title,
+    enabled: !!organization && !!title,
     select: (data: GithubUser[]): Contributor[] =>
       data.map((user) => ({
         githubId: user.login,
