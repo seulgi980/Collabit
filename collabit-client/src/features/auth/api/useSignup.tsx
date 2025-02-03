@@ -1,5 +1,5 @@
 import SignupSchema from "@/features/auth/types/SignupSchema";
-import { sendEmailCodeAPI } from "@/shared/api/auth";
+import { checkNicknameAPI, sendEmailCodeAPI } from "@/shared/api/auth";
 import { useToast } from "@/shared/hooks/use-toast";
 import useModalStore from "@/shared/lib/stores/modalStore";
 import OneButtonModal from "@/widget/ui/modals/OneButtonModal";
@@ -146,6 +146,8 @@ const useSignup = () => {
     }
 
     // 닉네임 중복 API 호출
+    const isNicknameAvailable = await checkNicknameAPI(nicknameValue);
+    console.log(isNicknameAvailable);
 
     // 닉네임 중복 확인 성공 시
     openModal(
