@@ -7,5 +7,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EmailVerifyRequestDTO {
     private String email;
-    private String code;
+    private int code;
 }

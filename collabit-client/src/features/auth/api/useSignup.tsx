@@ -1,4 +1,5 @@
 import SignupSchema from "@/features/auth/types/SignupSchema";
+import { sendEmailCodeAPI } from "@/shared/api/auth";
 import { useToast } from "@/shared/hooks/use-toast";
 import useModalStore from "@/shared/lib/stores/modalStore";
 import OneButtonModal from "@/widget/ui/modals/OneButtonModal";
@@ -45,20 +46,22 @@ const useSignup = () => {
     }
 
     // Todo : 인증번호 발송 API 호출
-
-    // 인증번호 발송 성공 시
-    toast({
-      title: "인증번호 발송",
-      description: "인증번호는 5분 후 만료됩니다.",
-    });
-    setStep(2);
-
-    // 인증번호 발송 실패 시
-    toast({
-      title: "인증번호 발송 실패",
-      description: "인증번호 발송에 실패했습니다.",
-      variant: "destructive",
-    });
+    try {
+      await sendEmailCodeAPI(emailValue);
+      toast({
+        title: "인증번호 발송",
+        description: "인증번호는 5분 후 만료됩니다.",
+      });
+      setStep(2);
+    } catch (error) {
+      toast({
+        title: "인증번호 발송 실패",
+        description: (error as Error).message,
+        // description: "인증번호 발송에 실패했습니다.",
+        variant: "destructive",
+      });
+      return;
+    }
   };
 
   // 2단계 인증번호 검증 함수
