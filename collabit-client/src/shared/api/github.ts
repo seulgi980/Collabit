@@ -11,11 +11,24 @@ const githubHeaders = {
   "X-GitHub-Api-Version": "2022-11-28",
 };
 
-export const getGithubUserReposAPI = async (githubId: string) => {
-  const res = await fetch(`${githubUrl}/users/${githubId}/repos`, {
-    method: "GET",
-    headers: githubHeaders,
-  });
+export const getGithubUserReposAPI = async ({
+  keyword,
+  direction = "asc",
+}: {
+  keyword: string | null;
+  direction?: "asc" | "desc";
+}) => {
+  if (!keyword) {
+    return null;
+  }
+
+  const res = await fetch(
+    `${githubUrl}/users/${keyword}/repos?sort=updated&direction=${direction}`,
+    {
+      method: "GET",
+      headers: githubHeaders,
+    },
+  );
 
   if (!res.ok) {
     throw new Error(`GitHub API Error: ${res.status}`);
@@ -71,4 +84,23 @@ export const getGithubCollaboratorsAPI = async (
 
   const data = await res.json();
   return data;
+};
+
+export const getGithubRepoDetailAPI = async (
+  keyword: string | null,
+  title: string | null,
+) => {
+  if (!keyword || !title) {
+    return null;
+  }
+
+  const res = await fetch(`${githubUrl}/repos/${keyword}/${title}`, {
+    method: "GET",
+    headers: githubHeaders,
+  });
+
+  if (!res.ok) {
+    throw new Error(`GitHub API Error: ${res.status}`);
+  }
+  return res.json();
 };

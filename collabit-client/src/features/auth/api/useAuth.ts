@@ -10,8 +10,8 @@ export const useAuth = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["auth"],
     queryFn: getUserInfoAPI,
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 60,
+    staleTime: 1000 * 60 * 60,
+    gcTime: 1000 * 60 * 60 * 12,
     retry: false,
   });
 

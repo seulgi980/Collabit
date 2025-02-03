@@ -5,7 +5,7 @@ import { ArrowLeftIcon } from "lucide-react";
 interface PageHeaderProps {
   mainTitle: string;
   subTitle: string;
-  handleBack?: () => void;
+  handleBack?: () => void | null;
   rightButton?: React.ReactNode;
 }
 
@@ -23,13 +23,17 @@ const PageHeader = ({
           className="absolute left-0"
           onClick={handleBack}
         >
-          <ArrowLeftIcon style={{ width: "24px", height: "24px" }} />
+          <ArrowLeftIcon style={{ width: "20px", height: "20px" }} />
         </Button>
       )}
 
       <div className="flex flex-col items-center justify-center gap-1">
-        <h1 className="text-center text-3xl font-bold">{mainTitle}</h1>
-        <h2 className="text-center text-lg text-gray-400">{subTitle}</h2>
+        <h1 className="text-center text-lg font-bold md:text-2xl">
+          {mainTitle}
+        </h1>
+        <h2 className="md:text-md px-12 text-center text-sm text-gray-400">
+          {subTitle}
+        </h2>
       </div>
       {/* <Button
         variant="ghost"
