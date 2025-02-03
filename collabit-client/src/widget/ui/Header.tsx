@@ -15,7 +15,7 @@ const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [hasNewChat] = useState(true);
-  const { userInfo, isAuthencicated, logout } = useAuth();
+  const { userInfo, isAuthenticated, logout } = useAuth();
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/feedback/") && pathname !== "/feedback");
@@ -44,7 +44,7 @@ const Header = () => {
       {isMobile ? (
         <>
           <HeaderMobile
-            isLogin={isAuthencicated ?? false}
+            isLogin={isAuthenticated ?? false}
             handleToLogin={handleToLogin}
             handleLogout={handleLogout}
             handleToMyPage={handleToMyPage}
@@ -58,7 +58,7 @@ const Header = () => {
         </>
       ) : (
         <HeaderDesktop
-          isLogin={isAuthencicated ?? false}
+          isLogin={isAuthenticated ?? false}
           handleToLogin={handleToLogin}
           handleLogout={handleLogout}
           handleToMyPage={handleToMyPage}

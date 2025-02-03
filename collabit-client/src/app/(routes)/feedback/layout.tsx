@@ -1,6 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { useAuth } from "@/features/auth/api/useAuth";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const ChatLayout = ({
   list,
@@ -9,10 +11,20 @@ const ChatLayout = ({
   list: React.ReactNode;
   room: React.ReactNode;
 }) => {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
   const pathname = usePathname();
+
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/feedback/") && pathname !== "/feedback");
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
+
   return (
     <>
       {/* 모바일 레이아웃 */}

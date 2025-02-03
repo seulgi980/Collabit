@@ -1,5 +1,6 @@
 "use client";
 import SearchBar from "@/entities/common/ui/SearchBar";
+import { useAuth } from "@/features/auth/api/useAuth";
 import { Button } from "@/shared/ui/button";
 import {
   Select,
@@ -11,12 +12,20 @@ import {
 import ProjectList from "@/widget/project/ui/ProjectList";
 import ProjectListSkeleton from "@/widget/project/ui/ProjectListSkeleton";
 import { useRouter } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 export default function Page() {
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+
   const [keyword, setKeyword] = useState("");
   const [sort, setSort] = useState("recent");
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   const handleSort = (value: string) => {
     setSort(value);
@@ -35,7 +44,7 @@ export default function Page() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="recent">최신순</SelectItem>
-            <SelectItem value="participantRatio">참여자 비율</SelectItem>
+            <SelectItem value="participantRatio">참여율 높은순</SelectItem>
           </SelectContent>
         </Select>
         <Button onClick={handleCreateProject}>프로젝트 생성</Button>

@@ -28,13 +28,13 @@ export const getUserInfoAPI = async (): Promise<UserInfoResponse> => {
     });
 
     if (!res.ok) {
-      return { userInfo: undefined, isAuthencicated: false };
+      return { userInfo: undefined, isAuthenticated: false };
     }
     const data = await res.json();
-    return { userInfo: data, isAuthencicated: true };
+    return { userInfo: data, isAuthenticated: true };
   } catch (error) {
     console.error(error);
-    return { userInfo: undefined, isAuthencicated: false };
+    return { userInfo: undefined, isAuthenticated: false };
   }
 };
 
