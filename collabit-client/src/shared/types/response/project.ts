@@ -12,26 +12,22 @@ type ProjectInfoResponse = Pick<
   Pick<Project, "title"> & {
     participationRate: number;
   };
+
+export type Organization = Pick<Project, "organization" | "organizationImage">;
+
 export type ProjectResponse = ProjectInfoResponse & {
   contributors: Contributor[];
 };
-export type ProjectListResponse = {
-  organization: Project["organization"];
-  organizationImage: Project["organizationImage"];
-  projects: ProjectResponse[];
-}[];
+
+export type ProjectListResponse = Organization &
+  {
+    projects: ProjectResponse[];
+  }[];
+
 export type ProjectUpdateCheckResponse = {
   isUpdated: boolean;
 };
-export type GithubOrgResponse = {
-  login: string;
-  avatar_url: string;
-};
 
-export type GithubRepoResponse = Pick<Project, "organization">;
-export type GithubCollaboratorResponse = {
-  contributors: Contributor[];
-};
 export type ProjectAddedResponse = ProjectTitle & {
   isAdded: boolean;
   contributors: Contributor[];
