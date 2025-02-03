@@ -49,7 +49,7 @@ public class EmailService {
     // 인증 코드 검증
     public String verifyCode(String email, String code) {
         String storedCode = redisService.get(email);
-        if (storedCode != null) {
+        if (storedCode == null) {
             return "만료";
         }
 

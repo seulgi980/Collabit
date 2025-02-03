@@ -16,7 +16,6 @@ const useLoginCallback = () => {
         queryKey: ["auth"],
         queryFn: () => getUserInfoAPI(),
       });
-      console.log(auth);
       if (auth.isAuthencicated) {
         router.push("/");
       } else {
