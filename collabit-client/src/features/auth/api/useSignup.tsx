@@ -1,5 +1,6 @@
 import SignupSchema from "@/features/auth/types/SignupSchema";
 import {
+  checkEmailAPI,
   checkNicknameAPI,
   sendEmailCodeAPI,
   signupAPI,
@@ -53,6 +54,14 @@ const useSignup = () => {
 
     setIsLoading(true);
     // Todo : 인증번호 발송 API 호출
+    try {
+      await checkEmailAPI(emailValue);
+    } catch {
+      toast({
+        title: "이미 가입된 이메일 입니다.",
+        variant: "destructive",
+      });
+    }
     try {
       await sendEmailCodeAPI(emailValue);
       toast({
@@ -188,7 +197,6 @@ const useSignup = () => {
     } finally {
       setIsLoading(false);
     }
-
 
     // 닉네임 중복 확인 성공 시
     openModal(

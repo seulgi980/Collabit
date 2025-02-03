@@ -103,7 +103,6 @@ export const linkGithubAccountAPI = async () => {
   return data;
 };
 
-
 export const checkNicknameAPI = async (nickname: string) => {
   const res = await fetch(`${apiUrl}/auth/check-nickname`, {
     method: "POST",
@@ -114,10 +113,27 @@ export const checkNicknameAPI = async (nickname: string) => {
   });
 
   const data = await res.json();
+  console.log(res);
 
   if (!res.ok) {
     throw new Error(data.message || "닉네임 중복 확인에 실패했습니다.");
   }
+
+  return data;
+};
+
+export const checkEmailAPI = async (email: string) => {
+  const res = await fetch(`${apiUrl}/auth/check-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) {
+    throw new Error("이미 가입된 이메일 입니다.");
+  }
+  const data = await res.json();
 
   return data;
 };
