@@ -11,7 +11,7 @@ const ProjectContributor = ({
   contributor,
   size = "md",
 }: ProjectContributorProps) => {
-  const contributorCount = contributor.length;
+  const contributorCount = contributor?.length;
   const avatarSize = size === "sm" ? "h-6 w-6" : "h-10 w-10";
   const countSize = size === "sm" ? "text-xs" : "text-sm";
   const margin = size === "sm" ? "ml-[-10px]" : "ml-[-15px]";
