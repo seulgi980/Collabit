@@ -67,7 +67,7 @@ public class AuthController {
     @PostMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestBody EmailRequestDto emailRequestDto) {
         String email = emailRequestDto.getEmail();
-        String code = emailRequestDto.getCode();
+        int code = emailRequestDto.getCode();
 
         String result = emailService.verifyCode(email, code);
         switch (result) {
