@@ -19,10 +19,9 @@ export type ProjectResponse = ProjectInfoResponse & {
   contributors: Contributor[];
 };
 
-export type ProjectListResponse = Organization &
-  {
-    projects: ProjectResponse[];
-  }[];
+export type ProjectListResponse = (Organization & {
+  projects: ProjectResponse[];
+})[];
 
 export type ProjectUpdateCheckResponse = {
   isUpdated: boolean;

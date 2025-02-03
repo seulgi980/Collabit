@@ -1,4 +1,4 @@
-import { Contributor, Project, ProjectInfo } from "../model/Project";
+import { Contributor, Project } from "../model/Project";
 
 export type ProjectCreateRequest = Pick<
   Project,
@@ -6,5 +6,3 @@ export type ProjectCreateRequest = Pick<
 > & {
   contributors: Contributor[];
 };
-export type ProjectRemoveRequest = Pick<ProjectInfo, "code">;
-export type ProjectFinishRequest = Pick<ProjectInfo, "code">;
