@@ -1,3 +1,5 @@
+"use client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -5,37 +7,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { cn } from "@/lib/utils";
+import { Organization } from "@/shared/types/response/project";
 
 interface ProjectSelectProps {
-  nickname: string;
-  organizations: Array<string>;
-  selectType: string;
-  setSelectType: (selectType: string) => void;
+  githubId: string;
+  organizations?: Organization[];
+  organization: string;
+  isLoading: boolean;
+  onOrganizationChange: (value: string) => void;
+  className?: string;
 }
 
-const ProjectSelect = ({
-  nickname,
+export default function ProjectSelect({
+  githubId,
   organizations,
-  selectType,
-  setSelectType,
-}: ProjectSelectProps) => {
+  organization,
+  isLoading,
+  onOrganizationChange,
+  className,
+}: ProjectSelectProps) {
   return (
-    <div>
-      <Select onValueChange={setSelectType}>
-        <SelectTrigger className="w-[120px] py-4">
-          <SelectValue placeholder="select" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value={nickname}>{nickname}</SelectItem>
-          {organizations.map((organization, index) => (
-            <SelectItem key={index} value={organization}>
-              {organization}
+    <Select defaultValue={organization} onValueChange={onOrganizationChange}>
+      <SelectTrigger className={cn("w-full", className)}>
+        <SelectValue placeholder="조직" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={githubId}>
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={`https://github.com/${githubId}.png`} />
+              <AvatarFallback>{githubId.slice(0, 2)}</AvatarFallback>
+            </Avatar>
+            {githubId}
+          </div>
+        </SelectItem>
+        {isLoading ? (
+          <SelectItem value="loading" disabled>
+            로딩 중...
+          </SelectItem>
+        ) : (
+          organizations?.map((org) => (
+            <SelectItem key={org.organization} value={org.organization}>
+              <div className="flex items-center gap-2">
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={org.organizationImage} />
+                  <AvatarFallback>
+                    {org.organization.slice(0, 2)}
+                  </AvatarFallback>
+                </Avatar>
+                {org.organization}
+              </div>
             </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+          ))
+        )}
+      </SelectContent>
+    </Select>
   );
-};
-
-export default ProjectSelect;
+}
