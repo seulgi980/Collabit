@@ -1,6 +1,6 @@
 package com.collabit.oauth.handler;
 
-import com.collabit.auth.domain.dto.TokenDto;
+import com.collabit.auth.domain.dto.TokenDTO;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.oauth.domain.enums.OAuth2Status;
 import com.collabit.oauth.service.OAuth2Service;
@@ -45,7 +45,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     // 인증 정보로부터 토큰을 생성하여 쿠키에 저장
     private void addAuthTokens(HttpServletResponse response, Authentication authentication) {
-        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+        TokenDTO tokenDto = tokenProvider.generateTokenDto(authentication);
 
         addCookie(response, "accessToken", tokenDto.getAccessToken(),
                 tokenProvider.getAccessTokenExpireTime() / 1000);
