@@ -30,4 +30,6 @@ public interface ProjectContributorRepository extends JpaRepository<ProjectContr
     void deleteByProjectCode(int code);
 
     void deleteByProjectInfoCode(int code);
+
+    List<ProjectContributor> findByIdGithubId(String githubId);
 }
