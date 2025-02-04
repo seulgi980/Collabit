@@ -1,5 +1,6 @@
 package com.collabit.survey.service;
 
+import com.collabit.global.security.SecurityUtil;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.survey.domain.dto.SurveyQuestionResponseDTO;
 import com.collabit.survey.domain.entity.SurveyQuestion;
@@ -7,7 +8,6 @@ import com.collabit.survey.domain.entity.SurveyResponse;
 import com.collabit.survey.repository.SurveyProjectInfoRepository;
 import com.collabit.survey.repository.SurveyQuestionRepository;
 import com.collabit.survey.repository.SurveyResponseRepository;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -30,11 +29,8 @@ public class SurveyService {
 
     // 특정 userCode 유저 -> 특정 projectInfoCode 설문 참여 가능 여부 확인
     public boolean canUserEvaluate(int projectInfoCode, HttpServletRequest request) {
-        // request 의 cookie 에서 access token 추출
-        String accessToken = extractToken(request, "accessToken");
-
-        // token 에서 userCode 추출
-        String userCode = tokenProvider.parseClaims(accessToken).getSubject();
+        // userCode 추출
+        String userCode = SecurityUtil.getCurrentUserCode();
 
         // userCode 유저가 projectInfoCode 설문에 참여했는지 확인
         List<SurveyResponse> existingResponses = surveyResponseRepository.findByProjectInfoCodeAndUserCode(
@@ -60,13 +56,8 @@ public class SurveyService {
 
     // 객관식 설문 결과 저장하기
     public SurveyResponse saveResponse(int projectInfoCode, List<Integer> scores, HttpServletRequest request) {
-        // request 의 cookie 에서 access token 추출
-        String accessToken = extractToken(request, "accessToken");
-        log.debug("accessToken: {}", accessToken);
-        // token 에서 userCode 추출
-
-        String userCode = tokenProvider.parseClaims(accessToken).getSubject();
-        log.debug("userCode: {}", userCode);
+        // userCode 추출
+        String userCode = SecurityUtil.getCurrentUserCode();
 
         SurveyResponse surveyResponse = SurveyResponse.builder()
                 .projectInfoCode(projectInfoCode)
@@ -91,17 +82,6 @@ public class SurveyService {
         surveyProjectInfoRepository.updateSurveyScores(projectInfoCode, sympathy, listening, expression, problemSolving, conflictResolution, leadership);
 
         return surveyResponseRepository.save(surveyResponse);
-    }
-
-    // cookie에서 특정 token 추출 메서드
-    private String extractToken(HttpServletRequest request, String tokenName) {
-        if(request.getCookies() == null) return null;
-
-        return Arrays.stream(request.getCookies())
-                .filter(cookie -> tokenName.equals(cookie.getName()))
-                .map(Cookie::getValue)
-                .findFirst()
-                .orElse(null);
     }
 
 }
