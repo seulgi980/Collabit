@@ -17,9 +17,13 @@ import com.collabit.user.domain.entity.User;
 import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,12 +36,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SurveyService {
     private final SurveyQuestionRepository surveyQuestionRepository;
-    private final SurveyEssayRepository surveyEssayRepository;
     private final SurveyMultipleRepository surveyMultipleRepository;
     private final ProjectInfoRepository projectInfoRepository;
     private final ProjectContributorRepository projectContributorRepository;
     private final UserRepository userRepository;
     private final ObjectMapper objectMapper;
+    private final MongoTemplate mongoTemplate;
 
     // 유저의 설문 리스트 가져오기
     public List<SurveyListResponseDTO> getSurveyList(String userCode) {
@@ -59,10 +63,9 @@ public class SurveyService {
                 LocalDateTime updatedAt = projectInfo.getCreatedAt();
 
                 //주관식
-                SurveyEssay surveyEssays = surveyEssayRepository.findByProjectInfoCodeAndUserCode(projectInfo.getCode(), userCode);
+                SurveyEssay surveyEssays = getEssay(userCode, projectInfo.getCode());
                 //객관식
-                SurveyMultiple surveyMultiples = surveyMultipleRepository.findByProjectInfoCodeAndUserCode(
-                        projectInfo.getCode(), userCode);
+                SurveyMultiple surveyMultiples = getMultiple(userCode, projectInfo.getCode());
 
                 //둘 다 참여한 경우
                 if (surveyEssays != null) {
@@ -135,26 +138,43 @@ public class SurveyService {
 
     // 객관식 설문 답변 조회하기
     public SurveyMultipleResponseDTO getMultipleResponse(String userCode, int projectInfoCode) {
-        SurveyMultiple multiple = surveyMultipleRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
+        SurveyMultiple multiple = getMultiple(userCode, projectInfoCode);
         if (multiple == null) throw new SurveyNotFinishedException();
         return SurveyMultipleResponseDTO.builder().scores(multiple.getScores()).submittedAt(multiple.getSubmittedAt()).build();
     }
 
     //주관식 설문 답변 조회하기
     public SurveyEssayResponseDTO getEssayResponse(String userCode, int projectInfoCode) {
-        SurveyEssay essay = surveyEssayRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
+        SurveyEssay essay = getEssay(userCode, projectInfoCode);
+        System.out.println(essay);
+
         if (essay == null) throw new SurveyNotFinishedException();
         //메시지 string -> MessageDTO로 변환
         List<SurveyEssayMessageDTO> messageList;
         try {
-            messageList = objectMapper.readValue(essay.getMessages(), new TypeReference<List<SurveyEssayMessageDTO>>() {});
-        } catch (Exception e) {
-            throw new SurveyMessageDecodingException();
-        }
+            String jsonArray = "[" + essay.getMessages() + "]";
+            messageList = objectMapper.readValue(jsonArray, new TypeReference<List<SurveyEssayMessageDTO>>() {});
 
+        }catch (Exception e){
+                throw new SurveyMessageDecodingException();
+
+        }
         return SurveyEssayResponseDTO.builder()
                 .messages(messageList.subList(2, messageList.size()))
                 .submittedAt(essay.getSubmittedAt())
                 .build();
+    }
+
+    public SurveyMultiple getMultiple(String userCode, int projectInfoCode) {
+        return surveyMultipleRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
+    }
+
+    public SurveyEssay getEssay(String userCode, int projectInfoCode) {
+        Query query = new Query();
+        query.addCriteria(Criteria.where("projectInfoCode").is(projectInfoCode + "")
+                .and("userCode").is(userCode));
+
+        return mongoTemplate.findOne(query, SurveyEssay.class);
+
     }
 }
