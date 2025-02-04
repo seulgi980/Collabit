@@ -14,7 +14,7 @@ export default function ProjectCreateButton({
     project.organization,
     project.title,
   );
-  const { handleCreateProject, isAdded } = useCreateProject(
+  const { handleAddProject, isAdded } = useCreateProject(
     project.organization,
     project.title,
   );
@@ -22,7 +22,7 @@ export default function ProjectCreateButton({
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isAdded) {
-      handleCreateProject({
+      handleAddProject({
         ...project,
         contributors: contributors || [],
       });
@@ -33,7 +33,7 @@ export default function ProjectCreateButton({
     return (
       <Button
         variant="outline"
-        className="w-[60px] cursor-not-allowed bg-gray-100 text-gray-400"
+        className="w-[60px] cursor-not-allowed bg-gray-500 text-white"
         disabled
       >
         완료

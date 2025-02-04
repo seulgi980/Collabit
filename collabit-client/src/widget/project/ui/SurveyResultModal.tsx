@@ -1,4 +1,4 @@
-import ProjectListCard2 from "@/features/project/ui/ProjectListCard2";
+import ProjectListCard from "@/features/project/ui/ProjectListCard";
 import { ProjectResponse } from "@/shared/types/response/project";
 import { Button } from "@/shared/ui/button";
 import {
@@ -26,7 +26,7 @@ const SurveyResultModal = ({
     <Dialog>
       <DialogTrigger asChild>
         <div>
-          <ProjectListCard2 organization={organization} project={project} />
+          <ProjectListCard organization={organization} project={project} />
         </div>
       </DialogTrigger>
       <DialogPortal>

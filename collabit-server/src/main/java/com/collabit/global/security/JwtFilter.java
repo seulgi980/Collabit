@@ -1,5 +1,8 @@
 package com.collabit.global.security;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -30,24 +33,52 @@ public class JwtFilter extends OncePerRequestFilter {
     // JWT 토큰 인증 정보 검증후, SecurityContext 에 검증된 인증 정보 저장
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            // request header 에서 토큰 추출
+            String jwt = resolveToken(request);
+            log.debug("JWT token: {}", jwt);
 
-        // request header 에서 토큰 추출
-        String jwt = resolveToken(request);
-        log.debug("JWT token: {}", jwt);
+            // 블랙리스트 조회 (토큰이 블랙리스트에 있으면 즉시 차단)
+            if (jwt != null && redisTemplate.hasKey("blacklist:" + jwt)) {
+                log.warn("블랙리스트 토큰 감지! Access denied.");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "로그아웃된 토큰입니다.");
+                return;
+            }
 
-        // 블랙리스트 조회 (토큰이 블랙리스트에 있으면 즉시 차단)
-        if (jwt != null && redisTemplate.hasKey("blacklist:" + jwt)) {
-            log.debug("Token is blacklisted. Access denied.");
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "로그아웃된 토큰입니다.");
+            // validateToken 으로 토큰 유효성 검사
+            // 정상 토큰이면 해당 토큰으로 Authentication 을 가져와서 SecurityContext 에 저장
+            if (StringUtils.hasText(jwt)) {
+                if (!tokenProvider.validateToken(jwt)) {
+                    log.warn("유효하지 않은 토큰: {}", jwt);
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
+                    return;
+                }
+
+                // 토큰이 정상적이면 SecurityContext 에 저장
+                log.debug("JWT 토큰 유효. SecurityContext 에 저장");
+                Authentication authentication = tokenProvider.getAuthentication(jwt);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+
+        } catch (ExpiredJwtException e) {
+            log.error("ExpiredJwtException: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰이 만료되었습니다.");
             return;
-        }
 
-        // validateToken 으로 토큰 유효성 검사
-        // 정상 토큰이면 해당 토큰으로 Authentication 을 가져와서 SecurityContext 에 저장
-        if(StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-            log.debug("JWT token validated");
-            Authentication authentication = tokenProvider.getAuthentication(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (MalformedJwtException e) {
+            log.error("MalformedJwtException: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "잘못된 형식의 토큰입니다.");
+            return;
+
+        } catch (SignatureException e) {
+            log.error("SignatureException: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "토큰 서명이 유효하지 않습니다.");
+            return;
+
+        } catch (Exception e) {
+            log.error("예상치 못한 JWT 인증 오류 발생: {}", e.getMessage());
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "JWT 인증 실패: " + e.getMessage());
+            return;
         }
 
         filterChain.doFilter(request, response);
