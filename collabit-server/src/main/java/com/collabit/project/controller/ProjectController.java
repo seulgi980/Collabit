@@ -3,6 +3,7 @@ package com.collabit.project.controller;
 import com.collabit.global.security.SecurityUtil;
 import com.collabit.project.domain.dto.CreateProjectRequestDTO;
 import com.collabit.project.domain.dto.GetAddedProjectListResponseDTO;
+import com.collabit.project.domain.dto.GetMainProjectListResponseDTO;
 import com.collabit.project.domain.dto.GetProjectListResponseDTO;
 import com.collabit.project.domain.entity.SortOrder;
 import com.collabit.project.service.ProjectService;
@@ -18,7 +19,6 @@ import java.util.List;
 @Tag(name = "ProjectController", description = "프로젝트 API")
 @Slf4j
 @RequiredArgsConstructor
-@RestControllerAdvice
 @RequestMapping("/api/project")
 @RestController
 public class ProjectController {
@@ -56,6 +56,17 @@ public class ProjectController {
         log.info("저장된 프로젝트 목록 데이터 반환 - 반환할 프로젝트 수: {}", addedProjectList.size());
 
         return ResponseEntity.ok(addedProjectList);
+    }
+
+    @Operation(summary = "메인 페이지 프로젝트 목록 조회", description = "메인페이지에 보여줄 프로젝트 목록을 조회하는 API 입니다.")
+    @GetMapping("/list/main")
+    public ResponseEntity<?> getMainProjectList() {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        List<GetMainProjectListResponseDTO> projectList = projectService.findMainProjectList(userCode);
+        log.info("메인 페이지 프로젝트 목록 데이터 반환 - 반환할 프로젝트 수: {}", projectList.size());
+
+        return ResponseEntity.ok(projectList);
     }
 
     @Operation(summary = "프로젝트 설문 마감", description = "로그인된 사용자의 특정 프로젝트를 마감하는 API 입니다.")

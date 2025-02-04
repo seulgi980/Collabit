@@ -1,6 +1,8 @@
 package com.collabit.project.domain.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,7 +10,8 @@ import java.util.List;
 @Builder
 @Getter
 @AllArgsConstructor
-public class ProjectDetailDTO {
+public class GetMainProjectListResponseDTO {
+    private final String organization;
     private final int code;
     private final String title;
     private final int participant;

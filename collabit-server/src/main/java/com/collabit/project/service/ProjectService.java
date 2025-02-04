@@ -1,5 +1,6 @@
 package com.collabit.project.service;
 
+import com.collabit.global.service.RedisService;
 import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
 import com.collabit.project.repository.ContributorRepository;
@@ -30,6 +31,10 @@ public class ProjectService {
     private final ContributorRepository contributorRepository;
     private final ProjectContributorRepository projectContributorRepository;
     private final UserRepository userRepository;
+    private final RedisService redisService;
+
+    // 새로운 설문 응답에 대한 Redis Key
+    private static final String NEW_SURVEY_RESPONSE_KEY_PREFIX = "newSurveyResponse:targetCode:";
 
     // User 검증 메소드
     private User findUserByCode(String userCode) {
@@ -179,7 +184,7 @@ public class ProjectService {
         List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
         log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
 
-        // 키워드 검색 적용
+        // 2. 키워드 검색 적용
         if (keyword != null && !keyword.trim().isEmpty()) {
             projectInfoList = projectInfoList.stream()
                     .filter(pi -> pi.getProject().getTitle().toLowerCase()
@@ -188,11 +193,14 @@ public class ProjectService {
             log.debug("키워드 검색 적용 후 ProjectInfo 수: {}", projectInfoList.size());
         }
 
-        // 2. organization별로 그룹핑
+        // 3. organization별로 그룹핑
         Map<String, List<ProjectInfo>> groupedByOrg = projectInfoList.stream()
                 .collect(Collectors.groupingBy(pi -> pi.getProject().getOrganization()));
 
-        // 2. organizaion으로 묶은 ProjectInfo 리스트를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
+        // 4. Redis에서 newSurveyResponse 정보를 한 번에 조회
+        Map<Integer, Boolean> newSurveyResponseMap = redisService.findNewSurveyResponsesByUserCode(userCode);
+
+        // 5. organizaion으로 묶은 ProjectInfo 리스트를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
         List<GetProjectListResponseDTO> result = groupedByOrg.entrySet().stream()
                 .map(entry -> {
                     String org = entry.getKey();
@@ -225,6 +233,7 @@ public class ProjectService {
                                         .title(project.getTitle())
                                         .participant(projectInfo.getParticipant())
                                         .isDone(projectInfo.isDone())
+                                        .newSurveyResponse(newSurveyResponseMap.getOrDefault(projectInfo.getCode(), false))
                                         .createdAt(projectInfo.getCreatedAt())
                                         .contributors(contributors)
                                         .participationRate(calculateParticipationRate(projectInfo))
@@ -388,5 +397,61 @@ public class ProjectService {
                 }
             }
         }
+    }
+
+    // 로그인 유저의 메인페이지에 보여줄 프로젝트 리스트 조회 (isDone, new응답, 최신순)
+    @Transactional(readOnly = true)
+    public List<GetMainProjectListResponseDTO> findMainProjectList(String userCode) {
+        log.info("메인페이지 프로젝트 목록 조회 시작 - userCode: {}", userCode);
+
+        // 1. 로그인 유저의 ProjectInfo 리스트 조회
+        List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
+        log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
+
+        // 2. Redis에서 newSurveyResponse 정보를 한 번에 조회
+        Map<Integer, Boolean> newSurveyResponseMap = redisService.findNewSurveyResponsesByUserCode(userCode);
+
+        // 3. ProjectInfo 리스트를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
+        List<GetMainProjectListResponseDTO> result = projectInfoList.stream()
+                .map(projectInfo -> {
+                    Project project = projectInfo.getProject();
+
+                    // contributor 정보 조회 (같은 project의 해당 projectInfo 이전의 모든 contributor 조회)
+                    List<String> contributorsGithubId = projectContributorRepository
+                            .findByProjectCodeAndProjectInfoCodeLessThanEqual(
+                                    project.getCode(),
+                                    projectInfo.getCode()
+                            );
+
+                    // 조회한 contributor들의 githubId, 프로필 이미지 조회
+                    List<ContributorDetailDTO> contributors = contributorRepository
+                            .findByGithubIdIn(contributorsGithubId)
+                            .stream()
+                            .map(contributor -> ContributorDetailDTO.builder()
+                                    .githubId(contributor.getGithubId())
+                                    .profileImage(contributor.getProfileImage())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    return GetMainProjectListResponseDTO.builder()
+                            .organization(project.getOrganization())
+                            .code(projectInfo.getCode())
+                            .title(project.getTitle())
+                            .participant(projectInfo.getParticipant())
+                            .isDone(projectInfo.isDone())
+                            .newSurveyResponse(newSurveyResponseMap.getOrDefault(projectInfo.getCode(), false))
+                            .createdAt(projectInfo.getCreatedAt())
+                            .contributors(contributors)
+                            .participationRate(calculateParticipationRate(projectInfo))
+                            .build();
+                })
+                .sorted(Comparator
+                        .comparing(GetMainProjectListResponseDTO::isDone) // isDone이 false인 것이 앞으로
+                        .thenComparing(GetMainProjectListResponseDTO::isNewSurveyResponse, Comparator.reverseOrder()) // newSurveyResponse가 true인 것이 앞으로
+                        .thenComparing(GetMainProjectListResponseDTO::getCode, Comparator.reverseOrder())) // 최신순 (code가 큰 것이 앞으로)
+                .collect(Collectors.toList());
+
+        log.info("메인페이지 프로젝트 목록 조회 완료 - 조회된 organization 수: {}", result.size());
+        return result;
     }
 }
