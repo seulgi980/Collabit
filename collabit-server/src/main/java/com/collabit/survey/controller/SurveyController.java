@@ -24,7 +24,8 @@ public class SurveyController {
     @GetMapping
     @Operation(summary="설문 리스트 조회", description = "참여 전/후의 설문 리스트를 조회하는 API입니다.")
     public ResponseEntity<?> getSurveyList() {
-        List<SurveyListResponseDTO> responseDTO = surveyService.getSurveyList();
+        String userCode = SecurityUtil.getCurrentUserCode();
+        List<SurveyListResponseDTO> responseDTO = surveyService.getSurveyList(userCode);
         if (responseDTO.isEmpty()) return ResponseEntity.noContent().build();
         return ResponseEntity.ok(responseDTO);
     }
