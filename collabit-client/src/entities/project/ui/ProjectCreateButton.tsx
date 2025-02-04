@@ -1,7 +1,7 @@
 import { Button } from "@/shared/ui/button";
 import { FormattedGithubRepo } from "@/shared/types/response/github";
 import { useCreateProject } from "@/features/project/api/useCreateProject";
-import { useGithubContributors } from "@/features/project/api/useGithub";
+import useGetGithubContributors from "@/features/project/api/useGetGithubContributors";
 
 interface ProjectCreateButtonProps {
   project: FormattedGithubRepo;
@@ -10,7 +10,7 @@ interface ProjectCreateButtonProps {
 export default function ProjectCreateButton({
   project,
 }: ProjectCreateButtonProps) {
-  const { contributors } = useGithubContributors(
+  const { contributors } = useGetGithubContributors(
     project.organization,
     project.title,
   );

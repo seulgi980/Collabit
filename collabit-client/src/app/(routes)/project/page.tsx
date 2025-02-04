@@ -53,7 +53,7 @@ export default function Page() {
               <SelectItem value="PARTICIPATION">참여율 높은순</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleCreateProject}>프로젝트 생성</Button>
+          <Button onClick={handleCreateProject}>프로젝트 등록</Button>
         </div>
         <Suspense fallback={<ProjectListSkeleton />}>
           <ProjectList keyword={keyword} sort={sort} />

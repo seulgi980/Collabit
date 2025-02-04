@@ -21,7 +21,19 @@ const ProjectList = ({ keyword, sort }: { keyword: string; sort: string }) => {
   const projectList: ProjectListResponse = Array.isArray(data) ? data : [];
 
   if (projectList.length === 0) {
-    return <div className="m-10 text-center">프로젝트를 등록해주세요.</div>;
+    return (
+      <div className="m-10 flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-gray-200 p-8">
+        <div className="mb-2 text-4xl">✨</div>
+        <h3 className="text-xl font-semibold text-gray-800">
+          아직 등록된 프로젝트가 없어요
+        </h3>
+        <p className="text-center text-gray-600">
+          프로젝트를 등록하고 협업했던 동료들에게
+          <br />
+          소중한 피드백을 요청해보세요!
+        </p>
+      </div>
+    );
   }
 
   return (

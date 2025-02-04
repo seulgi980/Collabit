@@ -12,20 +12,20 @@ import { Input } from "@/shared/ui/input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/shared/ui/input-otp";
 import { Progress } from "@/shared/ui/progress";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, Loader2 } from "lucide-react";
 
 // 회원가입 폼 스키마
 
 export default function Page() {
   const {
     form,
+    step,
+    isLoading,
     handleSendCode,
     handleValidCode,
     handleValidPassword,
     handleValidNickname,
     onSubmit,
-    step,
-
     handleBack,
   } = useSignup();
   return (
@@ -65,8 +65,17 @@ export default function Page() {
                   </FormItem>
                 )}
               />
-              <Button className="mt-8" type="button" onClick={handleSendCode}>
-                인증번호 발송
+              <Button
+                className="mt-8 w-[100px]"
+                type="button"
+                onClick={handleSendCode}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "인증번호 발송"
+                )}
               </Button>
             </div>
           )}
@@ -101,8 +110,17 @@ export default function Page() {
                 )}
               />
 
-              <Button className="mt-8" type="button" onClick={handleValidCode}>
-                다음
+              <Button
+                className="mt-8"
+                type="button"
+                disabled={isLoading}
+                onClick={handleValidCode}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "다음"
+                )}
               </Button>
             </div>
           )}
@@ -184,11 +202,16 @@ export default function Page() {
                 )}
               />
               <Button
-                className="mt-8"
+                className="mt-8 w-[84px]"
                 type="button"
                 onClick={handleValidNickname}
+                disabled={isLoading}
               >
-                중복 확인
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "중복 확인"
+                )}
               </Button>
             </div>
           )}

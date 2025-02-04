@@ -1,9 +1,16 @@
+import { createPostAPI } from "@/shared/api/community";
+import { useMutation } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
 const usePost = () => {
   const [images, setImages] = useState<File[]>([]);
   const [preview, setPreview] = useState<string[]>([]);
   const [content, setContent] = useState<string>("");
+
+  const { mutate: createPost } = useMutation({
+    mutationKey: ["createPost"],
+    mutationFn: createPostAPI,
+  });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -37,7 +44,7 @@ const usePost = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(content, images);
+    createPost({ content, images });
   };
   return {
     images,

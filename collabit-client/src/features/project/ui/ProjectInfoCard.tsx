@@ -1,24 +1,25 @@
-import { Card } from "@/shared/ui/card";
 import { FormattedGithubRepo } from "@/shared/types/response/github";
 import { Avatar, AvatarImage, AvatarFallback } from "@/shared/ui/avatar";
-import { useGithubContributors } from "../api/useGithub";
+
 import Image from "next/image";
 import { BookA, Bug, Clock3, GitFork, Github, Star } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
+import useGetGithubContributors from "../api/useGetGithubContributors";
+import { ScrollArea } from "@/shared/ui/scroll-area";
 
 interface ProjectInfoCardProps {
   repo: FormattedGithubRepo;
 }
 
 export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
-  const { contributors, isLoading } = useGithubContributors(
+  const { contributors, isLoading } = useGetGithubContributors(
     repo.organization,
     repo.title,
   );
 
   return (
-    <Card className="flex flex-col gap-4 p-4">
+    <ScrollArea className="flex h-full max-h-[calc(100vh-260px)] flex-col gap-4 overflow-y-auto rounded-lg border p-4">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Avatar>
@@ -51,7 +52,7 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
           variant="secondary"
           className="flex w-full items-center justify-center gap-2 py-2"
         >
-          <Star className="h-5 w-5" />
+          <Star className="h-5 w-5 fill-yellow-300 text-yellow-300" />
           <span>{repo.stargazers_count}</span>
         </Badge>
         <Badge
@@ -94,6 +95,6 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
           )}
         </div>
       </div>
-    </Card>
+    </ScrollArea>
   );
 }
