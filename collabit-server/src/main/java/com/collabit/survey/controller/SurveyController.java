@@ -1,5 +1,6 @@
 package com.collabit.survey.controller;
 
+import com.collabit.global.security.SecurityUtil;
 import com.collabit.survey.domain.dto.ApiTextResponseDTO;
 import com.collabit.survey.domain.dto.SurveyQuestionResponseDTO;
 import com.collabit.survey.domain.dto.SurveyResponseSaveRequestDTO;
@@ -28,7 +29,10 @@ public class SurveyController {
     @Operation(summary="특정 userCode 유저가 특정 projectInfoCode 의 설문에 참여했는지 확인", description = "A가 projectInfoCode 1번의 설문을 이미 완료했는지 확인하는 API 입니다.(true면 참여완료)")
     public ResponseEntity<Boolean> checkIfUserCanEvaluate(
             @RequestParam int projectInfoCode, HttpServletRequest request) {
-        boolean canEvaluate = surveyService.canUserEvaluate(projectInfoCode, request);
+        // userCode 추출
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        boolean canEvaluate = surveyService.canUserEvaluate(projectInfoCode, request, userCode);
         return ResponseEntity.ok(!canEvaluate);
     }
 
@@ -46,7 +50,10 @@ public class SurveyController {
             HttpServletRequest request) {
 
         List<Integer> scores = surveyResponseDTO.getScores();
-        SurveyResponse surveyResponse = surveyService.saveResponse(projectInfoCode, scores, request);
+        // userCode 추출
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        SurveyResponse surveyResponse = surveyService.saveResponse(projectInfoCode, scores, request, userCode);
         log.debug("surveyResponse: {}", surveyResponse);
         return ResponseEntity.ok(new ApiTextResponseDTO("설문 응답이 성공적으로 저장되었습니다."));
     }

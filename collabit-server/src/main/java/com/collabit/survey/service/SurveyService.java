@@ -28,9 +28,7 @@ public class SurveyService {
     private final SurveyProjectInfoRepository surveyProjectInfoRepository;
 
     // 특정 userCode 유저 -> 특정 projectInfoCode 설문 참여 가능 여부 확인
-    public boolean canUserEvaluate(int projectInfoCode, HttpServletRequest request) {
-        // userCode 추출
-        String userCode = SecurityUtil.getCurrentUserCode();
+    public boolean canUserEvaluate(int projectInfoCode, HttpServletRequest request, String userCode) {
 
         // userCode 유저가 projectInfoCode 설문에 참여했는지 확인
         List<SurveyResponse> existingResponses = surveyResponseRepository.findByProjectInfoCodeAndUserCode(
@@ -55,10 +53,7 @@ public class SurveyService {
     }
 
     // 객관식 설문 결과 저장하기
-    public SurveyResponse saveResponse(int projectInfoCode, List<Integer> scores, HttpServletRequest request) {
-        // userCode 추출
-        String userCode = SecurityUtil.getCurrentUserCode();
-
+    public SurveyResponse saveResponse(int projectInfoCode, List<Integer> scores, HttpServletRequest request, String userCode) {
         SurveyResponse surveyResponse = SurveyResponse.builder()
                 .projectInfoCode(projectInfoCode)
                 .userCode(userCode)
