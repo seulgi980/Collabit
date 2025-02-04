@@ -12,13 +12,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 
 @Tag(name = "ProjectController", description = "프로젝트 API")
 @Slf4j
 @RequiredArgsConstructor
+@RestControllerAdvice
 @RequestMapping("/api/project")
 @RestController
 public class ProjectController {
@@ -45,12 +45,6 @@ public class ProjectController {
         log.info("프로젝트 목록 데이터 반환 - 반환할 프로젝트 수: {}", projectList.size());
 
         return ResponseEntity.ok(projectList);
-    }
-
-    // 쿼리 파라미터로 들어온 정렬 조건이 올바르지 않을 때 커스텀 예외 처리
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<String> handleInvalidEnumValue(Exception e) {
-        return ResponseEntity.badRequest().body("정렬 조건이 올바르지 않습니다. 가능한 조건: LATEST, PARTICIPATION");
     }
 
     @Operation(summary = "저장된 프로젝트 목록 조회", description = "현재 DB에 있는 프로젝트(organization, title) 목록을 조회하는 API 입니다.")
