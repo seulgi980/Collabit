@@ -46,10 +46,11 @@ public class SurveyController {
     @Operation(summary="객관식 설문 답변 저장하기", description = "24개의 객관식 설문 답변내용을 mongoDB에 저장하는 API 입니다.")
     public ResponseEntity<ApiTextResponseDTO> saveResponse(
             @RequestParam int projectInfoCode,
-            @RequestBody @Valid SurveyResponseSaveRequestDTO surveyResponseDTO,
+            @RequestBody @Valid SurveyResponseSaveRequestDTO surveyResponseSaveRequestDTO,
             HttpServletRequest request) {
 
-        List<Integer> scores = surveyResponseDTO.getScores();
+        List<Integer> scores = surveyResponseSaveRequestDTO.getScores();
+
         // userCode 추출
         String userCode = SecurityUtil.getCurrentUserCode();
 
