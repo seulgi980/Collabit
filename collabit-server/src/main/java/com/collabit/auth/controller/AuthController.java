@@ -12,15 +12,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@RestControllerAdvice
 @Tag(name = "AuthController", description = "Auth(로그인, 회원가입) 관련 API")
 public class AuthController {
     private final AuthService authService;
@@ -30,10 +28,12 @@ public class AuthController {
     // 회원가입
     @Operation(summary = "일반 회원가입", description = "일반 사이트 자체 회원가입 하는 API입니다.")
     @PostMapping("/sign-up")
-    public ResponseEntity<UserResponseDTO> signUp(@Valid @RequestBody UserSignupRequestDTO userSignupRequestDTO) {
+    public ResponseEntity<?> signUp(@Valid @RequestBody UserSignupRequestDTO userSignupRequestDTO) {
         log.debug("signUp Request: {}", userSignupRequestDTO.toString());
+
         UserResponseDTO userResponseDto = authService.signup(userSignupRequestDTO);
         log.debug("signUp Response: {}", userResponseDto.toString());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
     }
 
@@ -44,12 +44,10 @@ public class AuthController {
         String nickname = checkNicknameRequestDTO.getNickname();
         log.debug("checkNickname Request: {}", nickname);
 
-        if(authService.isNicknameAlreadyExists(nickname)){
-            return ResponseEntity.ok(new ApiTextResponseDTO("이미 사용중인 닉네임입니다."));
-        } else {
-            return ResponseEntity.ok(new ApiTextResponseDTO("사용가능한 닉네임입니다."));
-        }
+        authService.isNicknameAlreadyExists(nickname);
 
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiTextResponseDTO("사용 가능한 닉네임입니다."));
     }
 
     // 이메일 중복 체크
@@ -59,11 +57,11 @@ public class AuthController {
         String email = checkEmailRequestDTO.getEmail();
         log.debug("checkEmail Request: {}", email);
 
-        if(authService.isEmailAlreadyExists(email)){
-            return ResponseEntity.ok(new ApiTextResponseDTO("이미 사용중인 이메일입니다."));
-        } else {
-            return ResponseEntity.ok(new ApiTextResponseDTO("사용가능한 이메일입니다."));
-        }
+        authService.isEmailAlreadyExists(email);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(new ApiTextResponseDTO("사용 가능한 이메일입니다."));
+
     }
 
     // 로그인
