@@ -87,7 +87,6 @@ export const loginCredentialAPI = async (body: LoginRequest) => {
     },
     credentials: "include",
     body: JSON.stringify(body),
-    credentials: "include",
   });
 
   const data = await res.json();

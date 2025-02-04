@@ -52,7 +52,7 @@ const HeaderDesktop = ({
                 className={cn(
                   "rounded-md px-4 py-2 hover:bg-slate-100",
                   (pathname.startsWith(i.href) ||
-                    (i.href === "/chat" && pathname.startsWith("/feedback"))) &&
+                    (i.href === "/chat" && pathname.startsWith("/survey"))) &&
                     "bg-slate-100",
                 )}
               >

@@ -1,13 +1,20 @@
-FROM node:22.12.0-alpine AS build
+# Build stage
+FROM node:20-alpine AS build
 WORKDIR /app
+
+# Install dependencies
 COPY package*.json ./
-RUN npm cache clean --force && \
-   rm -rf node_modules && \
-   rm -f package-lock.json && \
-   npm install
+RUN npm ci
+
+# Build application
 COPY . .
 RUN npm run build
+RUN npm run export
+
+# Production stage - nginx로 서빙
 FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/out /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

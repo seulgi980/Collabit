@@ -44,7 +44,7 @@ const NavMobile = ({
                 ((i.href === "/"
                   ? pathname === "/"
                   : pathname.startsWith(i.href)) ||
-                  (i.href === "/chat" && pathname.startsWith("/feedback"))) &&
+                  (i.href === "/chat" && pathname.startsWith("/survey"))) &&
                   "border-b-2 border-violet-700 text-violet-700",
               )}
             >
