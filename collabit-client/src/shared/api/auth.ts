@@ -85,6 +85,7 @@ export const loginCredentialAPI = async (body: LoginRequest) => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(body),
     credentials: "include",
   });

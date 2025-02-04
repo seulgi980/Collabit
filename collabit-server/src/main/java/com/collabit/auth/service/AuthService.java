@@ -73,13 +73,13 @@ public class AuthService {
 
     // HttpOnly Cookie 에 토큰 저장
     public void addCookie(HttpServletResponse response, String name, String value, long maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true); // HttpOnly 설정
-        cookie.setSecure(true); // HTTPS 에서만 동작
-        cookie.setPath("/"); // 쿠키가 유효한 경로
-        cookie.setMaxAge((int) maxAge); // 만료 시간 (초 단위)
-        response.addCookie(cookie); // 클라이언트로 쿠키 전송 필수
-    }
+      Cookie cookie = new Cookie(name, value);
+      cookie.setHttpOnly(true); // HttpOnly 설정
+      cookie.setSecure(false); // HTTPS 에서만 동작
+      cookie.setPath("/"); // 쿠키가 유효한 경로
+      cookie.setMaxAge((int) maxAge); // 만료 시간 (초 단위)
+      response.addCookie(cookie); // 클라이언트로 쿠키 전송 필수
+  }
 
     // 회원가입 메서드
     public UserResponseDTO signup(UserSignupRequestDTO userSignupRequestDto) {
