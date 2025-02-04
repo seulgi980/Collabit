@@ -36,7 +36,7 @@ public class SurveyController {
         return ResponseEntity.ok(surveyService.getAllQuestions());
     }
 
-    @PostMapping("/response/{surveyCode}/multiple")
+    @PostMapping("/{surveyCode}/multiple")
     @Operation(summary="객관식 설문 답변 저장", description = "24개의 객관식 설문 답변내용을 mongoDB에 저장하는 API 입니다.")
     public ResponseEntity<ApiTextResponseDTO> saveMultipleResponse(
             @PathVariable int surveyCode,
@@ -47,7 +47,7 @@ public class SurveyController {
         return ResponseEntity.ok(new ApiTextResponseDTO("설문 응답이 성공적으로 저장되었습니다."));
     }
 
-    @GetMapping("/response/{surveyCode}/multiple")
+    @GetMapping("/{surveyCode}/multiple")
     @Operation(summary="객관식 설문 답변 조회", description = "24개의 객관식 설문 답변내용을 조회하는 API입니다.")
     public ResponseEntity<SurveyMultipleResponseDTO> getMultipleResponse(@PathVariable int surveyCode) {
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -56,7 +56,7 @@ public class SurveyController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @GetMapping("/response/{surveyCode}/essay")
+    @GetMapping("/{surveyCode}/essay")
     @Operation(summary="주관식 설문 답변 조회", description = "주관식 설문 답변내용을 조회하는 API입니다.")
     public ResponseEntity<SurveyEssayResponseDTO> getEssayResponse(@PathVariable int surveyCode) {
         String userCode = SecurityUtil.getCurrentUserCode();
