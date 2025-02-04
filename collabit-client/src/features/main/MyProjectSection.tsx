@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import EmptyProjectCard from "../project/ui/EmptyProjectCard";
 import MainProjectListCard from "../project/ui/MainProjectListCard";
+import NoProjectGuide from "../project/ui/NoProjectGuide";
 
 const MyProjectSection = () => {
   const keyword = "";
@@ -53,7 +54,7 @@ const MyProjectSection = () => {
       <h3 className="text-lg font-bold md:text-xl">나의 프로젝트 소식</h3>
       {isLoading ? (
         <MainProjectListSkeleton />
-      ) : (
+      ) : data!.length > 0 ? (
         <Carousel
           setApi={setApi}
           opts={{
@@ -95,15 +96,15 @@ const MyProjectSection = () => {
           </CarouselContent>
           <CarouselPrevious
             type="button"
-            className="absolute left-12 h-6 w-6 md:h-8 md:w-8"
+            className="hidden md:flex"
             hide={true}
           />
-          <CarouselNext
-            type="button"
-            className="absolute right-12 h-6 w-6 md:h-8 md:w-8"
-            hide={true}
-          />
+          <CarouselNext type="button" className="hidden md:flex" hide={true} />
         </Carousel>
+      ) : (
+        <div>
+          <NoProjectGuide />
+        </div>
       )}
     </div>
   );
