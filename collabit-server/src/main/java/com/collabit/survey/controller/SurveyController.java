@@ -1,5 +1,6 @@
 package com.collabit.survey.controller;
 
+import com.collabit.global.security.SecurityUtil;
 import com.collabit.survey.domain.dto.*;
 import com.collabit.survey.service.SurveyService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,16 +40,17 @@ public class SurveyController {
     public ResponseEntity<ApiTextResponseDTO> saveMultipleResponse(
             @PathVariable int surveyCode,
             @RequestBody @Valid SurveyMultipleRequestDTO requestDTO) {
-
+        String userCode = SecurityUtil.getCurrentUserCode();
         List<Integer> scores = requestDTO.getScores();
-        surveyService.saveResponse(surveyCode, scores);
+        surveyService.saveResponse(userCode, surveyCode, scores);
         return ResponseEntity.ok(new ApiTextResponseDTO("설문 응답이 성공적으로 저장되었습니다."));
     }
 
     @GetMapping("/response/{surveyCode}/multiple")
     @Operation(summary="객관식 설문 답변 조회", description = "24개의 객관식 설문 답변내용을 조회하는 API입니다.")
     public ResponseEntity<SurveyMultipleResponseDTO> getMultipleResponse(@PathVariable int surveyCode) {
-        SurveyMultipleResponseDTO responseDTO = surveyService.getMultipleResponse(surveyCode);
+        String userCode = SecurityUtil.getCurrentUserCode();
+        SurveyMultipleResponseDTO responseDTO = surveyService.getMultipleResponse(userCode, surveyCode);
         log.debug("surveyResponse: {}", responseDTO);
         return ResponseEntity.ok(responseDTO);
     }
@@ -56,7 +58,8 @@ public class SurveyController {
     @GetMapping("/response/{surveyCode}/essay")
     @Operation(summary="주관식 설문 답변 조회", description = "주관식 설문 답변내용을 조회하는 API입니다.")
     public ResponseEntity<SurveyEssayResponseDTO> getEssayResponse(@PathVariable int surveyCode) {
-        SurveyEssayResponseDTO responseDTO = surveyService.getEssayResponse(surveyCode);
+        String userCode = SecurityUtil.getCurrentUserCode();
+        SurveyEssayResponseDTO responseDTO = surveyService.getEssayResponse(userCode, surveyCode);
         log.debug("surveyResponse: {}", responseDTO);
         return ResponseEntity.ok(responseDTO);
     }

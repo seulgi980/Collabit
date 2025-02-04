@@ -41,8 +41,7 @@ public class SurveyService {
     private final ObjectMapper objectMapper;
 
     // 유저의 설문 리스트 가져오기
-    public List<SurveyListResponseDTO> getSurveyList() {
-        String userCode = SecurityUtil.getCurrentUserCode();
+    public List<SurveyListResponseDTO> getSurveyList(String userCode) {
         User user = userRepository.findByCode(userCode).orElseThrow(() -> {
             log.debug("User not found");
             return new UserNotFoundException();
@@ -111,9 +110,7 @@ public class SurveyService {
     }
 
     // 객관식 설문 결과 저장하기
-    public void saveResponse(int projectInfoCode, List<Integer> scores) {
-        String userCode = SecurityUtil.getCurrentUserCode();
-
+    public void saveResponse(String userCode, int projectInfoCode, List<Integer> scores) {
         SurveyMultiple surveyMultiple = SurveyMultiple.builder()
                 .projectInfoCode(projectInfoCode)
                 .userCode(userCode)
@@ -138,16 +135,14 @@ public class SurveyService {
     }
 
     // 객관식 설문 답변 조회하기
-    public SurveyMultipleResponseDTO getMultipleResponse(int projectInfoCode) {
-        String userCode = SecurityUtil.getCurrentUserCode();
+    public SurveyMultipleResponseDTO getMultipleResponse(String userCode, int projectInfoCode) {
         SurveyMultiple multiple = surveyMultipleRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
         if (multiple == null) throw new SurveyNotFInishedException();
         return SurveyMultipleResponseDTO.builder().scores(multiple.getScores()).submittedAt(multiple.getSubmittedAt()).build();
     }
 
     //주관식 설문 답변 조회하기
-    public SurveyEssayResponseDTO getEssayResponse(int projectInfoCode) {
-        String userCode = SecurityUtil.getCurrentUserCode();
+    public SurveyEssayResponseDTO getEssayResponse(String userCode, int projectInfoCode) {
         SurveyEssay essay = surveyEssayRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
         if (essay == null) throw new SurveyNotFInishedException();
         //메시지 string -> MessageDTO로 변환
