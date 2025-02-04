@@ -101,7 +101,7 @@ public class ProjectService {
         ProjectInfo projectInfo = ProjectInfo.builder()
                 .project(project)
                 .user(user)
-                .total(createProjectRequestDTO.getContributors().size())
+                .total(createProjectRequestDTO.getContributors().size()-1) // 본인 제외
                 .build();
         projectInfo = projectInfoRepository.save(projectInfo);
         log.debug("ProjectInfo 저장 완료 - projectInfoCode: {}", projectInfo.getCode());
@@ -116,6 +116,12 @@ public class ProjectService {
 
         // 프론트에서 받아온 contributor와 저장된 contributor를 비교하여 중복되지 않은 contributor만 저장
         for(ContributorDetailDTO contributorDetailDTO : createProjectRequestDTO.getContributors()) {
+
+            // 로그인 user는 해당 projectInfo의 contributor로 저장하지 않음
+            if(contributorDetailDTO.getGithubId().equals(user.getGithubId())){
+                continue;
+            }
+
             boolean exists = existingContributors.stream()
                     .anyMatch(pc -> pc.getId().getGithubId().equals(contributorDetailDTO.getGithubId()));
 
