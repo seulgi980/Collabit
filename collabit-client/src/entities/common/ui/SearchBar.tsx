@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 interface SearchBarProps {
   keyword: string;
-  setKeyword: (keyword: string) => void;
+  setKeyword: (value: string) => void;
   debounceTime?: number;
 }
 
