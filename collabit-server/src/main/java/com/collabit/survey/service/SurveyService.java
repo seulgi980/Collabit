@@ -1,14 +1,24 @@
 package com.collabit.survey.service;
 
 import com.collabit.global.security.SecurityUtil;
-import com.collabit.global.security.TokenProvider;
-import com.collabit.survey.domain.dto.SurveyQuestionResponseDTO;
+import com.collabit.project.domain.entity.ProjectContributor;
+import com.collabit.project.domain.entity.ProjectInfo;
+import com.collabit.project.repository.ProjectContributorRepository;
+import com.collabit.project.repository.ProjectInfoRepository;
+import com.collabit.survey.domain.dto.*;
+import com.collabit.survey.domain.entity.SurveyEssay;
 import com.collabit.survey.domain.entity.SurveyQuestion;
-import com.collabit.survey.domain.entity.SurveyResponse;
-import com.collabit.survey.repository.SurveyProjectInfoRepository;
+import com.collabit.survey.domain.entity.SurveyMultiple;
+import com.collabit.survey.exception.SurveyMessageDecodingException;
+import com.collabit.survey.exception.SurveyNotFInishedException;
+import com.collabit.survey.repository.SurveyEssayRepository;
+import com.collabit.survey.repository.SurveyMultipleRepository;
 import com.collabit.survey.repository.SurveyQuestionRepository;
-import com.collabit.survey.repository.SurveyResponseRepository;
-import jakarta.servlet.http.HttpServletRequest;
+import com.collabit.user.domain.entity.User;
+import com.collabit.user.exception.UserNotFoundException;
+import com.collabit.user.repository.UserRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,22 +33,68 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SurveyService {
     private final SurveyQuestionRepository surveyQuestionRepository;
-    private final SurveyResponseRepository surveyResponseRepository;
-    private final TokenProvider tokenProvider;
-    private final SurveyProjectInfoRepository surveyProjectInfoRepository;
+    private final SurveyEssayRepository surveyEssayRepository;
+    private final SurveyMultipleRepository surveyMultipleRepository;
+    private final ProjectInfoRepository projectInfoRepository;
+    private final ProjectContributorRepository projectContributorRepository;
+    private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
-    // 특정 userCode 유저 -> 특정 projectInfoCode 설문 참여 가능 여부 확인
-    public boolean canUserEvaluate(int projectInfoCode, HttpServletRequest request) {
-        // userCode 추출
+    // 유저의 설문 리스트 가져오기
+    public List<SurveyListResponseDTO> getSurveyList() {
         String userCode = SecurityUtil.getCurrentUserCode();
+        User user = userRepository.findByCode(userCode).orElseThrow(() -> {
+            log.debug("User not found");
+            return new UserNotFoundException();
+        });
+        log.debug("User GithubID: " + user.getGithubId());
 
-        // userCode 유저가 projectInfoCode 설문에 참여했는지 확인
-        List<SurveyResponse> existingResponses = surveyResponseRepository.findByProjectInfoCodeAndUserCode(
-                projectInfoCode, userCode);
-        return existingResponses.isEmpty(); // 평가 내역이 없으면 설문 가능
+        //나에게 들어온 모든 설문 요청 가져오기
+        List<ProjectContributor> surveyRequest = projectContributorRepository.findByIdGithubId(user.getGithubId());
+        // 해당 설문들의 정보 가져오기
+        List<SurveyListResponseDTO> surveyList = new ArrayList<>();
+
+        for (ProjectContributor projectContributor : surveyRequest) {
+            ProjectInfo projectInfo = projectContributor.getProjectInfo();
+            if (projectInfo != null) {
+                int status = 0;
+                LocalDateTime updatedAt = projectInfo.getCreatedAt();
+
+                //주관식
+                SurveyEssay surveyEssays = surveyEssayRepository.findByProjectInfoCodeAndUserCode(projectInfo.getCode(), userCode);
+                //객관식
+                SurveyMultiple surveyMultiples = surveyMultipleRepository.findByProjectInfoCodeAndUserCode(
+                        projectInfo.getCode(), userCode);
+
+                //둘 다 참여한 경우
+                if (surveyEssays != null) {
+                    status = 2;
+                    updatedAt = surveyEssays.getSubmittedAt();
+                }
+                // 객관식만 참여한 경우
+                else if (surveyMultiples != null) {
+                    status = 1;
+                    updatedAt = surveyMultiples.getSubmittedAt();
+                }
+                log.debug("status: " + status + ", updatedAt: " + updatedAt);
+
+                SurveyListResponseDTO dto = SurveyListResponseDTO.builder()
+                        .surveyCode(projectInfo.getCode())
+                        .title(projectInfo.getProject().getTitle())
+                        .profileImage(projectInfo.getUser().getProfileImage())
+                        .nickname(projectInfo.getUser().getNickname())
+                        .status(status)
+                        .updatedAt(updatedAt)
+                        .build();
+                surveyList.add(dto);
+
+                log.debug(dto.toString());
+            }
+        }
+        return surveyList;
     }
 
-    // 24개 모든 질문 가져오기
+    // 객관식 24개 모든 질문 가져오기
     public List<SurveyQuestionResponseDTO> getAllQuestions() {
         List<SurveyQuestion> questions = surveyQuestionRepository.findAll();
 
@@ -55,17 +111,16 @@ public class SurveyService {
     }
 
     // 객관식 설문 결과 저장하기
-    public SurveyResponse saveResponse(int projectInfoCode, List<Integer> scores, HttpServletRequest request) {
-        // userCode 추출
+    public void saveResponse(int projectInfoCode, List<Integer> scores) {
         String userCode = SecurityUtil.getCurrentUserCode();
 
-        SurveyResponse surveyResponse = SurveyResponse.builder()
+        SurveyMultiple surveyMultiple = SurveyMultiple.builder()
                 .projectInfoCode(projectInfoCode)
                 .userCode(userCode)
                 .scores(scores)
                 .submittedAt(LocalDateTime.now())
                 .build();
-        log.debug("surveyResponse: {}", surveyResponse);
+        log.debug("surveyResponse: {}", surveyMultiple);
 
         // projectInfoCode 로 6개영역 총합값 업데이트, participant += 1
         int sympathy = scores.subList(0, 4).stream().mapToInt(Integer::intValue).sum();
@@ -78,10 +133,34 @@ public class SurveyService {
         log.debug("Calculated Scores - Sympathy: {}, Listening: {}, Expression: {}, ProblemSolving: {}, ConflictResolution: {}, Leadership: {}",
                 sympathy, listening, expression, problemSolving, conflictResolution, leadership);
 
-        // project_info 테이블 업데이트
-        surveyProjectInfoRepository.updateSurveyScores(projectInfoCode, sympathy, listening, expression, problemSolving, conflictResolution, leadership);
-
-        return surveyResponseRepository.save(surveyResponse);
+        projectInfoRepository.updateSurveyScores(projectInfoCode, sympathy, listening, expression, problemSolving, conflictResolution, leadership);
+        surveyMultipleRepository.save(surveyMultiple);
     }
 
+    // 객관식 설문 답변 조회하기
+    public SurveyMultipleResponseDTO getMultipleResponse(int projectInfoCode) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+        SurveyMultiple multiple = surveyMultipleRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
+        if (multiple == null) throw new SurveyNotFInishedException();
+        return SurveyMultipleResponseDTO.builder().scores(multiple.getScores()).submittedAt(multiple.getSubmittedAt()).build();
+    }
+
+    //주관식 설문 답변 조회하기
+    public SurveyEssayResponseDTO getEssayResponse(int projectInfoCode) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+        SurveyEssay essay = surveyEssayRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
+        if (essay == null) throw new SurveyNotFInishedException();
+        //메시지 string -> MessageDTO로 변환
+        List<SurveyEssayMessageDTO> messageList;
+        try {
+            messageList = objectMapper.readValue(essay.getMessages(), new TypeReference<List<SurveyEssayMessageDTO>>() {});
+        } catch (Exception e) {
+            throw new SurveyMessageDecodingException();
+        }
+
+        return SurveyEssayResponseDTO.builder()
+                .messages(messageList)
+                .submittedAt(essay.getSubmittedAt())
+                .build();
+    }
 }
