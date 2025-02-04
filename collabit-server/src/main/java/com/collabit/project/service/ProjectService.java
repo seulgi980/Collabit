@@ -398,4 +398,60 @@ public class ProjectService {
             }
         }
     }
+
+    // 로그인 유저의 메인페이지에 보여줄 프로젝트 리스트 조회 (isDone, new응답, 최신순)
+    @Transactional(readOnly = true)
+    public List<GetMainProjectListResponseDTO> findMainProjectList(String userCode) {
+        log.info("메인페이지 프로젝트 목록 조회 시작 - userCode: {}", userCode);
+
+        // 1. 로그인 유저의 ProjectInfo 리스트 조회
+        List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
+        log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
+
+        // 2. Redis에서 newSurveyResponse 정보를 한 번에 조회
+        Map<Integer, Boolean> newSurveyResponseMap = redisService.findNewSurveyResponsesByUserCode(userCode);
+
+        // 3. ProjectInfo 리스트를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
+        List<GetMainProjectListResponseDTO> result = projectInfoList.stream()
+                .map(projectInfo -> {
+                    Project project = projectInfo.getProject();
+
+                    // contributor 정보 조회 (같은 project의 해당 projectInfo 이전의 모든 contributor 조회)
+                    List<String> contributorsGithubId = projectContributorRepository
+                            .findByProjectCodeAndProjectInfoCodeLessThanEqual(
+                                    project.getCode(),
+                                    projectInfo.getCode()
+                            );
+
+                    // 조회한 contributor들의 githubId, 프로필 이미지 조회
+                    List<ContributorDetailDTO> contributors = contributorRepository
+                            .findByGithubIdIn(contributorsGithubId)
+                            .stream()
+                            .map(contributor -> ContributorDetailDTO.builder()
+                                    .githubId(contributor.getGithubId())
+                                    .profileImage(contributor.getProfileImage())
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    return GetMainProjectListResponseDTO.builder()
+                            .organization(project.getOrganization())
+                            .code(projectInfo.getCode())
+                            .title(project.getTitle())
+                            .participant(projectInfo.getParticipant())
+                            .isDone(projectInfo.isDone())
+                            .newSurveyResponse(newSurveyResponseMap.getOrDefault(projectInfo.getCode(), false))
+                            .createdAt(projectInfo.getCreatedAt())
+                            .contributors(contributors)
+                            .participationRate(calculateParticipationRate(projectInfo))
+                            .build();
+                })
+                .sorted(Comparator
+                        .comparing(GetMainProjectListResponseDTO::isDone) // isDone이 false인 것이 앞으로
+                        .thenComparing(GetMainProjectListResponseDTO::isNewSurveyResponse, Comparator.reverseOrder()) // newSurveyResponse가 true인 것이 앞으로
+                        .thenComparing(GetMainProjectListResponseDTO::getCode, Comparator.reverseOrder())) // 최신순 (code가 큰 것이 앞으로)
+                .collect(Collectors.toList());
+
+        log.info("메인페이지 프로젝트 목록 조회 완료 - 조회된 organization 수: {}", result.size());
+        return result;
+    }
 }
