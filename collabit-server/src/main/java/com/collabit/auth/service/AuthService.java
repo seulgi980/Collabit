@@ -5,6 +5,8 @@ import com.collabit.auth.domain.dto.TokenDTO;
 import com.collabit.auth.domain.dto.UserLoginRequestDTO;
 import com.collabit.auth.domain.dto.UserResponseDTO;
 import com.collabit.auth.domain.dto.UserSignupRequestDTO;
+import com.collabit.global.common.ErrorCode;
+import com.collabit.global.error.exception.BusinessException;
 import com.collabit.global.security.CustomUserDetails;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.user.domain.entity.Role;
@@ -81,15 +83,15 @@ public class AuthService {
 
     // 회원가입 메서드
     public UserResponseDTO signup(UserSignupRequestDTO userSignupRequestDto) {
-        // 이메일 중복 체크
-        if (isEmailAlreadyExists(userSignupRequestDto.getEmail())) {
-            throw new IllegalStateException("이미 등록된 이메일입니다.");
-        }
+        String email = userSignupRequestDto.getEmail();
+        String nickname = userSignupRequestDto.getNickname();
 
-        // 닉네임 중복 체크
-        if (isNicknameAlreadyExists(userSignupRequestDto.getNickname())) {
-            throw new IllegalStateException("이미 사용중인 닉네임입니다.");
-        }
+        // 이메일 중복체크
+        isEmailAlreadyExists(email);
+
+        // 닉네임 중복체크
+        isNicknameAlreadyExists(nickname);
+
         // 비밀번호 암호화
         String encodedPassword = encodePassword(userSignupRequestDto.getPassword());
 
@@ -191,13 +193,21 @@ public class AuthService {
     }
 
     // 이메일 중복 체크
-    public boolean isEmailAlreadyExists(String email) {
-        return userRepository.existsByEmail(email);
+    public void isEmailAlreadyExists(String email) {
+        if (userRepository.existsByEmail(email)) {
+            log.warn("이메일 중복 발생: {}", email);
+
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
     }
 
     // 닉네임 중복 체크
-    public boolean isNicknameAlreadyExists(String nickname) {
-        return userRepository.existsByNickname(nickname);
+    public void isNicknameAlreadyExists(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            log.warn("닉네임 중복 발생: {}", nickname);
+
+            throw new BusinessException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
     }
 
     // 비밀번호 암호화

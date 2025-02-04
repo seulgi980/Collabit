@@ -19,9 +19,7 @@ const ProjectCreateCard = ({ project, isSelected }: ProjectCreateCardProps) => {
     <Card
       className={cn(
         "flex h-[60px] w-full cursor-pointer items-center justify-between px-4 transition-colors",
-        isSelected
-          ? "bg-violet-200 hover:bg-violet-300"
-          : "bg-violet-50 hover:bg-violet-100",
+        isSelected ? "bg-violet-200" : "bg-violet-50 hover:bg-violet-100",
       )}
       onClick={() => {
         router.push(

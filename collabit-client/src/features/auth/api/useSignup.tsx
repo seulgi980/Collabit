@@ -53,7 +53,6 @@ const useSignup = () => {
     }
 
     setIsLoading(true);
-    // Todo : 인증번호 발송 API 호출
     try {
       await checkEmailAPI(emailValue);
     } catch {
