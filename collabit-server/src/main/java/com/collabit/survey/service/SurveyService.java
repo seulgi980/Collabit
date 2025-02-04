@@ -1,6 +1,5 @@
 package com.collabit.survey.service;
 
-import com.collabit.global.security.SecurityUtil;
 import com.collabit.project.domain.entity.ProjectContributor;
 import com.collabit.project.domain.entity.ProjectInfo;
 import com.collabit.project.repository.ProjectContributorRepository;
@@ -10,7 +9,7 @@ import com.collabit.survey.domain.entity.SurveyEssay;
 import com.collabit.survey.domain.entity.SurveyQuestion;
 import com.collabit.survey.domain.entity.SurveyMultiple;
 import com.collabit.survey.exception.SurveyMessageDecodingException;
-import com.collabit.survey.exception.SurveyNotFInishedException;
+import com.collabit.survey.exception.SurveyNotFinishedException;
 import com.collabit.survey.repository.SurveyEssayRepository;
 import com.collabit.survey.repository.SurveyMultipleRepository;
 import com.collabit.survey.repository.SurveyQuestionRepository;
@@ -137,14 +136,14 @@ public class SurveyService {
     // 객관식 설문 답변 조회하기
     public SurveyMultipleResponseDTO getMultipleResponse(String userCode, int projectInfoCode) {
         SurveyMultiple multiple = surveyMultipleRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
-        if (multiple == null) throw new SurveyNotFInishedException();
+        if (multiple == null) throw new SurveyNotFinishedException();
         return SurveyMultipleResponseDTO.builder().scores(multiple.getScores()).submittedAt(multiple.getSubmittedAt()).build();
     }
 
     //주관식 설문 답변 조회하기
     public SurveyEssayResponseDTO getEssayResponse(String userCode, int projectInfoCode) {
         SurveyEssay essay = surveyEssayRepository.findByProjectInfoCodeAndUserCode(projectInfoCode, userCode);
-        if (essay == null) throw new SurveyNotFInishedException();
+        if (essay == null) throw new SurveyNotFinishedException();
         //메시지 string -> MessageDTO로 변환
         List<SurveyEssayMessageDTO> messageList;
         try {
@@ -154,7 +153,7 @@ public class SurveyService {
         }
 
         return SurveyEssayResponseDTO.builder()
-                .messages(messageList)
+                .messages(messageList.subList(2, messageList.size()))
                 .submittedAt(essay.getSubmittedAt())
                 .build();
     }
