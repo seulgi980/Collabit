@@ -38,14 +38,14 @@ public class SseEmitterService {
         return emitter;
     }
 
-    // 특정 사용자에게 새로운 설문 응답 데이터를 SSE로 전송하는 메서드
-    public void sendToClient(String userCode, Map<Object, Object> surveyData) {
+    // targetUser에게 새로운 설문 응답 데이터를 SSE로 전송하는 메서드
+    public void sendToClientProjectInfo(String userCode, int projectInfoCode) {
         SseEmitter emitter = sseEmitters.get(userCode);
         if (emitter != null) {
             try {
                 emitter.send(SseEmitter.event()
                         .name("newSurveyResponse")
-                        .data(surveyData));
+                        .data(projectInfoCode));
             } catch (IOException e) {
                 emitter.complete();
                 sseEmitters.remove(userCode);

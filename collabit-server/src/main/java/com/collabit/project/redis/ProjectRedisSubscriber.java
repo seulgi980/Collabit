@@ -1,7 +1,6 @@
 package com.collabit.project.redis;
 
 import com.collabit.project.service.SseEmitterService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.Message;
@@ -10,7 +9,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -20,31 +18,28 @@ public class ProjectRedisSubscriber implements MessageListener {
     private final SseEmitterService sseEmitterService;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    // Redis의 키 이벤트 발생 시 호출되는 메서드, 설문 응답 데이터를 SSE로 전송
+    // Redis의 키 이벤트 발생 시 호출되는 메서드, 어떤 projectInfo에 대한 응답인지 알 수 있게 code를 SSE로 전송
+    // Redis에서 정보를 삭제할 때는 SSE 이벤트를 보내지 않음
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
             String channel = new String(message.getChannel(), StandardCharsets.UTF_8);
 
-            String[] parts = channel.split(":");
-            if (parts.length > 1) {
-                String key = parts[1];
+            // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9
+            String[] keyParts = channel.split("::");
 
-                // key 구조 = newSurveyResponse:targetCode:1943e2-d5ae
-                if (key != null && key.startsWith("newSurveyResponse:")) {
-                    String[] keyParts = key.split(":");
-                    if (keyParts.length > 2) {
-                        String userCode = keyParts[2];
+            if(keyParts.length == 3) {
+                String key = keyParts[0];
 
-                        // Redis에서 해당 키의 해시 데이터 조회
-                        Map<Object, Object> surveyData = redisTemplate.opsForHash().entries(key);
+                if (key != null && key.startsWith("newSurveyResponse")) {
+                    String userCode = keyParts[1];
+                    int projectInfoCode = Integer.parseInt(keyParts[2]);
 
-                        log.debug("설문조사 응답을 받은 유저: {}", userCode);
-                        log.debug("설문조사 데이터: {}", surveyData);
+                    log.debug("설문조사 targetUser: {}", userCode);
+                    log.debug("설문조사 projectInfoCode: {}", projectInfoCode);
 
-                        // SSE를 통해 클라이언트에 데이터 전송
-                        sseEmitterService.sendToClient(userCode, surveyData);
-                    }
+                    // SSE를 통해 클라이언트에 데이터 전송
+                    sseEmitterService.sendToClientProjectInfo(userCode, projectInfoCode);
                 }
             }
         } catch (Exception e) {

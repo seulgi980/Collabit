@@ -60,6 +60,7 @@ const useSignup = () => {
         title: "이미 가입된 이메일 입니다.",
         variant: "destructive",
       });
+      return;
     }
     try {
       await sendEmailCodeAPI(emailValue);
@@ -196,25 +197,6 @@ const useSignup = () => {
     } finally {
       setIsLoading(false);
     }
-
-    // 닉네임 중복 확인 성공 시
-    openModal(
-      <OneButtonModal
-        title="사용 가능한 닉네임"
-        description="회원가입을 진행하시겠습니까?"
-        buttonText="가입하기"
-        handleButtonClick={() => {
-          onSubmit(form.getValues());
-        }}
-      />,
-    );
-
-    // 닉네임 중복 확인 실패 시
-    toast({
-      title: "사용 불가능한 닉네임",
-      description: "이미 사용중인 닉네임입니다.",
-      variant: "destructive",
-    });
   };
 
   // 회원가입 폼 제출 함수
