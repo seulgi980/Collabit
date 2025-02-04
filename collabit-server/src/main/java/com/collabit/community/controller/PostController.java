@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/post")
 @RequiredArgsConstructor
+@RestControllerAdvice
 @Slf4j
 public class PostController {
 

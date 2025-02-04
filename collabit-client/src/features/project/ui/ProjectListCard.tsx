@@ -62,7 +62,7 @@ const ProjectListCard = ({ project }: ProjectListCardProps) => {
       </div>
       <div className="flex w-full items-center justify-between">
         <CardTitle className="text-xl">{project.title}</CardTitle>
-        {project.isDone ? (
+        {project.done ? (
           <>
             <Button className="z-5 disabled bg-gray-400">종료됨</Button>
           </>

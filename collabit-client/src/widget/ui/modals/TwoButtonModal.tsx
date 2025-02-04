@@ -44,7 +44,10 @@ const TwoButtonModal = ({
           <Button
             type="button"
             className="h-11 w-32 font-medium transition-colors md:h-12 md:w-40"
-            onClick={handleConfirm}
+            onClick={() => {
+              handleConfirm();
+              closeModal();
+            }}
           >
             {confirmText}
           </Button>

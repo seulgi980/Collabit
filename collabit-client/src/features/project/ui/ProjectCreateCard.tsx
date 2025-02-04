@@ -1,58 +1,50 @@
-import ProjectCotnributor from "@/entities/project/ui/ProjectContributor";
-import { Button } from "@/shared/ui/button";
 import { Card, CardDescription, CardTitle } from "@/shared/ui/card";
-import { LockIcon } from "lucide-react";
-import {
-  GithubCollaboratorResponse,
-  GithubRepoResponse,
-} from "@/shared/types/response/project";
-import { useGithubProject } from "../api/useGithubProject";
+import { FormattedGithubRepo } from "@/shared/types/response/github";
+import formatRelativeTime from "@/shared/utils/formatRelativeTime";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { cn } from "@/shared/lib/shadcn/utils";
+import ProjectCreateButton from "@/entities/project/ui/ProjectCreateButton";
 
 interface ProjectCreateCardProps {
-  project: GithubRepoResponse & GithubCollaboratorResponse;
+  project: FormattedGithubRepo;
+  isSelected?: boolean;
 }
 
-const ProjectCreateCard = ({ project }: ProjectCreateCardProps) => {
-  const { handleCreateProject } = useGithubProject();
+const ProjectCreateCard = ({ project, isSelected }: ProjectCreateCardProps) => {
+  const router = useRouter();
+  const timeAgo = formatRelativeTime(project.updated_at);
 
-  const now = new Date();
-  const diffInMilliseconds = now.getTime() - project.updatedAt.getTime();
-
-  const hours = Math.floor(diffInMilliseconds / 3600000);
-  const days = Math.floor(hours / 24);
-  const months = Math.floor(days / 30);
-  const years = Math.floor(days / 365);
-
-  let timeAgo = "";
-
-  if (years > 0) {
-    timeAgo = `${years}년 전`;
-  } else if (months > 0) {
-    timeAgo = `${months}달 전`;
-  } else if (days > 0) {
-    timeAgo = `${days}일 전`;
-  } else if (hours > 0) {
-    timeAgo = `${hours}시간 전`;
-  }
   return (
-    <Card className="flex h-[90px] items-center justify-between bg-violet-50 px-4 drop-shadow-lg">
+    <Card
+      className={cn(
+        "flex h-[60px] w-full cursor-pointer items-center justify-between px-4 transition-colors",
+        isSelected
+          ? "bg-violet-200 hover:bg-violet-300"
+          : "bg-violet-50 hover:bg-violet-100",
+      )}
+      onClick={() => {
+        router.push(
+          `/project/create?keyword=${project.organization}&repo=${project.title}`,
+        );
+      }}
+    >
       <div className="flex flex-row items-center justify-between gap-4">
-        <ProjectCotnributor contributor={project.contributors} />
-        <CardTitle className="text-lg md:text-xl">{project.title}</CardTitle>
+        <Image
+          width={24}
+          height={24}
+          src="/images/github-profile.png"
+          alt="Github Profile"
+        />
+        <CardTitle className="text-md overflow-hidden text-ellipsis whitespace-nowrap">
+          {project.title}
+        </CardTitle>
       </div>
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" className="h-4 w-4">
-          <LockIcon className="h-full w-full text-gray-400" />
-        </Button>
-        <CardDescription className="mr-4 hidden w-[50px] text-right text-gray-400 md:block">
+      <div className="flex items-center justify-between gap-2">
+        <CardDescription className="mr-4 text-nowrap text-right text-gray-500">
           {timeAgo}
         </CardDescription>
-        <Button
-          className="bg-black"
-          onClick={() => handleCreateProject(project)}
-        >
-          선택
-        </Button>
+        <ProjectCreateButton project={project} />
       </div>
     </Card>
   );

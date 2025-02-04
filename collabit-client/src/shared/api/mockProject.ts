@@ -8,10 +8,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "네이버 페이 리뉴얼",
         code: 2025,
-        total: 8,
         participant: 6,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-15",
+        participationRate: 0.75,
         contributors: [
           {
             githubId: "github1",
@@ -50,10 +50,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "네이버 지도 UI 개선",
         code: 2024,
-        total: 6,
         participant: 4,
-        isDone: true,
+        done: true,
         createdAt: "2024-02-20",
+        participationRate: 0.67,
         contributors: [
           {
             githubId: "github3",
@@ -84,10 +84,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "네이버 검색 알고리즘 개선",
         code: 2029,
-        total: 2,
         participant: 2,
-        isDone: true,
+        done: true,
         createdAt: "2024-01-05",
+        participationRate: 0.5,
         contributors: [
           {
             githubId: "searchmaster",
@@ -102,10 +102,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "네이버 클라우드 보안 강화",
         code: 2030,
-        total: 4,
         participant: 3,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-25",
+        participationRate: 1.0,
         contributors: [
           {
             githubId: "cloudsec",
@@ -124,11 +124,11 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "네이버 블로그 리디자인",
         code: 2035,
-        total: 3,
         participant: 0,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-28",
-        contributor: [
+        participationRate: 1.0,
+        contributors: [
           {
             githubId: "blogdev1",
             profileImage: `https://www.gravatar.com/avatar/blogdev1?d=identicon&f=y`,
@@ -152,10 +152,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "카카오톡 채팅 기능 개선",
         code: 2026,
-        total: 7,
         participant: 5,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-10",
+        participationRate: 0.67,
         contributors: [
           {
             githubId: "github4",
@@ -190,9 +190,9 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "카카오페이 보안 감사",
         code: 2031,
-        total: 2,
         participant: 2,
-        isDone: true,
+        done: true,
+        participationRate: 1.0,
         createdAt: "2024-02-01",
         contributors: [
           {
@@ -208,10 +208,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "카카오 T 신규 기능 개발",
         code: 2032,
-        total: 5,
         participant: 3,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-18",
+        participationRate: 1.0,
         contributors: [
           {
             githubId: "mobilepro",
@@ -230,11 +230,11 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "카카오 게임 플랫폼 개선",
         code: 2036,
-        total: 4,
         participant: 0,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-27",
-        contributor: [
+        participationRate: 1.0,
+        contributors: [
           {
             githubId: "gamedev1",
             profileImage: `https://www.gravatar.com/avatar/gamedev1?d=identicon&f=y`,
@@ -262,10 +262,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "구글 클라우드 플랫폼 개선",
         code: 2027,
-        total: 10,
         participant: 8,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-20",
+        participationRate: 1.0,
         contributors: [
           {
             githubId: "cloudmaster",
@@ -312,10 +312,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "안드로이드 13 보안 업데이트",
         code: 2028,
-        total: 6,
         participant: 5,
-        isDone: true,
+        done: true,
         createdAt: "2024-02-15",
+        participationRate: 1.0,
         contributors: [
           {
             githubId: "androidsec",
@@ -346,10 +346,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "Chrome 확장프로그램 보안점검",
         code: 2033,
-        total: 2,
         participant: 2,
-        isDone: true,
+        done: true,
         createdAt: "2024-01-15",
+        participationRate: 1.0,
         contributors: [
           {
             githubId: "chromesec",
@@ -364,10 +364,10 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "Google Workspace AI 통합",
         code: 2034,
-        total: 7,
         participant: 4,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-22",
+        participationRate: 1.0,
         contributors: [
           {
             githubId: "aidev",
@@ -390,11 +390,11 @@ const mockProjectList: ProjectListResponse = [
       {
         title: "Google Maps API 업데이트",
         code: 2037,
-        total: 5,
         participant: 0,
-        isDone: false,
+        done: false,
         createdAt: "2024-03-26",
-        contributor: [
+        participationRate: 1.0,
+        contributors: [
           {
             githubId: "mapsdev",
             profileImage: `https://www.gravatar.com/avatar/mapsdev?d=identicon&f=y`,
@@ -433,21 +433,20 @@ export const getMockProjectListAPI = async ({
     ...org,
     projects: [...org.projects].sort((a, b) => {
       // isDone이 false인 항목이 앞으로 오도록 정렬
-      if (a.isDone === b.isDone) {
+      if (a.done === b.done) {
         // isDone이 같은 경우 생성일 기준 내림차순
         return (
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
       }
-      return a.isDone ? 1 : -1;
+      return a.done ? 1 : -1;
     }),
   }));
 
   if (keyword) {
     filteredProjects = filteredProjects
       .map((org) => ({
-        organization: org.organization,
-        organizationImage: org.organizationImage,
+        ...org,
         projects: org.projects.filter(
           (project) =>
             project.title.toLowerCase().includes(keyword.toLowerCase()) ||
@@ -460,20 +459,17 @@ export const getMockProjectListAPI = async ({
   // 정렬 처리
   if (sort) {
     filteredProjects = filteredProjects.map((org) => ({
-      organization: org.organization,
-      organizationImage: org.organizationImage,
+      ...org,
       projects: [...org.projects].sort((a, b) => {
         switch (sort) {
-          case "latest":
+          case "recent":
             return (
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
-          case "oldest":
-            return (
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-            );
-          case "participant":
-            return b.participant - a.participant;
+          case "participantRatio":
+            const ratioA = a.participant / (a.contributors?.length || 1) || 0;
+            const ratioB = b.participant / (b.contributors?.length || 1) || 0;
+            return ratioB - ratioA;
           default:
             return 0;
         }
