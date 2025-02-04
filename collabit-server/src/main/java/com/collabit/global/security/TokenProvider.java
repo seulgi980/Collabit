@@ -159,7 +159,7 @@ public class TokenProvider {
     }
 
     // JWT 토큰 파싱해서 내부 claims 추출
-    public Claims parseClaims(String accessToken) {
+    private Claims parseClaims(String accessToken) {
         try {
             return Jwts.parserBuilder().
                     setSigningKey(key) // 서명검증을 위한 비밀키 등록
