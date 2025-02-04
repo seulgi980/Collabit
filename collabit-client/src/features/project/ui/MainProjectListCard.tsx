@@ -1,7 +1,8 @@
+"use client";
 import ProjectCotnributor from "@/entities/project/ui/ProjectContributor";
 import { ProjectResponse } from "@/shared/types/response/project";
 import { Button } from "@/shared/ui/button";
-import { Card, CardDescription, CardTitle } from "@/shared/ui/card";
+import { Card, CardTitle } from "@/shared/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,45 +10,32 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { Progress } from "@/shared/ui/progress";
-import formatRelativeTime from "@/shared/utils/formatRelativeTime";
+import calcRatio from "@/shared/utils/calcRatio";
 import { DeleteIcon, Ellipsis, GithubIcon } from "lucide-react";
-import { useProjectList } from "@/features/project/api/useProjectList";
+import { useProjectList } from "../api/useProjectList";
 
 interface ProjectListCardProps {
-  organization: string;
   project: ProjectResponse;
+  organization: string;
   onClick?: (e: React.MouseEvent) => void;
 }
 
-const ProjectListCard2 = ({
+const MainProjectListCard = ({
   project,
   organization,
-  onClick,
 }: ProjectListCardProps) => {
-  const { handleRemoveProject, handleFinishSurvey } = useProjectList();
+  const { handleFinishSurvey, handleRemoveProject } = useProjectList();
 
-  const contributorsCount = project.contributors?.length;
-  const participantsRatio = Math.floor(
-    (project.participant * 100) / contributorsCount,
-  );
-
-  console.log(project);
+  const contributorsCount = project.contributors.length;
+  const participantsRatio = calcRatio(project.participant, contributorsCount);
 
   return (
-    <Card
-      onClick={onClick}
-      className="flex cursor-pointer flex-col items-center justify-between gap-3 bg-violet-50 px-4 py-4 drop-shadow-lg"
-    >
-      <div className="flex w-full items-center justify-between">
-        <div className="flex items-center gap-3">
-          <CardTitle className="text-lg">{project.title}</CardTitle>
-          <CardDescription className="text-xs">
-            {formatRelativeTime(project.createdAt)}
-          </CardDescription>
-        </div>
+    <Card className="flex cursor-pointer flex-col items-center justify-between gap-4 bg-violet-50 px-4 py-6 drop-shadow-lg">
+      <div className="flex w-full items-center justify-between gap-10">
+        <ProjectCotnributor contributor={project.contributors} />
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="z-10 flex h-5 w-5 items-center justify-center text-gray-400"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-violet-300"
             onClick={(e) => e.stopPropagation()}
           >
             <Ellipsis />
@@ -80,28 +68,17 @@ const ProjectListCard2 = ({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <div className="flex w-full items-center justify-between gap-10">
-        <div className="items-left flex w-full flex-col justify-center gap-2">
-          <div className="flex items-center">
-            <ProjectCotnributor size="sm" contributor={project.contributors} />
-            <span className="text-sm">
-              <span className="font-semibold">{contributorsCount}</span>명 중{" "}
-              <span className="font-semibold">{project.participant}</span>명
-              참여 / <span className="font-semibold">{participantsRatio}</span>%
-            </span>
-          </div>
-          <Progress
-            className="h-1 bg-white [&>div]:rounded-full [&>div]:bg-black [&>div]:transition-all"
-            value={participantsRatio}
-          />
-        </div>
+      <div className="flex w-full items-center justify-between">
+        <CardTitle className="text-lg">{project.title}</CardTitle>
         {project.done ? (
           <>
-            <Button className="z-5 disabled bg-gray-400">종료됨</Button>
+            <Button className="z-5 disabled bg-gray-400 px-2 text-xs font-semibold">
+              종료됨
+            </Button>
           </>
         ) : (
           <Button
-            className="z-5 bg-black"
+            className="z-5 bg-black px-2 text-xs font-semibold"
             onClick={(e) => {
               e.stopPropagation();
               handleFinishSurvey(project.code);
@@ -111,8 +88,19 @@ const ProjectListCard2 = ({
           </Button>
         )}
       </div>
+      <div className="items-left flex w-full flex-col justify-center gap-2">
+        <span className="text-sm">
+          <span className="font-semibold">{project.contributors.length}</span>명
+          중 <span className="font-semibold">{project.participant}</span>명 참여
+          / <span className="font-semibold">{participantsRatio}</span>%
+        </span>
+        <Progress
+          className="h-1 bg-white [&>div]:rounded-full [&>div]:bg-black [&>div]:transition-all"
+          value={participantsRatio}
+        />
+      </div>
     </Card>
   );
 };
 
-export default ProjectListCard2;
+export default MainProjectListCard;

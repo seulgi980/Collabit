@@ -10,7 +10,7 @@ const ProjectInfoCardSkeleton = () => {
           <Skeleton className="h-10 w-10 rounded-full" />
           <Skeleton className="h-7 w-40" />
         </div>
-        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-10 w-10" />
       </div>
 
       <div className="my-2 flex flex-col gap-2">

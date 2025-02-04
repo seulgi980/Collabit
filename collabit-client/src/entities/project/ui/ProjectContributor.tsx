@@ -12,10 +12,10 @@ const ProjectContributor = ({
   size = "md",
 }: ProjectContributorProps) => {
   const contributorCount = contributor?.length;
-  const avatarSize = size === "sm" ? "h-6 w-6" : "h-10 w-10";
+  const avatarSize = size === "sm" ? "h-6 w-6" : "h-8 w-8";
   const countSize = size === "sm" ? "text-xs" : "text-sm";
   const margin = size === "sm" ? "ml-[-10px]" : "ml-[-15px]";
-  const width = size === "sm" ? "w-[60px]" : "w-[90px]";
+  const width = size === "sm" ? "w-[60px]" : "w-[80px]";
   return (
     <div className={cn("flex", width)}>
       {/* 3명 이상일 때 */}
