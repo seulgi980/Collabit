@@ -5,6 +5,6 @@ export interface Comment {
   content: string;
   createdAt: Date;
   updatedAt: Date;
-  parentCommentCode: number;
+  parentCode: number;
   isDeleted: boolean;
 }

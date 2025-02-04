@@ -2,14 +2,15 @@
 import SearchBar from "@/entities/common/ui/SearchBar";
 import ProjectSelect from "@/entities/project/ui/ProjectSelect";
 import ProjectSortSelect from "@/entities/project/ui/ProjectSort";
-import { useGithubOrganization } from "@/features/project/api/useGithubOrganization";
-import { useGithubOrgRepo } from "@/features/project/api/useGithubOrgRepo";
-import { useGithubUserRepo } from "@/features/project/api/useGithubUserRepo";
-import ProjectCreateCard from "@/features/project/ui/ProjectCreateCard";
-import { FormattedGithubRepo } from "@/shared/types/response/github";
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/features/auth/api/useAuth";
+import { useGetGithubOrganizationList } from "@/features/project/api/useGetGithubOrganizationList";
+import { useGetGithubRepoList } from "@/features/project/api/useGetGithubRepoList";
+import ProjectCreateCard from "@/features/project/ui/ProjectCreateCard";
+import ProjectCreateCardSkeleton from "@/features/project/ui/ProjectCreateCardSkeleton";
+import { getGithubUserReposAPI } from "@/shared/api/github";
+import { ScrollArea } from "@/shared/ui/scroll-area";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ListPage() {
   const searchParams = useSearchParams();
@@ -18,82 +19,63 @@ export default function ListPage() {
   const { userInfo } = useAuth();
   const githubId = userInfo?.githubId || "";
 
-  const [organization, setOrganization] = useState(githubId);
-  const [keyword, setKeyword] = useState("");
-  const [sort, setSort] = useState("recent");
+  const [sort, setSort] = useState<"asc" | "desc">("desc");
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedValue, setSelectedValue] = useState(githubId);
 
   const { githubUserOrgs, isLoading: isGithubUserLoading } =
-    useGithubOrganization(githubId ?? "");
+    useGetGithubOrganizationList(githubId);
 
-  const isUserRepo = organization === githubId;
-  const { githubUserRepos, isLoading: isUserRepoLoading } = useGithubUserRepo(
-    isUserRepo ? organization : "",
-  );
-  const { githubOrgRepos, isLoading: isOrgRepoLoading } = useGithubOrgRepo(
-    isUserRepo ? "" : organization,
-  );
+  const { data, isLoading: isUserRepoLoading } = useGetGithubRepoList({
+    api: getGithubUserReposAPI,
+    direction: sort,
+    keyword: selectedValue,
+  });
 
-  const isLoading = isUserRepo ? isUserRepoLoading : isOrgRepoLoading;
+  const isLoading = isUserRepoLoading ?? isGithubUserLoading;
+  const myRepo = {
+    organization: githubId,
+    organizationImage: `https://github.com/${githubId}.png`,
+  };
 
-  const repositories: FormattedGithubRepo[] = isUserRepo
-    ? (githubUserRepos as FormattedGithubRepo[]) || []
-    : (githubOrgRepos as FormattedGithubRepo[]) || [];
+  useEffect(() => {
+    if (githubId) {
+      setSelectedValue(githubId);
+    }
+  }, [githubId]);
 
-  const filteredRepos = repositories
-    .filter((repo) => repo.title.toLowerCase().includes(keyword.toLowerCase()))
-    .sort((a, b) => {
-      const dateA = new Date(a.updated_at).getTime();
-      const dateB = new Date(b.updated_at).getTime();
-
-      return sort === "recent" ? dateB - dateA : dateA - dateB;
-    });
+  const options = [myRepo, ...githubUserOrgs];
 
   return (
     <div className="mx-auto flex w-full flex-col justify-center gap-5">
-      {/* 모바일 레이아웃 */}
-      <div className="flex flex-col gap-2 md:hidden">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between gap-2">
           <ProjectSelect
-            githubId={githubId}
-            organizations={githubUserOrgs}
-            organization={organization}
-            isLoading={isGithubUserLoading}
-            onOrganizationChange={setOrganization}
-            className="w-1/2"
+            options={options}
+            defaultValue={selectedValue}
+            onValueChange={setSelectedValue}
           />
-          <ProjectSortSelect sort={sort} onSort={setSort} className="w-1/2" />
+          <ProjectSortSelect sort={sort} onSort={setSort} />
         </div>
-        <SearchBar keyword={keyword} setKeyword={setKeyword} />
+        <SearchBar keyword={searchKeyword} setKeyword={setSearchKeyword} />
       </div>
 
-      {/* 데스크톱 레이아웃 */}
-      <div className="hidden md:flex md:items-center md:gap-2">
-        <ProjectSelect
-          githubId={githubId}
-          organizations={githubUserOrgs}
-          organization={organization}
-          isLoading={isGithubUserLoading}
-          onOrganizationChange={setOrganization}
-          className="w-[280px]"
-        />
-        <SearchBar keyword={keyword} setKeyword={setKeyword} />
-        <ProjectSortSelect sort={sort} onSort={setSort} className="w-[180px]" />
-      </div>
-
-      {isLoading ? (
-        <p className="text-center">로딩 중...</p>
-      ) : (
-        <ul className="flex flex-col gap-2">
-          {filteredRepos?.map((repo) => (
-            <li key={repo.title}>
-              <ProjectCreateCard
-                project={repo}
-                isSelected={repo.title === selectedRepo}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      <ScrollArea className="h-[calc(100vh-360px)] rounded-lg border p-4">
+        {isLoading ? (
+          <ProjectCreateCardSkeleton />
+        ) : (
+          <ul className="flex flex-col gap-2">
+            {data?.map((repo) => (
+              <li key={repo.title}>
+                <ProjectCreateCard
+                  project={repo}
+                  isSelected={repo.title === selectedRepo}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </ScrollArea>
     </div>
   );
 }

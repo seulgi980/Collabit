@@ -1,83 +1,30 @@
-"use client";
-import { useAuth } from "@/features/auth/api/useAuth";
-import { cn } from "@/shared/lib/shadcn/utils";
+import { PostListResponse } from "@/shared/types/response/post";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import { Button } from "@/shared/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import formatRelativeTime from "@/shared/utils/formatRelativeTime";
-import {
-  DeleteIcon,
-  Ellipsis,
-  Heart,
-  MessageCircle,
-  Pencil,
-  Send,
-} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/shared/lib/shadcn/utils";
+import formatRelativeTime from "@/shared/utils/formatRelativeTime";
+import { CommunityCardMenu } from "@/entities/community/ui/CommunityCardMenu";
+import { CommunityCardActions } from "@/entities/community/ui/CommunityCardAction";
 
-interface Post {
-  id: number;
-  user: {
-    nickname: string;
-    profileImage: string;
-  };
-  content: string;
-  images: string[];
-  likeCount: number;
-  commentCount: number;
-  isLiked: boolean;
-  createdAt: string;
-}
-const CommunityCard = ({ post }: { post: Post }) => {
-  const { userInfo } = useAuth();
+const CommunityCard = ({ post }: { post: PostListResponse }) => {
   return (
     <Link
-      href={`/community/${post.id}`}
+      href={`/community/${post.code}`}
       className="flex w-full flex-col gap-2 border-b border-b-border px-2 py-5"
     >
       <div className="flex w-full items-center justify-between">
         <div className="flex w-full items-center gap-2">
           <Avatar>
-            <AvatarImage src={post.user.profileImage} />
-            <AvatarFallback>{post.user.nickname.slice(0, 2)}</AvatarFallback>
+            <AvatarImage src={post.author.profileImage} />
+            <AvatarFallback>{post.author.nickname.slice(0, 2)}</AvatarFallback>
           </Avatar>
-          <span className="text-base font-medium">{post.user.nickname}</span>
+          <span className="text-base font-medium">{post.author.nickname}</span>
           <span className="text-sm text-muted-foreground">
-            {formatRelativeTime(post.createdAt)}
+            {formatRelativeTime(post.createdAt.toString())}
           </span>
         </div>
-        {userInfo?.nickname === post.user.nickname ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 px-2 py-1">
-              <Ellipsis
-                style={{ width: "1.2rem", height: "1.2rem" }}
-                className="text-muted-foreground"
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                className="cursor-pointer text-red-500"
-              >
-                <DeleteIcon />
-                게시물 삭제
-              </DropdownMenuItem>
-
-              <DropdownMenuItem onClick={() => {}} className="cursor-pointer">
-                <Pencil />
-                게시물 수정
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : null}
+        <CommunityCardMenu post={post} />
       </div>
       <p className="px-2 text-sm">{post.content}</p>
       <ul
@@ -110,27 +57,9 @@ const CommunityCard = ({ post }: { post: Post }) => {
           </li>
         ))}
       </ul>
-      <div className="flex items-center gap-1 text-muted-foreground">
-        <div className="flex items-center gap-1 px-2 py-1">
-          <MessageCircle className="size-4" />
-          <span className="text-sm">{post.commentCount}</span>
-        </div>
-        <div className="flex items-center">
-          <Button variant="ghost" className="flex items-center px-2 py-1">
-            <Heart
-              className={cn(
-                "size-4",
-                post.isLiked && "fill-red-500 text-red-500",
-              )}
-            />
-            <span className="text-sm">{post.likeCount}</span>
-          </Button>
-        </div>
-        <Button variant="ghost" className="flex items-center px-2 py-1">
-          <Send className="size-4" />
-        </Button>
-      </div>
+      <CommunityCardActions post={post} />
     </Link>
   );
 };
+
 export default CommunityCard;
