@@ -42,10 +42,10 @@ public class SurveyController {
         return ResponseEntity.ok(surveyService.getAllQuestions());
     }
 
-    @PostMapping("/response/save")
+    @PostMapping("/response/save/{projectInfoCode}")
     @Operation(summary="객관식 설문 답변 저장하기", description = "24개의 객관식 설문 답변내용을 mongoDB에 저장하는 API 입니다.")
     public ResponseEntity<ApiTextResponseDTO> saveResponse(
-            @RequestParam int projectInfoCode,
+            @PathVariable int projectInfoCode,
             @RequestBody @Valid SurveyResponseSaveRequestDTO surveyResponseSaveRequestDTO,
             HttpServletRequest request) {
 
