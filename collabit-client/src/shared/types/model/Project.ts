@@ -27,7 +27,7 @@ export type ProjectListItem = Pick<
   Project,
   "title" | "organization" | "organizationImage"
 > &
-  Pick<ProjectInfo, "code" | "total" | "participant" | "done"> & {
+  Pick<ProjectInfo, "code" | "total" | "participant" | "done" | "createdAt"> & {
     contributors: Contributor[];
     isUpdated: boolean;
   };

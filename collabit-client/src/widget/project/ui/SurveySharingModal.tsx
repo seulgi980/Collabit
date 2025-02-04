@@ -1,4 +1,3 @@
-import ProjectListCard2 from "@/features/project/ui/ProjectListCard2";
 import { useToast } from "@/shared/hooks/use-toast";
 import { ProjectResponse } from "@/shared/types/response/project";
 import { Button } from "@/shared/ui/button";
@@ -6,6 +5,7 @@ import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
 import { X } from "lucide-react";
 
+import ProjectListCard from "@/features/project/ui/ProjectListCard";
 import {
   Dialog,
   DialogClose,
@@ -48,7 +48,7 @@ const SurveySharingModal = ({
     <Dialog>
       <DialogTrigger asChild>
         <div>
-          <ProjectListCard2 organization={organization} project={project} />
+          <ProjectListCard organization={organization} project={project} />
         </div>
       </DialogTrigger>
       <DialogPortal>
