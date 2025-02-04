@@ -60,6 +60,7 @@ const useSignup = () => {
         title: "이미 가입된 이메일 입니다.",
         variant: "destructive",
       });
+      setIsLoading(false);
       return;
     }
     try {
@@ -176,8 +177,7 @@ const useSignup = () => {
     setIsLoading(true);
     try {
       // 닉네임 중복 API 호출
-      const isNicknameAvailable = await checkNicknameAPI(nicknameValue);
-      console.log(isNicknameAvailable);
+      await checkNicknameAPI(nicknameValue);
       openModal(
         <OneButtonModal
           title="사용 가능한 닉네임"
