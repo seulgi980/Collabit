@@ -25,10 +25,10 @@ import java.util.List;
 public class SurveyController {
     private final SurveyService surveyService;
 
-    @GetMapping("/check")
+    @GetMapping("/check/{projectInfoCode}")
     @Operation(summary="특정 userCode 유저가 특정 projectInfoCode 의 설문에 참여했는지 확인", description = "A가 projectInfoCode 1번의 설문을 이미 완료했는지 확인하는 API 입니다.(true면 참여완료)")
     public ResponseEntity<Boolean> checkIfUserCanEvaluate(
-            @RequestParam int projectInfoCode, HttpServletRequest request) {
+            @PathVariable int projectInfoCode, HttpServletRequest request) {
         // userCode 추출
         String userCode = SecurityUtil.getCurrentUserCode();
 
