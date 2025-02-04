@@ -26,14 +26,14 @@ export const getUserInfoAPI = async (): Promise<UserInfoResponse> => {
     const res = await fetch(`${apiUrl}/user`, {
       credentials: "include",
     });
+    console.log(res);
 
     if (!res.ok) {
       return { userInfo: undefined, isAuthenticated: false };
     }
     const data = await res.json();
     return { userInfo: data, isAuthenticated: true };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return { userInfo: undefined, isAuthenticated: false };
   }
 };
