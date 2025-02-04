@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @Tag(name = "UserController", description = "유저 API")
 @RequiredArgsConstructor
-@RestControllerAdvice
 @RequestMapping("/api/user")
 @RestController
 public class UserController {

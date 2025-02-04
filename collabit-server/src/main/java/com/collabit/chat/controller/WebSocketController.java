@@ -16,7 +16,6 @@ import org.springframework.web.socket.WebSocketSession;
 
 @Controller
 @RequiredArgsConstructor
-@RestControllerAdvice
 @Slf4j
 public class WebSocketController {
 

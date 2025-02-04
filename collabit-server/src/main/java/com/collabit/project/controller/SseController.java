@@ -11,7 +11,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RequestMapping("/api/sse")
 @RequiredArgsConstructor
-@RestControllerAdvice
 @RestController
 public class SseController {
 
