@@ -20,7 +20,7 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
 
   return (
     <ScrollArea className="flex h-full max-h-[calc(100vh-260px)] flex-col gap-4 overflow-y-auto rounded-lg border p-4">
-      <div className="flex items-center justify-between gap-4">
+      <div className="mb-5 flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Avatar>
             <AvatarImage src={repo.organizationImage} />
@@ -28,13 +28,17 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
           </Avatar>
           <h2 className="text-xl font-bold">{repo.title}</h2>
         </div>
-        <Button
-          className="bg-black"
+        <button
+          className="p-2"
           onClick={() => window.open(repo.html_url, "_blank")}
         >
-          <Github className="h-4 w-4" />
-          Github
-        </Button>
+          <Image
+            width={32}
+            height={32}
+            src="/images/github-profile.png"
+            alt="Github Profile"
+          />
+        </button>
       </div>
 
       <div className="my-2 flex flex-col gap-2">
@@ -52,7 +56,7 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
           variant="secondary"
           className="flex w-full items-center justify-center gap-2 py-2"
         >
-          <Star className="h-5 w-5 fill-yellow-300 text-yellow-300" />
+          <Star className="size-10 h-5 w-5 fill-yellow-300 text-yellow-300" />
           <span>{repo.stargazers_count}</span>
         </Badge>
         <Badge
@@ -70,7 +74,7 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
           <span>{repo.open_issues_count}</span>
         </Badge>
       </div>
-      <hr className="my-2" />
+      <hr className="my-5" />
       <div>
         <h3 className="mb-2 text-lg font-semibold">Contributors</h3>
         <div className="flex flex-wrap gap-2">
@@ -80,7 +84,7 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
             contributors?.map((contributor) => (
               <div
                 key={contributor.githubId}
-                className="flex items-center gap-2 rounded-lg bg-violet-100 p-2"
+                className="flex items-center gap-2 rounded-full bg-gray-100 p-2"
               >
                 <Image
                   src={contributor.profileImage}

@@ -2,6 +2,7 @@
 
 import { removeProjectAPI, updateProjectDoneAPI } from "@/shared/api/project";
 import useModalStore from "@/shared/lib/stores/modalStore";
+import OneButtonModal from "@/widget/ui/modals/OneButtonModal";
 import TwoButtonModal from "@/widget/ui/modals/TwoButtonModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -13,7 +14,14 @@ export const useProjectList = () => {
     mutationFn: removeProjectAPI,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projectList"] });
-      closeModal();
+      openModal(
+        <OneButtonModal
+          title="프로젝트 삭제"
+          description="프로젝트가 성공적으로 삭제되었습니다."
+          buttonText="확인"
+          handleButtonClick={() => closeModal()}
+        />,
+      );
     },
   });
 
@@ -21,7 +29,14 @@ export const useProjectList = () => {
     mutationFn: updateProjectDoneAPI,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projectList"] });
-      closeModal();
+      openModal(
+        <OneButtonModal
+          title="프로젝트 종료"
+          description="프로젝트가 성공적으로 종료되었습니다."
+          buttonText="확인"
+          handleButtonClick={() => closeModal()}
+        />,
+      );
     },
   });
 
