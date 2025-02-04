@@ -25,8 +25,8 @@ public class ProjectRedisSubscriber implements MessageListener {
         try {
             String channel = new String(message.getChannel(), StandardCharsets.UTF_8);
 
-            // key 구조 = newSurveyResponse:targetCode:projectInfoCode
-            String[] keyParts = channel.split(":");
+            // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9
+            String[] keyParts = channel.split("::");
 
             if(keyParts.length == 3) {
                 String key = keyParts[0];
