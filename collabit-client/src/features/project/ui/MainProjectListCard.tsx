@@ -1,3 +1,4 @@
+"use client";
 import ProjectCotnributor from "@/entities/project/ui/ProjectContributor";
 import { ProjectResponse } from "@/shared/types/response/project";
 import { Button } from "@/shared/ui/button";
@@ -10,7 +11,7 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { Progress } from "@/shared/ui/progress";
 import calcRatio from "@/shared/utils/calcRatio";
-import { DeleteIcon, EllipsisVertical, GithubIcon } from "lucide-react";
+import { DeleteIcon, Ellipsis, GithubIcon } from "lucide-react";
 import { useProjectList } from "../api/useProjectList";
 
 interface ProjectListCardProps {
@@ -34,10 +35,10 @@ const MainProjectListCard = ({
         <ProjectCotnributor contributor={project.contributors} />
         <DropdownMenu>
           <DropdownMenuTrigger
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-300"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-violet-300"
             onClick={(e) => e.stopPropagation()}
           >
-            <EllipsisVertical />
+            <Ellipsis />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {/* 설문 참여 인원이 0명일 때만 프로젝트 삭제 가능*/}
@@ -68,14 +69,16 @@ const MainProjectListCard = ({
         </DropdownMenu>
       </div>
       <div className="flex w-full items-center justify-between">
-        <CardTitle className="text-xl">{project.title}</CardTitle>
+        <CardTitle className="text-lg">{project.title}</CardTitle>
         {project.done ? (
           <>
-            <Button className="z-5 disabled bg-gray-400">종료됨</Button>
+            <Button className="z-5 disabled bg-gray-400 px-2 text-xs font-semibold">
+              종료됨
+            </Button>
           </>
         ) : (
           <Button
-            className="z-5 bg-black"
+            className="z-5 bg-black px-2 text-xs font-semibold"
             onClick={(e) => {
               e.stopPropagation();
               handleFinishSurvey(project.code);

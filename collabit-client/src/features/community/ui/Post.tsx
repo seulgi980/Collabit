@@ -4,6 +4,7 @@ import { Button } from "@/shared/ui/button";
 import { Card, CardContent } from "@/shared/ui/card";
 import {
   Carousel,
+  CarouselApi,
   CarouselContent,
   CarouselItem,
   CarouselNext,
@@ -11,6 +12,7 @@ import {
 } from "@/shared/ui/carousel";
 import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 import TextareaAutosize from "react-textarea-autosize";
 
@@ -35,6 +37,22 @@ const Post = ({
   handleDeleteImage,
   handleSubmit,
 }: PostProps) => {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -88,7 +106,13 @@ const Post = ({
       </div>
 
       {preview.length > 0 && (
-        <Carousel className="w-full px-10">
+        <Carousel
+          opts={{
+            align: "start",
+          }}
+          setApi={setApi}
+          className="w-full px-10"
+        >
           <CarouselContent>
             {preview.map((prev, index) => (
               <CarouselItem
