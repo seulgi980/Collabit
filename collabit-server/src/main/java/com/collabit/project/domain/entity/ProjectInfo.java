@@ -7,8 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -42,7 +41,7 @@ public class ProjectInfo {
     private boolean isDone = false;
 
     @Column(name = "created_at", nullable = false, insertable = false)
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Builder.Default
     @Column(nullable = false)

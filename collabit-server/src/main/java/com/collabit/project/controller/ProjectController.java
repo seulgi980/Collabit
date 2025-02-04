@@ -18,7 +18,6 @@ import java.util.List;
 @Tag(name = "ProjectController", description = "프로젝트 API")
 @Slf4j
 @RequiredArgsConstructor
-@RestControllerAdvice
 @RequestMapping("/api/project")
 @RestController
 public class ProjectController {
