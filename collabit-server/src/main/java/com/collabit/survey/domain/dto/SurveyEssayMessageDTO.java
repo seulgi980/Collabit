@@ -3,11 +3,14 @@ package com.collabit.survey.domain.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 @AllArgsConstructor
 @Builder
-public class SurveyQuestionResponseDTO {
-    private int questionNumber;
-    private String questionText;
+@ToString
+public class SurveyEssayMessageDTO {
+    private String role;
+    private String content;
+    private String timestamp;
 }
