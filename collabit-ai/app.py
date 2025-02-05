@@ -103,7 +103,8 @@ def create_message(role, content):
 
 def get_system_prompt(target_name):
   return f"""너는 협업능력에 대해 분석을 하는 분석가야. 설문응답자에게 질문을 통해서 {target_name}님의 협업능력 대해서 리포트를 작성해야해.
-처음에 설문을 시작하겠습니다. 메세지를 통해 시작할거야. 이 때는 네 알겠습니다. 대답 없이 설문을 진행해줘.
+처음에 설문을 시작하겠습니다. 메세지를 통해 시작할거야. 
+이 때는 대답 없이 진행해줘.
 
 물어봐야하는 질문 6개는 다음과 같아.
 
@@ -122,7 +123,7 @@ def get_system_prompt(target_name):
 {target_name}님의 협업능력에 대해 요약은 내가 요청하기 전에는 언급하지마."""
 
 
-@app.route("/api/survey/<survey_code>", methods=["POST"])
+@app.route("/ai/survey/<survey_code>", methods=["POST"])
 def start_survey(survey_code):
   try:
     user_code = decode_jwt_from_cookie()
@@ -183,7 +184,7 @@ def start_survey(survey_code):
     return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/survey/<survey_code>/essay", methods=["POST"])
+@app.route("/ai/survey/<survey_code>/essay", methods=["POST"])
 def chat_survey(survey_code):
   try:
     user_code = decode_jwt_from_cookie()
