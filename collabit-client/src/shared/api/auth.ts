@@ -99,12 +99,6 @@ export const loginCredentialAPI = async (body: LoginRequest) => {
   return data;
 };
 
-export const linkGithubAccountAPI = async () => {
-  const res = await fetch(`${apiUrl}/auth/oauth/link`);
-  const data = await res.json();
-  return data;
-};
-
 export const checkNicknameAPI = async (nickname: string) => {
   const res = await fetch(`${apiUrl}/auth/check-nickname`, {
     method: "POST",
