@@ -1,6 +1,8 @@
 export interface Project {
   code: number;
   title: string;
+  organization: string;
+  organizationImage: string;
 }
 export interface ProjectInfo {
   code: number;
@@ -8,17 +10,18 @@ export interface ProjectInfo {
   userCode: string;
   total: number;
   participant: number;
-  totalScore: number;
-  idDone: boolean;
+  done: boolean;
+  createdAt: string;
+  sympathy: number;
+  listening: number;
+  expression: number;
+  problemSolving: number;
+  conflictResolution: number;
+  leadership: number;
 }
-
 export interface Contributor {
-  code: number;
-  id: string;
+  githubId: string;
   profileImage: string;
 }
-export interface ProjectContributor {
-  projectCode: number;
-  projectInfoCode: number;
-  contributorCode: number;
-}
+
+export type ProjectTitle = Pick<Project, "title" | "organization">;

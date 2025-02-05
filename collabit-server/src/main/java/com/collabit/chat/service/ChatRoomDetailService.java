@@ -37,18 +37,24 @@ public class ChatRoomDetailService {
 
         // 채팅방 참여 여부 확인
         if (!isUserInChatRoom(userCode, roomCode)) {
+            log.debug("User {} is not in chat room", userCode);
             throw new UserNotInChatRoomException();
         }
 
         Pageable pageable = PageRequest.of(requestDTO.getPageNumber(), 50);
         Page<ChatMessage> chatMessagePage = chatMessageRepository.findByRoomCodeOrderByTimestampDesc(roomCode, pageable);
+        log.debug("ChatMessagePage {}", chatMessagePage.toString());
+
 
         List<ChatMessageResponseDTO> chatMessages = chatMessagePage.getContent().stream()
                 .map(this::convertToResponseDTO)
                 .toList();
+        log.debug("ChatMessages {}", chatMessages);
 
         // 채팅방 상세 정보 생성
         ChatRoomDetailResponseDTO chatRoomDetail = buildChatRoomDetailResponse(userCode, roomCode, chatMessages);
+        log.debug("ChatRoomDetail {}", chatRoomDetail);
+
         return PageResponseDTO.builder()
                 .content(chatRoomDetail)
                 .pageNumber(requestDTO.getPageNumber())
@@ -75,6 +81,7 @@ public class ChatRoomDetailService {
                 .isRead(false)
                 .build();
 
+        log.debug("ChatMessage saving... {}", chatMessage);
         chatMessageRepository.save(chatMessage);
         log.info("메시지 저장 완료: Room {}, Message {}", roomCode, chatMessageRequestDTO.getMessage());
     }
@@ -82,6 +89,7 @@ public class ChatRoomDetailService {
     // 채팅방 상세 정보 생성
     private ChatRoomDetailResponseDTO buildChatRoomDetailResponse(String userCode, int roomCode, List<ChatMessageResponseDTO> messages) {
         User user = getUserByUserCode(userCode, roomCode);
+        log.debug("ChatRoomDetailResponse {}", user.toString());
         return ChatRoomDetailResponseDTO.builder()
                 .messages(messages)
                 .roomCode(roomCode)

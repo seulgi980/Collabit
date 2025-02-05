@@ -26,7 +26,9 @@ public class S3Service {
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
-    private static final String BASEURL = "https://collabit-s3.s3.ap-northeast-2.amazonaws.com/";
+    @Value("${cloud.aws.s3.base-url}")
+    private String baseUrl;
+
 
     public String upload(MultipartFile file, String dirName) {
         if (file.isEmpty()) {
@@ -45,7 +47,7 @@ public class S3Service {
 
     public boolean delete(String fileUrl) {
         try {
-            amazonS3.deleteObject(new DeleteObjectRequest(bucket, BASEURL + fileUrl));
+            amazonS3.deleteObject(new DeleteObjectRequest(bucket, baseUrl + fileUrl));
             return true;
         } catch (AmazonServiceException e) {
             log.error(e.getMessage());
@@ -56,6 +58,6 @@ public class S3Service {
     }
 
     private String extractUrl(String Url) {
-        return Url.substring(BASEURL.length());
+        return Url.substring(baseUrl.length());
     }
 }

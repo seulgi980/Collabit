@@ -6,11 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import lombok.ToString;
 
 @Embeddable
 @Getter
 @NoArgsConstructor
 @EqualsAndHashCode
+@ToString
 public class PostLikeId implements Serializable {
 
     private String userCode;

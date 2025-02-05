@@ -32,7 +32,10 @@ public class ChatRoomListService {
     // 닉네임으로 사용자 찾기
     private User getUserByNickname(String nickname) {
         return userRepository.findByNickname(nickname)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> {
+                    log.debug("User with nickname {} not found", nickname);
+                    return new UserNotFoundException();
+                });
     }
 
     // 닉네임으로 채팅방 조회
@@ -42,6 +45,7 @@ public class ChatRoomListService {
         String uniqueCode = ChatRoom.generateChatRoomCode(userCode, userCode2);
         Optional<ChatRoom> chatRoom = chatRoomRepository.findByUniqueCode(uniqueCode);
         int roomCode = chatRoom.map(ChatRoom::getCode).orElse(-1);
+        log.debug("Chat room code {} for user code {}", roomCode, userCode);
 
         return ChatRoomResponseDTO.builder()
                 .roomCode(roomCode)
@@ -52,7 +56,7 @@ public class ChatRoomListService {
     public ChatRoomResponseDTO saveChatRoom(String userCode, ChatRoomRequestDTO requestDTO) {
         String nickname = requestDTO.getNickname();
 
-        User user = getUserByNickname(nickname); // 사용자 조회
+        User user = getUserByNickname(nickname);
         String userCode2 = user.getCode();
 
         // 채팅방 고유 코드 생성
@@ -60,6 +64,7 @@ public class ChatRoomListService {
         // 채팅방 중복 확인 또는 새 채팅방 생성
         ChatRoom chatRoom = chatRoomRepository.findByUniqueCode(uniqueCode)
                 .orElseGet(() -> createNewChatRoom(userCode, userCode2, uniqueCode));
+        log.debug("Chat room code {} for user code {}", chatRoom.getCode(), userCode);
 
         return buildChatRoomResponseDTO(chatRoom);
     }
@@ -68,7 +73,7 @@ public class ChatRoomListService {
     private ChatRoom createNewChatRoom(String userCode1, String userCode2, String uniqueCode) {
         User user1 = userRepository.findById(userCode1).orElseThrow(UserNotFoundException::new);
         User user2 = userRepository.findById(userCode2).orElseThrow(UserNotFoundException::new);
-
+        log.debug("Creating new chat room {}", uniqueCode);
         return chatRoomRepository.save(
                 ChatRoom.builder()
                         .user1(user1)
@@ -92,9 +97,11 @@ public class ChatRoomListService {
         User user = userRepository.findById(userCode).orElseThrow();
 
         Page<ChatRoom> chatRoomPage = chatRoomRepository.findByUser1OrUser2(user, user, pageable);
+        log.debug("Chat room count {}", chatRoomPage.toString());
         List<ChatRoomListResponseDTO> chatRoomList = chatRoomPage.getContent().stream()
                 .map(chatRoom -> buildChatRoomListResponse(chatRoom, userCode))
                 .toList();
+        log.debug(chatRoomList.toString());
 
         return PageResponseDTO.builder()
                 .content(chatRoomList)
@@ -112,6 +119,7 @@ public class ChatRoomListService {
         ChatMessage lastMessage = chatMessageRepository.findTopByRoomCodeOrderByTimestampDesc(chatRoom.getCode());
         int unreadCount = chatRedisService.getUnreadMessagesCount(chatRoom.getCode(), userCode);
         User otherUser = getOtherUser(chatRoom, userCode);
+        log.debug("Chat room {} has {} unread messages", chatRoom.getCode(), unreadCount);
 
         return ChatRoomListResponseDTO.builder()
                 .roomCode(chatRoom.getCode())

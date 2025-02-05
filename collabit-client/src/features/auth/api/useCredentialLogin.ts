@@ -52,6 +52,8 @@ const useCredentialLogin = () => {
   const onSubmit = async (data: z.infer<typeof LoginSchema>) => {
     try {
       await loginCredentialAPI(data);
+      console.log("login success");
+      router.push("/auth/callback");
     } catch (error) {
       console.error(error);
     }

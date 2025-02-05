@@ -16,8 +16,7 @@ const useLoginCallback = () => {
         queryKey: ["auth"],
         queryFn: () => getUserInfoAPI(),
       });
-      console.log(auth);
-      if (auth.isAuthencicated) {
+      if (auth.isAuthenticated) {
         router.push("/");
       } else {
         openModal(
@@ -26,7 +25,7 @@ const useLoginCallback = () => {
             description="로그인에 실패했습니다."
             buttonText="확인"
             handleButtonClick={() => {
-              router.push("/auth/login");
+              router.push("/login");
               closeModal();
             }}
           />,

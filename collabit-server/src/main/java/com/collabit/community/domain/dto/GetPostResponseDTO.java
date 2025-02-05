@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class GetPostResponseDTO {
     int code;
-    String userCode;
+    String userNickname;
     String content;
     String[] images;
     LocalDateTime createdAt;

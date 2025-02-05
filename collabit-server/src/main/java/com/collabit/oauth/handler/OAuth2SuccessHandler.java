@@ -1,6 +1,6 @@
 package com.collabit.oauth.handler;
 
-import com.collabit.auth.domain.dto.TokenDto;
+import com.collabit.auth.domain.dto.TokenDTO;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.oauth.domain.enums.OAuth2Status;
 import com.collabit.oauth.service.OAuth2Service;
@@ -8,6 +8,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -30,6 +32,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                         Authentication authentication) throws IOException {
 
         OAuth2Status oAuth2Status = oAuth2Service.getOAuth2Status(); // 로그인, 회원가입, 연동 구분
+        log.debug("OAuth2 status is {}", oAuth2Status);
 
         // 로그인/회원가입 성공시에만 토큰 발급
         if (oAuth2Status != OAuth2Status.GITHUB_LINK_SUCCESS) {
@@ -42,7 +45,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     // 인증 정보로부터 토큰을 생성하여 쿠키에 저장
     private void addAuthTokens(HttpServletResponse response, Authentication authentication) {
-        TokenDto tokenDto = tokenProvider.generateTokenDto(authentication);
+        TokenDTO tokenDto = tokenProvider.generateTokenDto(authentication);
 
         addCookie(response, "accessToken", tokenDto.getAccessToken(),
                 tokenProvider.getAccessTokenExpireTime() / 1000);

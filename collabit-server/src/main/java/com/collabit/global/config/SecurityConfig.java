@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,17 +31,17 @@ public class SecurityConfig {
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, RedisTemplate<String, Object> redisTemplate) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
             .authorizeHttpRequests(auth -> {
-                auth.requestMatchers("/api/user/sign-up","/api/user/login", "/api/auth/**", "/error").permitAll();
+                auth.requestMatchers("/api/user/sign-up","/api/user/login", "/api/auth/**", "/error", "/api/user/**", "/api/survey/**").permitAll();
                 auth.requestMatchers("/api/oauth").anonymous(); // oauth 회원가입, 로그인의 경우 토큰이 있는 사용자 거부
-                auth.requestMatchers("/api/oauth/link").authenticated();
                 auth.requestMatchers("/api/oauth/**").permitAll();
                 auth.requestMatchers("/oauth2/authorization/**").permitAll();
                 auth.requestMatchers("/login/oauth2/code/**").permitAll();
@@ -49,7 +50,7 @@ public class SecurityConfig {
             })
 
             .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class) // cors필터 추가
-            .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
+            .addFilterBefore(new JwtFilter(tokenProvider, redisTemplate), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
 
             // exception handling 할 때 우리가 만든 클래스 추가
             .exceptionHandling((exceptionHandling) ->

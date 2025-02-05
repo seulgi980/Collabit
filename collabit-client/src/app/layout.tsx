@@ -25,10 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko-KR">
-      <body className={`${inter.className} `}>
+      <body className={`${inter.className}`}>
         <QueryProviders>
           <Header />
-          <main className="w-full px-5 md:px-20">{children}</main>
+          <main className="w-full px-5 pb-10 md:px-20 md:pb-0">{children}</main>
           <Footer />
           <ModalContainer />
           <Toaster />
