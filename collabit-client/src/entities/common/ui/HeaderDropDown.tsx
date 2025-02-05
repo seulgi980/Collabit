@@ -1,3 +1,4 @@
+import { UserInfo } from "@/shared/types/model/User";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,21 +9,25 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { LogOutIcon, User } from "lucide-react";
 import { ComponentType } from "react";
+import UserAvatar from "./UserAvatar";
 
 interface HeaderDropDownProps {
   handleToMyPage: () => void;
   handleLogout: () => void;
+  user?: UserInfo;
   Icon: ComponentType;
 }
 
 const HeaderDropDown = ({
   Icon,
+  user,
   handleToMyPage,
   handleLogout,
 }: HeaderDropDownProps) => {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger className="flex items-center justify-center gap-2">
+        {user && <UserAvatar user={user} />}
         <Icon />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
