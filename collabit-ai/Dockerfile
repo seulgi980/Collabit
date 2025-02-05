@@ -1,8 +1,14 @@
 FROM python:3.12-alpine
+
 WORKDIR /app
+
 RUN apk add --no-cache build-base
+
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt gunicorn  # Gunicorn 추가
+
 COPY . .
+
 EXPOSE 5000
-CMD ["python", "app.py"]
+
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
