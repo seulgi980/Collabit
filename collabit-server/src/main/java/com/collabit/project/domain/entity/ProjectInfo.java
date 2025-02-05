@@ -73,4 +73,8 @@ public class ProjectInfo {
     public void completeSurvey() {
         this.isDone = true;
     }
+
+    public void increaseParticipant(int amount) {
+        this.participant += amount;
+    }
 }

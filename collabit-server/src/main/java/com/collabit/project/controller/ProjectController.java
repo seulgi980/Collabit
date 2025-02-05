@@ -69,7 +69,7 @@ public class ProjectController {
         return ResponseEntity.ok(projectList);
     }
 
-    @Operation(summary = "프로젝트 설문 마감", description = "로그인된 사용자의 특정 프로젝트를 마감하는 API 입니다.")
+    @Operation(summary = "프로젝트 설문 마감", description = "로그인 사용자의 특정 프로젝트를 마감하는 API 입니다.")
     @PatchMapping("/done/{code}")
     public ResponseEntity<?> closeProjectSurvey(@PathVariable int code) {
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -87,6 +87,23 @@ public class ProjectController {
 
         projectService.removeProject(userCode, code);
         log.debug("프로젝트 삭제 완료 - 삭제된 프로젝트 code: {}", code);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "프로젝트 알림 조회", description = "설문응답 알림을 확인할 경우 Redis의 알림 정보를 삭제하는 API 입니다. " +
+            "ProjectInfoCode가 param으로 들어올 경우 해당 프로젝트의 알림만 삭제됩니다.")
+    @DeleteMapping("/notification/{code}")
+    public ResponseEntity<?> deleteProjectNotification(@RequestParam(required = false) Integer code) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        if(code == null){
+            projectService.removeAllNotification(userCode);
+        }
+        else{
+            projectService.removeNotification(userCode, code);
+        }
+        log.debug("프로젝트 알림 삭제 완료");
 
         return ResponseEntity.ok().build();
     }

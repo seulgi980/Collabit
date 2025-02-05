@@ -22,6 +22,8 @@ public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Intege
             "WHERE pi.user.code = :userCode")
     List<ProjectInfo> findByUserCodeWithProject(@Param("userCode") String userCode);
 
+    List<ProjectInfo> findByUserCode(String userCode);
+
     List<ProjectInfo> findByProjectCodeOrderByCodeAsc(int code);
 
     @Transactional

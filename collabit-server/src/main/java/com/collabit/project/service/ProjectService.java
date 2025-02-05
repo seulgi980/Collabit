@@ -31,10 +31,7 @@ public class ProjectService {
     private final ContributorRepository contributorRepository;
     private final ProjectContributorRepository projectContributorRepository;
     private final UserRepository userRepository;
-    private final RedisService redisService;
-
-    // 새로운 설문 응답에 대한 Redis Key
-    private static final String NEW_SURVEY_RESPONSE_KEY_PREFIX = "newSurveyResponse:targetCode:";
+    private final ProjectRedisService projectRedisService;
 
     // User 검증 메소드
     private User findUserByCode(String userCode) {
@@ -198,7 +195,7 @@ public class ProjectService {
                 .collect(Collectors.groupingBy(pi -> pi.getProject().getOrganization()));
 
         // 4. Redis에서 newSurveyResponse 정보를 한 번에 조회
-        Map<Integer, Boolean> newSurveyResponseMap = redisService.findNewSurveyResponsesByUserCode(userCode);
+        Map<Integer, Boolean> newSurveyResponseMap = projectRedisService.findNewSurveyResponsesByUserCode(userCode);
 
         // 5. organizaion으로 묶은 ProjectInfo 리스트를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
         List<GetProjectListResponseDTO> result = groupedByOrg.entrySet().stream()
@@ -289,12 +286,13 @@ public class ProjectService {
         return result;
     }
 
+    // 프로젝트 설문조사 마감
     public void updateProjectSurveyState(String userCode, int code) {
         // 해당 projectInfo가 현재 로그인된 user의 소유가 맞는지 검증
         ProjectInfo projectInfo = validateProjectInfo(userCode, code);
 
         if (projectInfo.isDone()) {
-            log.error("isDone이 이미 true인 경우 - 해당 ProjectInfo의 isDone: {}", projectInfo.isDone());
+            log.error("isDone이 이미 true인 경우 - 해당 ProjectInfo의 isDone: {}", true);
             throw new RuntimeException("해당 프로젝트의 설문조사는 이미 마감되었습니다.");
         }
 
@@ -304,7 +302,7 @@ public class ProjectService {
             throw new RuntimeException("해당 프로젝트의 설문 참여자 수가 부족합니다. 전체 인원의 반 이상이 참여해야 마감이 가능합니다.");
         }
 
-       log.debug("해당 프로젝트 설문조사 마감 시작 - 해당 ProjectInfo의 isDone: {}", projectInfo.isDone());
+       log.debug("해당 프로젝트 설문조사 마감 시작 - 해당 ProjectInfo의 isDone: {}", false);
        projectInfo.completeSurvey();
        projectInfoRepository.save(projectInfo);
        log.debug("해당 프로젝트 설문조사 마감 완료");
@@ -312,6 +310,7 @@ public class ProjectService {
        // 포트폴리오 개발 시 isUpdate 함께 변경
     }
 
+    // 해당 프로젝트 설문에 참여한 사람이 없을 경우 프로젝트 삭제
     public void removeProject(String userCode, int code) {
         // 삭제할 projectInfo가 현재 로그인된 user의 소유가 맞는지 검증
         ProjectInfo projectInfo = validateProjectInfo(userCode, code);
@@ -409,7 +408,7 @@ public class ProjectService {
         log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
 
         // 2. Redis에서 newSurveyResponse 정보를 한 번에 조회
-        Map<Integer, Boolean> newSurveyResponseMap = redisService.findNewSurveyResponsesByUserCode(userCode);
+        Map<Integer, Boolean> newSurveyResponseMap = projectRedisService.findNewSurveyResponsesByUserCode(userCode);
 
         // 3. ProjectInfo 리스트를 기반으로 Project 정보와 Contributor 정보를 조회 후 DTO 매핑
         List<GetMainProjectListResponseDTO> result = projectInfoList.stream()
@@ -453,5 +452,52 @@ public class ProjectService {
 
         log.info("메인페이지 프로젝트 목록 조회 완료 - 조회된 organization 수: {}", result.size());
         return result;
+    }
+
+    // 해당 유저의 모든 프로젝트 알림 삭제
+    public void removeAllNotification(String userCode) {
+        log.debug("해당 유저의 모든 프로젝트 알림 삭제 시작");
+
+        // Redis에서 key가 newSurveyResponse::userCode인 데이터 삭제하며 가져오기
+        Map<Integer, Object> notificationList = projectRedisService.removeAllNotificationByUserCode(userCode);
+        log.debug("해당 유저의 모든 프로젝트 알림 삭제 완료 - 삭제된 알림 수 {}", notificationList.size());
+
+        // 각 projectInfoCode의 DB의 참여자 수 업데이트
+        List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCode(userCode);
+
+        for(Integer projectInfoCode : notificationList.keySet()) {
+            // projectInfoList에서 redis에 있던 projectInfoCode를 가진 projectInfo 찾기
+            projectInfoList.stream()
+                    .filter(info -> info.getCode() == projectInfoCode)
+                    .findFirst()
+                    .ifPresent(info -> {
+                        // Redis에서 가져온 값으로 participant 수 업데이트
+                        Object value = notificationList.get(projectInfoCode);
+                        if (value != null) {
+                            info.increaseParticipant(((Number) value).intValue()); // redis에서 가져온 Object 타입을 int형으로
+                            projectInfoRepository.save(info);
+                        }
+                    });
+        }
+        log.debug("Redis에 알림이 있던 전체 projectInfo {}개에 대해 participant 수 업데이트 완료", notificationList.size());
+    }
+
+    // 해당 프로젝트의 알림만 삭제
+    public void removeNotification(String userCode, int code){
+        log.debug("특정 프로젝트 알림 삭제 시작");
+
+        // Redis에서 특정 프로젝트 알림 삭제하며 값 가져오기
+        Object value = projectRedisService.removeNotificationByUserCodeAndProjectCode(userCode, code);
+
+        if (value != null) {
+            projectInfoRepository.findById(code) // projectInfo 조회
+                    .ifPresent(info -> {
+                        // Redis에서 가져온 값으로 participant 수 업데이트
+                        info.increaseParticipant(((Number) value).intValue());
+                        projectInfoRepository.save(info);
+                        log.debug("ProjectInfo(code: {}) participant 수 업데이트 완료: {}",
+                                code, value);
+                    });
+        }
     }
 }
