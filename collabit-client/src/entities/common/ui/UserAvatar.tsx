@@ -1,7 +1,5 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
-import HeaderDropDown from "./HeaderDropDown";
-import { ChevronDown } from "lucide-react";
 import { UserInfo } from "@/shared/types/model/User";
 import { cn } from "@/shared/lib/shadcn/utils";
 
@@ -13,8 +11,6 @@ interface UserAvatarProps {
 }
 const UserAvatar = ({
   user,
-  handleLogout,
-  handleToMyPage,
   size = "md",
 }: UserAvatarProps) => {
   return (
@@ -26,13 +22,6 @@ const UserAvatar = ({
       <span className={cn("font-semibold", size === "sm" && "text-md")}>
         {user.nickname}
       </span>
-      {handleToMyPage && handleLogout && (
-        <HeaderDropDown
-          Icon={ChevronDown}
-          handleToMyPage={handleToMyPage}
-          handleLogout={handleLogout}
-        />
-      )}
     </div>
   );
 };

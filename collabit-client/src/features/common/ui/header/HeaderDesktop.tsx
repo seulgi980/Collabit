@@ -1,6 +1,6 @@
 "use client";
 
-import UserAvatar from "@/entities/common/ui/UserAvatar";
+import HeaderDropDown from "@/entities/common/ui/HeaderDropDown";
 import { cn } from "@/shared/lib/shadcn/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
   NavigationMenuList,
 } from "@/shared/ui/navigation-menu";
 import { HeaderProps } from "@/widget/types/Header";
-import { Dot } from "lucide-react";
+import { ChevronDown, Dot } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -67,7 +67,8 @@ const HeaderDesktop = ({
           </NavigationMenuList>
         </NavigationMenu>
         {isLogin && userInfo ? (
-          <UserAvatar
+          <HeaderDropDown
+            Icon={ChevronDown}
             user={userInfo}
             handleToMyPage={handleToMyPage}
             handleLogout={handleLogout}
