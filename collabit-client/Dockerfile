@@ -1,20 +1,22 @@
-# Build stage
-FROM node:20-alpine AS build
+# 빌드 스테이지
+FROM node:18-alpine AS builder
 WORKDIR /app
-
-# Install dependencies
 COPY package*.json ./
-RUN npm ci
-
-# Build application
+RUN npm install
 COPY . .
 RUN npm run build
-RUN npm run export
 
-# Production stage - nginx로 서빙
-FROM nginx:alpine
-COPY --from=build /app/out /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 실행 스테이지
+FROM node:18-alpine AS runner
+WORKDIR /app
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+ENV NODE_ENV production
+
+COPY --from=builder /app/next.config.ts ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
