@@ -14,12 +14,13 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import com.collabit.global.error.exception.BusinessException;
 
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice(annotations = {RestController.class})
 public class GlobalExceptionHandler {
 
     // ====== 비즈니스 로직 예외처리 ======

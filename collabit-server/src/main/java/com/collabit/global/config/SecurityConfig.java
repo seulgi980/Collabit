@@ -42,7 +42,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/api/user/sign-up","/api/user/login", "/api/auth/**", "/error", "/api/user/**", "/api/survey/**").permitAll();
                 auth.requestMatchers("/api/oauth").anonymous(); // oauth 회원가입, 로그인의 경우 토큰이 있는 사용자 거부
-                auth.requestMatchers("/api/oauth/link").authenticated();
                 auth.requestMatchers("/api/oauth/**").permitAll();
                 auth.requestMatchers("/oauth2/authorization/**").permitAll();
                 auth.requestMatchers("/login/oauth2/code/**").permitAll();
