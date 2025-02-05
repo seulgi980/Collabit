@@ -1,0 +1,18 @@
+<svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 원 -->
+  <circle cx="150" cy="150" r="140" fill="#F3F4F6" />
+  
+  <!-- 리포트 문서 -->
+  <rect x="90" y="70" width="120" height="160" rx="8" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  
+  <!-- 문서 내부 선들 -->
+  <rect x="110" y="95" width="80" height="8" rx="4" fill="#E5E7EB"/>
+  <rect x="110" y="115" width="60" height="8" rx="4" fill="#E5E7EB"/>
+  <rect x="110" y="145" width="80" height="8" rx="4" fill="#E5E7EB"/>
+  <rect x="110" y="165" width="70" height="8" rx="4" fill="#E5E7EB"/>
+  
+  <!-- 물음표 아이콘 -->
+  <circle cx="150" cy="150" r="25" fill="#6366F1" opacity="0.2"/>
+  <path d="M145 145q2-4 6-4t6 1.5-2 4.5q-2 2-4 3t-2 4v2h6v-2q0-2 2-3 4-2 5-5t-1-7q-4-4-10-4t-10 6" fill="#6366F1"/>
+  <rect x="149" y="160" width="2" height="6" fill="#6366F1"/>
+</svg>
