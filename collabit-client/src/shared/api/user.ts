@@ -32,8 +32,7 @@ export const getUserInfoAPI = async (): Promise<UserInfoResponse> => {
     }
     const data = await res.json();
     return { userInfo: data, isAuthenticated: true };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return { userInfo: undefined, isAuthenticated: false };
   }
 };

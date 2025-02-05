@@ -48,14 +48,6 @@ const CompareSection = () => {
       legend: {
         position: "top" as const,
       },
-      title: {
-        display: true,
-        text: "협업 능력 비교",
-        font: {
-          size: 16,
-          weight: "bold" as const,
-        },
-      },
     },
     scales: {
       y: {
@@ -108,9 +100,13 @@ const CompareSection = () => {
   };
 
   return (
-    // <div className="h-full w-full  p-4">
-    <Bar options={options} data={data} />
-    // </div>
+    <div className="h-full w-full">
+      <h2 className="mb-4 text-xl font-bold">
+        {" "}
+        전체 이용자 대비 협업 능력 비교
+      </h2>
+      <Bar options={options} data={data} />
+    </div>
   );
 };
 

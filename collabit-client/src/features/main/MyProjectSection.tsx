@@ -1,4 +1,5 @@
 "use client";
+import DotIndicator from "@/entities/common/ui/DotIndicator";
 import { getProjectListAPI } from "@/shared/api/project";
 import { ProjectListResponse } from "@/shared/types/response/project";
 import {
@@ -55,52 +56,65 @@ const MyProjectSection = () => {
       {isLoading ? (
         <MainProjectListSkeleton />
       ) : data!.length > 0 ? (
-        <Carousel
-          setApi={setApi}
-          opts={{
-            align: "start",
-          }}
-          className="w-full"
-        >
-          <CarouselContent>
-            {data?.map((i, index) => (
-              <CarouselItem
-                key={`project-${i.projects[0].code || index}`}
-                className="md:basis-1/2 lg:basis-1/3"
-              >
-                <div className="px-2 py-2">
-                  <MainProjectListCard
-                    organization={i.organization}
-                    project={i.projects[0]}
-                    // 알림 끄는 코드 추가
-                    onClick={() => {}}
-                  />
-                </div>
-              </CarouselItem>
-            ))}
-            {Array.from({ length: emptySpace }).map((_, index) => (
-              <CarouselItem
-                key={`empty-${index}`}
-                className="md:basis-1/2 lg:basis-1/3"
-              >
+        <div className="flex w-full flex-col items-center justify-center gap-4">
+          <Carousel
+            setApi={setApi}
+            opts={{
+              align: "start",
+            }}
+            className="w-full"
+          >
+            <CarouselContent>
+              {data?.map((i, index) => (
+                <CarouselItem
+                  key={`project-${i.projects[0].code || index}`}
+                  className="md:basis-1/2 lg:basis-1/3"
+                >
+                  <div className="px-2 py-2">
+                    <MainProjectListCard
+                      organization={i.organization}
+                      project={i.projects[0]}
+                      // 알림 끄는 코드 추가
+                      onClick={() => {}}
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+              {Array.from({ length: emptySpace }).map((_, index) => (
+                <CarouselItem
+                  key={`empty-${index}`}
+                  className="md:basis-1/2 lg:basis-1/3"
+                >
+                  <div className="px-2 py-2">
+                    <EmptyProjectCard />
+                  </div>
+                </CarouselItem>
+              ))}
+              <CarouselItem className="md:basis-1/2 lg:basis-1/3">
                 <div className="px-2 py-2">
                   <EmptyProjectCard />
                 </div>
               </CarouselItem>
-            ))}
-            <CarouselItem className="md:basis-1/2 lg:basis-1/3">
-              <div className="px-2 py-2">
-                <EmptyProjectCard />
-              </div>
-            </CarouselItem>
-          </CarouselContent>
-          <CarouselPrevious
-            type="button"
-            className="hidden md:flex"
-            hide={true}
+            </CarouselContent>
+            <CarouselPrevious
+              type="button"
+              className="hidden md:flex"
+              hide={true}
+            />
+            <CarouselNext
+              type="button"
+              className="hidden md:flex"
+              hide={true}
+            />
+          </Carousel>
+          <DotIndicator
+            current={current}
+            count={count}
+            api={api}
+            setCurrent={setCurrent}
+            setCount={setCount}
           />
-          <CarouselNext type="button" className="hidden md:flex" hide={true} />
-        </Carousel>
+        </div>
       ) : (
         <div>
           <NoProjectGuide />

@@ -18,7 +18,7 @@ const Header = () => {
   const { userInfo, isAuthenticated, logout } = useAuth();
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
-    (pathname.includes("/feedback/") && pathname !== "/feedback");
+    (pathname.includes("/survey/") && pathname !== "/survey");
 
   // 채팅 알림
   useEffect(() => {

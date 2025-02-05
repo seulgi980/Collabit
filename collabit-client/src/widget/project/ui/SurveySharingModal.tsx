@@ -28,7 +28,7 @@ const SurveySharingModal = ({
 }: SurveySharingModalProps) => {
   const { toast } = useToast();
   const DEPLOY_URL = process.env.NEXT_PUBLIC_DEPLOY_URL;
-  const surveyUrl = `${DEPLOY_URL}/feedback/${project.code}`;
+  const surveyUrl = `${DEPLOY_URL}/survey/${project.code}`;
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(surveyUrl);

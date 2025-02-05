@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/features/auth/api/useAuth";
+import { SurveyListProvider } from "@/features/survey/context/SurveyListProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -17,7 +18,7 @@ const ChatLayout = ({
 
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
-    (pathname.includes("/feedback/") && pathname !== "/feedback");
+    (pathname.includes("/survey/") && pathname !== "/survey");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -26,7 +27,7 @@ const ChatLayout = ({
   }, [isAuthenticated, isLoading, router]);
 
   return (
-    <>
+    <SurveyListProvider initialData={[]}>
       {/* 모바일 레이아웃 */}
       <div className="md:hidden">{isChatRoom ? room : list}</div>
 
@@ -35,7 +36,7 @@ const ChatLayout = ({
         <div className="w-1/4 min-w-[280px] border-r">{list}</div>
         <div className="w-3/4">{room}</div>
       </div>
-    </>
+    </SurveyListProvider>
   );
 };
 

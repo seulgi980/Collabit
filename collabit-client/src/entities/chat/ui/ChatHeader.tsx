@@ -8,7 +8,7 @@ const ChatHeader = () => {
   const router = useRouter();
   const pathname = usePathname();
   const handleBack = () => {
-    router.push(pathname.startsWith("/feedback") ? "/feedback" : "/chat");
+    router.push(pathname.startsWith("/survey") ? "/survey" : "/chat");
   };
   return (
     <div className="flex w-full items-center gap-2 border-b border-gray-200 bg-white py-3">
