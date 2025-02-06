@@ -20,6 +20,7 @@ const ChatHeader = ({ nickname, projectName, profileImage }) => {
           <AvatarImage src={profileImage} />
           <AvatarFallback>{nickname}</AvatarFallback>
         </Avatar>
+
         <div className="flex text-sm font-semibold md:text-base">
           <p>{nickname}</p> - <p>{projectName}</p>
         </div>
