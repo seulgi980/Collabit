@@ -4,6 +4,8 @@ import { useAuth } from "@/features/auth/api/useAuth";
 import { ChatListProvider } from "@/features/chat/context/ChatListProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { useChatRoomList } from "@/features/chat/api/useChatRoomList";
+import { useSocket } from "@/features/chat/api/useSocket";
 
 const ChatLayout = ({
   list,
@@ -19,14 +21,21 @@ const ChatLayout = ({
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/survey/") && pathname !== "/survey");
 
+  const { chatList, hasNextPage, fetchNextPage } = useChatRoomList();
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
 
+  useSocket();
+
   return (
-    <ChatListProvider initialData={[]}>
+    <ChatListProvider
+      initialData={chatList}
+      hasNextPage={hasNextPage}
+      fetchNextPage={fetchNextPage}
+    >
       {/* 모바일 레이아웃 */}
       <div className="md:hidden">{isChatRoom ? room : list}</div>
 
