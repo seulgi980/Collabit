@@ -32,7 +32,6 @@ public class WebSocketService {
         redisPublisher.publish(channelKey, messageDTO);
 
         ChatMessageRequestDTO chatMessage = ChatMessageRequestDTO.builder()
-                .roomCode(messageDTO.getRoomCode())
                 .message((String) messageDTO.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
