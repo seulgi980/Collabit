@@ -40,14 +40,12 @@ public class ChatRoomDetailService {
         ChatRoomDetailResponseDTO chatRoomDetail = ChatRoomDetailResponseDTO.builder()
                 .profileImage(otherUser.getProfileImage())
                 .nickname(otherUser.getNickname())
-                .roomCode(roomCode)
                 .build();
         log.debug("ChatRoomDetail {}", chatRoomDetail);
         return chatRoomDetail;
-    }
+    
 
-    //채팅방 메시지 조회
-    public PageResponseDTO<ChatMessageResponseDTO> getChatRoomMessages(String userCode, int roomCode, int pageNumber) {
+        // 채팅방 참여 여부 확인
         if (!isUserInChatRoom(userCode, roomCode)) {
             log.debug("User {} is not in chat room", userCode);
             throw new UserNotInChatRoomException();
