@@ -14,9 +14,7 @@ app = Flask(__name__)
 
 
 # Environment variables setup
-env_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..',
-                        'collabit-server', '.env')
-load_dotenv(env_path)
+load_dotenv()
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
 MONGODB_URI = os.getenv('SPRING_DATA_MONGODB_URI')
