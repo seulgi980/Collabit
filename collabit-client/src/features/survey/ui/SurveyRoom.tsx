@@ -4,8 +4,10 @@ import ChatInput from "@/entities/chat/ui/ChatInput";
 import SurveyBubble from "@/entities/survey/ui/SurveyBubble";
 import SurveyMultipleSelectButton from "@/entities/survey/ui/SurveyMultipleSelectButton";
 import { useAuth } from "@/features/auth/api/useAuth";
+import { getSurveyDetailAPI } from "@/shared/api/survey";
 import { Button } from "@/shared/ui/button";
 import generateGreetingMessage from "@/shared/utils/generateGreetingMessage";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 const SurveyRoom = ({ id }: { id: number }) => {
@@ -16,7 +18,11 @@ const SurveyRoom = ({ id }: { id: number }) => {
     console.log(message);
     setMessage("");
   };
-
+  const { data: surveyDetail } = useQuery({
+    queryKey: ["surveyDetail", id],
+    queryFn: () => getSurveyDetailAPI(id),
+  });
+  console.log(surveyDetail);
   const TEMP_CHAT_LIST = [
     {
       id: 1,
