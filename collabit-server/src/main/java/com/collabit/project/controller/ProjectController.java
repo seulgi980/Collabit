@@ -93,7 +93,7 @@ public class ProjectController {
 
     @Operation(summary = "프로젝트 알림 조회", description = "설문응답 알림을 확인할 경우 Redis의 알림 정보를 삭제하는 API 입니다. " +
             "ProjectInfoCode가 param으로 들어올 경우 해당 프로젝트의 알림만 삭제됩니다.")
-    @DeleteMapping("/notification/{code}")
+    @DeleteMapping("/notification")
     public ResponseEntity<?> deleteProjectNotification(@RequestParam(required = false) Integer code) {
         String userCode = SecurityUtil.getCurrentUserCode();
 
