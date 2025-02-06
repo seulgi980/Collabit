@@ -21,14 +21,20 @@ const ChatLayout = ({
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/survey/") && pathname !== "/survey");
 
-  const { chatList, hasNextPage, fetchNextPage } = useChatRoomList();
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
 
+  //웹소켓 연결
   useSocket();
+
+  //리스트 렌더링
+  const { chatList, hasNextPage, fetchNextPage } = useChatRoomList();
+
+  //디테일 렌더링
+  
 
   return (
     <ChatListProvider
