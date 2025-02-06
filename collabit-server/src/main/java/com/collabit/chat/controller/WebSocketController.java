@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.socket.WebSocketSession;
 
 @Controller
@@ -23,7 +22,7 @@ public class WebSocketController {
     private final ChatRedisService chatRedisService;
 
     // 연결 설정
-    @MessageMapping("/connect/{roomCode}")
+    @MessageMapping("/chat.connect/{roomCode}")
     public void connectToRoom(@PathVariable int roomCode) {
         log.debug("Connecting to room {}", roomCode);
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -33,7 +32,7 @@ public class WebSocketController {
     }
 
     // 메시지 전송
-    @MessageMapping("/sendMessage/{roomCode}")
+    @MessageMapping("/chat.message/{roomCode}")
     public void sendMessageToRoom(WebSocketMessageDTO message) {
         log.debug("Sending message to room {}", message.toString());
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -47,7 +46,7 @@ public class WebSocketController {
     }
 
     // 연결 해제
-    @MessageMapping("/disconnect")
+    @MessageMapping("/chat.disconnect/{roomCode}")
     public void disconnect(WebSocketSession session) {
         log.debug("Disconnecting from room {}", session.getId());
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -59,7 +58,7 @@ public class WebSocketController {
     }
 
     // 채팅방 이동
-    @MessageMapping("/switchRoom")
+    @MessageMapping("/chat.switchRoom")
     public void switchRoom(ChatRoomSwitchDTO switchDTO) {
         log.debug("ChatRoomSwitchDTO {}", switchDTO.toString());
         String userCode = SecurityUtil.getCurrentUserCode();
