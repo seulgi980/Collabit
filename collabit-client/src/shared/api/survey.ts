@@ -14,9 +14,14 @@ export const getSurveyListAPI = async (): Promise<SurveyListResponse[]> => {
   return response.json();
 };
 
+export interface MultipleQueriesResponse {
+  questionNumber: number;
+  questionText: string;
+}
 // 객관식 설문 시작 Get
-// survey/question
-export const startMultipleSurveyAPI = async () => {
+export const getSurveyMultipleQueryAPI = async (): Promise<
+  MultipleQueriesResponse[]
+> => {
   const response = await fetch(`${apiUrl}/survey/question`, {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -67,15 +72,48 @@ export const essaySurveyProgressAPI = async (surveyCode: number) => {
 };
 
 // 설문 디테일 조회
-export const getSurveyDetailAPI = async (surveyCode: number) => {
+export interface SurveyDetailResponse {
+  nickname: string;
+  profileImage: string;
+  surveyEssayResponse: SurveyEssayResponse[];
+  surveyMultipleResponse: SurveyMultipleResponse[];
+  title: string;
+}
+export interface SurveyEssayResponse {
+  question: string;
+  answer: string;
+}
+export interface SurveyMultipleResponse {
+  messages: AIChatResponse[];
+  submittedAt: string;
+}
+export interface AIChatResponse {
+  role: string;
+  content: string;
+  timestamp: string;
+}
+export const getSurveyDetailAPI = async (
+  surveyCode: number,
+): Promise<SurveyDetailResponse> => {
   const response = await fetch(`${apiUrl}/survey/${surveyCode}`, {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
-  console.log(response);
 
   if (!response.ok) {
     throw new Error("설문 디테일 조회 실패");
   }
-  return response.json();
+
+  const data = await response.json();
+  console.log("Survey Detail Response:", {
+    status: response.status,
+    data,
+    surveyCode,
+  });
+
+  if (!data) {
+    throw new Error("응답 데이터가 비어있습니다");
+  }
+
+  return data;
 };
