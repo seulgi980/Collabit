@@ -40,19 +40,6 @@ export const sendMultipleSurveyAnswerAPI = async (surveyCode: number) => {
   return response.json();
 };
 
-// 객관식 설문 조회 Get
-//survey/{surveyCode}/multiple
-export const getMultipleSurveyAnswerAPI = async (surveyCode: number) => {
-  const response = await fetch(`${apiUrl}/survey/${surveyCode}/multiple`, {
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-  });
-  if (!response.ok) {
-    throw new Error("객관식 설문 조회 실패");
-  }
-  return response.json();
-};
-
 // 주관식 설문 시작 post
 //survey/{surveyCode}
 export const startEssaySurveyAPI = async (surveyCode: number) => {
@@ -79,15 +66,16 @@ export const essaySurveyProgressAPI = async (surveyCode: number) => {
   return response.json();
 };
 
-// 주관식 설문 답변 조회 Get
-//survey/{surveyCode}/essay
-export const getEssaySurveyAnswerAPI = async (surveyCode: number) => {
-  const response = await fetch(`${apiUrl}/survey/${surveyCode}/essay`, {
+// 설문 디테일 조회
+export const getSurveyDetailAPI = async (surveyCode: number) => {
+  const response = await fetch(`${apiUrl}/survey/${surveyCode}`, {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
+  console.log(response);
+
   if (!response.ok) {
-    throw new Error("주관식 설문 답변 조회 실패");
+    throw new Error("설문 디테일 조회 실패");
   }
   return response.json();
 };
