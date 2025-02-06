@@ -17,20 +17,18 @@ const ChatRoom = ({ id }: { id: number }) => {
     chatRoomError,
     fetchNextPage,
     hasNextPage,
-  } = useChat(id);
-
-  const { sendMessage } = useSocket(id);
+  } = useChat();
 
   // ✅ 메시지 전송 핸들러
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!message.trim()) return;
-    sendMessage({
-      roomCode: id,
-      message,
-      messageType: "text",
-      nickname: chatRoom?.nickname || "user",
-    });
+    // sendMessage({
+    //   roomCode: id,
+    //   message,
+    //   messageType: "text",
+    //   nickname: chatRoom?.nickname || "user",
+    // });
     setMessage("");
   };
 
@@ -54,7 +52,7 @@ const ChatRoom = ({ id }: { id: number }) => {
   return (
     <div className="flex h-screen w-full flex-col gap-3 py-4 md:h-[calc(100vh-108px)] md:px-2">
       <ChatHeader
-        title={chatRoom.nickname}
+        nickname={chatRoom.nickname}
         profileImage={chatRoom.profileImage}
       />
       <div
