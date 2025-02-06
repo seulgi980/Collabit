@@ -1,18 +1,22 @@
 "use client";
-import ChatBubble from "@/entities/chat/ui/ChatBubble";
 import ChatHeader from "@/entities/chat/ui/ChatHeader";
 import ChatInput from "@/entities/chat/ui/ChatInput";
+import SurveyBubble from "@/entities/survey/ui/SurveyBubble";
+import SurveyMultipleSelectButton from "@/entities/survey/ui/SurveyMultipleSelectButton";
+import { useAuth } from "@/features/auth/api/useAuth";
+import { Button } from "@/shared/ui/button";
+import generateGreetingMessage from "@/shared/utils/generateGreetingMessage";
 import { useState } from "react";
 
 const SurveyRoom = ({ id }: { id: number }) => {
-  console.log(id);
-
+  const { userInfo } = useAuth();
   const [message, setMessage] = useState("");
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(message);
     setMessage("");
   };
+
   const TEMP_CHAT_LIST = [
     {
       id: 1,
@@ -90,17 +94,31 @@ const SurveyRoom = ({ id }: { id: number }) => {
       },
     },
   ];
+  if (!userInfo) {
+    return null;
+  }
   return (
     <div className="flex h-screen w-full flex-col gap-3 py-4 md:h-[calc(100vh-108px)] md:px-2">
       <ChatHeader />
-      <div className="flex w-full flex-1 flex-col-reverse gap-2 overflow-y-auto rounded-lg bg-white px-2 py-3 md:px-4">
+      <div className="flex w-full flex-1 flex-col-reverse gap-4 overflow-y-auto rounded-lg bg-white px-2 py-3 md:px-4">
+        <SurveyBubble
+          isMe={false}
+          message={generateGreetingMessage(
+            userInfo!.nickname,
+            "이가현",
+            "콜라빗",
+          )}
+          isLoading={false}
+          component={<Button onClick={() => {}}>시작하기</Button>}
+        />
         {TEMP_CHAT_LIST.map((chat) => (
-          <ChatBubble
+          <SurveyBubble
             key={chat.id}
             isMe={chat.isMe}
             message={chat.message}
-            date={chat.date}
-            userInfo={chat.userInfo}
+            isLoading={false}
+            component={<SurveyMultipleSelectButton />}
+            animation={false}
           />
         ))}
       </div>
