@@ -21,7 +21,6 @@ const MyProjectSection = () => {
     queryKey: ["projectList", "main"],
     queryFn: () => getProjectListForMainAPI(),
   });
-  console.log(data);
 
   const [emptySpace, setEmptySpace] = useState(0);
   useEffect(() => {
