@@ -39,8 +39,8 @@ public class ChatRoomListService {
     }
 
     // 닉네임으로 채팅방 조회
-    public ChatRoomResponseDTO getChatRoomByNickname(String userCode, ChatRoomRequestDTO requestDTO) {
-        User user = getUserByNickname(requestDTO.getNickname());
+    public ChatRoomResponseDTO getChatRoomByNickname(String userCode, String nickname) {
+        User user = getUserByNickname(nickname);
         String userCode2 = user.getCode();
         String uniqueCode = ChatRoom.generateChatRoomCode(userCode, userCode2);
         Optional<ChatRoom> chatRoom = chatRoomRepository.findByUniqueCode(uniqueCode);
@@ -91,9 +91,9 @@ public class ChatRoomListService {
     }
 
     // 채팅방 리스트 조회
-    public PageResponseDTO getChatRoomList(String userCode, ChatRoomListRequestDTO requestDTO) {
+    public PageResponseDTO<ChatRoomListResponseDTO> getChatRoomList(String userCode, int pageNumber) {
         int size = 15;
-        Pageable pageable = PageRequest.of(requestDTO.getPageNumber(), size);
+        Pageable pageable = PageRequest.of(pageNumber, size);
         User user = userRepository.findById(userCode).orElseThrow();
 
         Page<ChatRoom> chatRoomPage = chatRoomRepository.findByUser1OrUser2(user, user, pageable);
@@ -103,9 +103,9 @@ public class ChatRoomListService {
                 .toList();
         log.debug(chatRoomList.toString());
 
-        return PageResponseDTO.builder()
+        return PageResponseDTO.<ChatRoomListResponseDTO>builder()
                 .content(chatRoomList)
-                .pageNumber(requestDTO.getPageNumber())
+                .pageNumber(pageNumber)
                 .pageSize(size)
                 .totalElements((int) chatRoomPage.getTotalElements())
                 .totalPages(chatRoomPage.getTotalPages())
