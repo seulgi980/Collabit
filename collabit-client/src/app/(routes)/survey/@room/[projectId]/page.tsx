@@ -1,4 +1,4 @@
-import ChattingRoom from "@/features/chat/ui/ChattingRoom";
+import ChattingRoom from "@/features/chat/ui/ChatRoom";
 
 const ChatRoomPage = async ({
   params,
