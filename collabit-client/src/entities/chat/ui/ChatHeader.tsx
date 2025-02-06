@@ -4,7 +4,7 @@ import { Button } from "@/shared/ui/button";
 import { ArrowLeftIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
-const ChatHeader = () => {
+const ChatHeader = ({ surveyDetail }) => {
   const router = useRouter();
   const pathname = usePathname();
   const handleBack = () => {
@@ -17,11 +17,11 @@ const ChatHeader = () => {
       </Button>
       <div className="flex items-center gap-2">
         <Avatar className="h-6 w-6 md:h-8 md:w-8">
-          <AvatarImage src="https://github.com/shadcn.png" />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage src={surveyDetail.profileImage} />
+          <AvatarFallback>{surveyDetail.nickname}</AvatarFallback>
         </Avatar>
         <div className="flex text-sm font-semibold md:text-base">
-          <p>Name</p> - <p>Last message</p>
+          <p>{surveyDetail.nickname}</p> - <p>{surveyDetail.title}</p>
         </div>
       </div>
     </div>

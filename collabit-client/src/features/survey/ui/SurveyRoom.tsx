@@ -22,6 +22,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
     queryKey: ["surveyDetail", id],
     queryFn: () => getSurveyDetailAPI(id),
   });
+
   console.log(surveyDetail);
   const TEMP_CHAT_LIST = [
     {
@@ -105,14 +106,14 @@ const SurveyRoom = ({ id }: { id: number }) => {
   }
   return (
     <div className="flex h-screen w-full flex-col gap-3 py-4 md:h-[calc(100vh-108px)] md:px-2">
-      <ChatHeader />
+      <ChatHeader surveyDetail={surveyDetail} />
       <div className="flex w-full flex-1 flex-col-reverse gap-4 overflow-y-auto rounded-lg bg-white px-2 py-3 md:px-4">
         <SurveyBubble
           isMe={false}
           message={generateGreetingMessage(
             userInfo!.nickname,
-            "이가현",
-            "콜라빗",
+            surveyDetail.nickname,
+            surveyDetail.projectName,
           )}
           isLoading={false}
           component={<Button onClick={() => {}}>시작하기</Button>}
