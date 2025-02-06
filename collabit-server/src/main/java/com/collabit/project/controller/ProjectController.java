@@ -1,10 +1,7 @@
 package com.collabit.project.controller;
 
 import com.collabit.global.security.SecurityUtil;
-import com.collabit.project.domain.dto.CreateProjectRequestDTO;
-import com.collabit.project.domain.dto.GetAddedProjectListResponseDTO;
-import com.collabit.project.domain.dto.GetMainProjectListResponseDTO;
-import com.collabit.project.domain.dto.GetProjectListResponseDTO;
+import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.SortOrder;
 import com.collabit.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -106,5 +103,16 @@ public class ProjectController {
         log.debug("프로젝트 알림 삭제 완료");
 
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "프로젝트별 결과의 막대 그래프 데이터 조회", description = "프로젝트별 결과 조회 시 막대 그래프에 들어갈 데이터를 조회하는 API 입니다.")
+    @GetMapping("/graph/bar/{code}")
+    public ResponseEntity<?> getBarGraph(@PathVariable int code) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        List<GetBarGraphResponseDTO> responseDTO = projectService.getBarGraph(userCode, code);
+        log.debug("bar 그래프 데이터 조회 완료 - 조회한 데이터 수: {}", responseDTO.size());
+
+        return ResponseEntity.ok(responseDTO);
     }
 }
