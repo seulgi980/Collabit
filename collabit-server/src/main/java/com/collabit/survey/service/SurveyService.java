@@ -183,11 +183,6 @@ public class SurveyService {
     public SurveyDetailResponseDTO getSurveyDetail(String userCode, int projectInfoCode) {
         log.debug("설문조사 상세조회 시작");
 
-        User user = userRepository.findByCode(userCode).orElseThrow(() -> {
-            log.debug("User not found");
-            return new UserNotFoundException();
-        });
-
         ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
 
         if(projectInfo == null) {
@@ -198,8 +193,8 @@ public class SurveyService {
         log.debug("조회한 projectInfo: {}", projectInfo.toString());
 
         return SurveyDetailResponseDTO.builder()
-                .nickname(user.getNickname())
-                .profileImage(user.getProfileImage())
+                .nickname(projectInfo.getUser().getNickname())
+                .profileImage(projectInfo.getUser().getProfileImage())
                 .title(projectInfo.getProject().getTitle())
                 .surveyMultipleResponse(getMultipleResponse(userCode, projectInfoCode))
                 .surveyEssayResponse(getEssayResponse(userCode, projectInfoCode))
