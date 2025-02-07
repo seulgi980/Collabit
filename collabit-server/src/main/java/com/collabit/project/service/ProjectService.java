@@ -2,6 +2,8 @@ package com.collabit.project.service;
 
 import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
+import com.collabit.project.exception.DescriptionNotFoundException;
+import com.collabit.project.exception.ProjectInfoNotFoundException;
 import com.collabit.project.repository.*;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.exception.UserNotFoundException;
@@ -496,74 +498,104 @@ public class ProjectService {
         }
     }
 
-    // 로그인 유저와 전체 유저의 객관식 데이터 평균값 계산 후 100점 변환
-    public List<GetBarGraphResponseDTO> getBarGraph(int projectInfoCode) {
+    // 로그인 유저의 객관식 데이터 평균값 계산 (소수점 첫째자리)
+    public GetHexagonResponseDTO getHexagonGraph(int projectInfoCode) {
+        Map<String, Double> averageScores = calculateAverageScores(projectInfoCode); // 해당 프로젝트의 객관식 5점 평균 계산
+        List<Description> descriptions = descriptionRepository.findAll();
+        log.debug("해당 projectInfo의 객관식 5점 평균 계산 완료, descriptions 조회 완료");
 
-        HashMap<String, Integer> total = calculateMultipleScore(projectInfoCode); // 전체 사용자의 객관식 평균
-        HashMap<String, Integer> personal = calculateMultipleScore(projectInfoCode); // 해당 프로젝트의 객관식 평균
-        List<Description> descriptions = descriptionRepository.findByIdIsPositiveTrue(); // 각 항목의 이름 조회
-        log.debug("전체, 프로젝트별 객관식 점수 조회 완료, descriptions 조회 완료");
+        log.debug("육각형 그래프 점수 부분 데이터 조회 시작");
+        Map<String, String> codeToNameMap = codeAndNameMapping(descriptions); // ex) conflict_resolution: 갈등해결(CS)
 
-        // description의 code를 key로, name을 value로 하는 Map 생성
-        Map<String, String> codeToNameMap = descriptions.stream()
-                .collect(Collectors.toMap(
-                        desc -> desc.getId().getCode(),
-                        Description::getName
-                ));
-
-        // 모든 Hash의 key를 통일해서 value 조회
-        List<GetBarGraphResponseDTO> result = personal.entrySet().stream()
-                .map(entry -> GetBarGraphResponseDTO.builder()
+        // 객관식 평균 점수와 이름 매핑
+        List<MultipleScore> multipleScores = averageScores.entrySet().stream()
+                .map(entry -> MultipleScore.builder()
                         .name(codeToNameMap.get(entry.getKey()))
-                        .me(entry.getValue())
-                        .avg(total.get(entry.getKey()))
+                        .score(entry.getValue())
                         .build())
                 .toList();
-        log.debug("각 항목에 대해 전체, 프로젝트별 객관식 평균 이름과 함께 DTO 빌더 - 반환할 result 수: {}", result.size());
 
-        return result;
+        log.debug("육각형 그래프 최고/최저 점수 설명 부분 조회 시작");
+        String maxKey = Collections.max(averageScores.entrySet(), Map.Entry.comparingByValue()).getKey();
+        String minKey = Collections.min(averageScores.entrySet(), Map.Entry.comparingByValue()).getKey();
+        log.debug("최고({}), 최저({}) 부분 조회 완료", maxKey, minKey);
+
+        // descriptions에서 최고/최저 점수의 설명 찾기
+        SkillData maxSkill = findMaxOrMinSkill(maxKey, true, descriptions);
+        SkillData minSkill = findMaxOrMinSkill(minKey, false, descriptions);
+
+        // 육각형 그래프용 응답 생성
+        return GetHexagonResponseDTO.builder()
+                .multipleScore(multipleScores)
+                .highestSkill(maxSkill)
+                .lowestSkill(minSkill)
+                .build();
+
     }
 
-    // projectInfo에 해당하는 6개 항목의 객관식 평균 계산
-    public HashMap<String, Integer> calculateMultipleScore(int projectInfoCode) {
-        log.debug("해당 projectInfo(code = {})의 6개 항목에 대한 객관식 평균(100점) 계산 시작", projectInfoCode);
+    // descriptions에서 최고/최저 점수의 설명 찾기
+    public SkillData findMaxOrMinSkill(String key, Boolean isPositive, List<Description> descriptions) {
+        return descriptions.stream()
+                .filter(desc -> desc.getId().getCode().equals(key) && desc.getId().getIsPositive() == isPositive)
+                .map(desc -> new SkillData(desc.getName(), desc.getDescription()))
+                .findFirst()
+                .orElseThrow(DescriptionNotFoundException::new);
+    }
 
-        ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
+    // 포트폴리오 결과의 프로젝트별 지표 확인 시 해당 메소드 (인터페이스처럼) 사용
+    public Map<String, Integer> calculateMultipleScore(int projectInfoCode) {
+        // 해당 프로젝트의 객관식 평균을 구한 후 100점 변환해서 반환
+        return convertTo100Scale(calculateAverageScores(projectInfoCode));
+    }
 
-        if(projectInfo == null) {
-            log.error("projectInfo에 해당하는 정보 없음");
-            throw new RuntimeException("해당 projectInfo 정보가 없습니다.");
-        }
+    // 5점 만점의 평균 점수 계산
+    private Map<String, Double> calculateAverageScores(int projectInfoCode) {
+
+        ProjectInfo projectInfo = projectInfoRepository.findById(projectInfoCode)
+                .orElseThrow(ProjectInfoNotFoundException::new);
 
         if (!projectInfo.isDone()) {
-            log.error("해당 projectInfo는 마감되지 않아 조회 불가");
             throw new RuntimeException("설문이 마감되지 않아 프로젝트 결과를 조회할 수 없습니다.");
         }
 
-        HashMap<String, Integer> scores = new HashMap<>();
-
-        // 각 필드의 총점과 필드명을 매핑
+        // DB의 필드명(=code), 점수 매핑
         Map<String, Integer> totalScores = Map.of(
                 "sympathy", projectInfo.getSympathy(),
                 "listening", projectInfo.getListening(),
                 "expression", projectInfo.getExpression(),
-                "problem_solving", projectInfo.getProblemSolving(), // DB와 맞추기 위해 스네이크 네이밍
+                "problem_solving", projectInfo.getProblemSolving(),
                 "conflict_resolution", projectInfo.getConflictResolution(),
                 "leadership", projectInfo.getLeadership()
         );
 
-        // 각 항목별 평균 계산 후 100점 변환
+        // 총점 데이터와 참여자 수로 5점 만점의 평균 계산
+        Map<String, Double> averageScores = new HashMap<>();
         int participant = projectInfo.getParticipant();
+
         totalScores.forEach((key, totalScore) -> {
             double average = participant > 0 ? (double) totalScore / participant : 0;
-            scores.put(key, convertTo100Scale(average));
+            averageScores.put(key, average);
         });
 
-        return scores;
+        return averageScores;
     }
 
-    // 5점 만점을 100점으로 변환하는 메서드 (선형 변환)
-    private int convertTo100Scale(double score) {
-        return (int) Math.round((score / 5.0) * 100);
+    // 100점 만점으로 변환
+    private Map<String, Integer> convertTo100Scale(Map<String, Double> averageScores) {
+        return averageScores.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> (int) Math.round((entry.getValue() / 5.0) * 100)
+                ));
+    }
+
+    // 항목의 code를 한국어 name으로 매핑 => conflict_resolution, 갈등해결(CS)
+    private Map<String, String> codeAndNameMapping(List<Description> descriptions) {
+        return descriptions.stream()
+                .filter(desc -> desc.getId().getIsPositive()) // isPositive가 true인 것만 필터링
+                .collect(Collectors.toMap(
+                        desc -> desc.getId().getCode(),
+                        Description::getName
+                ));
     }
 }
