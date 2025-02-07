@@ -1,12 +1,8 @@
 package com.collabit.project.service;
 
-import com.collabit.global.service.RedisService;
 import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
-import com.collabit.project.repository.ContributorRepository;
-import com.collabit.project.repository.ProjectContributorRepository;
-import com.collabit.project.repository.ProjectInfoRepository;
-import com.collabit.project.repository.ProjectRepository;
+import com.collabit.project.repository.*;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
@@ -15,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -32,6 +26,7 @@ public class ProjectService {
     private final ProjectContributorRepository projectContributorRepository;
     private final UserRepository userRepository;
     private final ProjectRedisService projectRedisService;
+    private final DescriptionRepository descriptionRepository;
 
     // User 검증 메소드
     private User findUserByCode(String userCode) {
@@ -499,5 +494,76 @@ public class ProjectService {
                                 code, value);
                     });
         }
+    }
+
+    // 로그인 유저와 전체 유저의 객관식 데이터 평균값 계산 후 100점 변환
+    public List<GetBarGraphResponseDTO> getBarGraph(int projectInfoCode) {
+
+        HashMap<String, Integer> total = calculateMultipleScore(projectInfoCode); // 전체 사용자의 객관식 평균
+        HashMap<String, Integer> personal = calculateMultipleScore(projectInfoCode); // 해당 프로젝트의 객관식 평균
+        List<Description> descriptions = descriptionRepository.findByIdIsPositiveTrue(); // 각 항목의 이름 조회
+        log.debug("전체, 프로젝트별 객관식 점수 조회 완료, descriptions 조회 완료");
+
+        // description의 code를 key로, name을 value로 하는 Map 생성
+        Map<String, String> codeToNameMap = descriptions.stream()
+                .collect(Collectors.toMap(
+                        desc -> desc.getId().getCode(),
+                        Description::getName
+                ));
+
+        // 모든 Hash의 key를 통일해서 value 조회
+        List<GetBarGraphResponseDTO> result = personal.entrySet().stream()
+                .map(entry -> GetBarGraphResponseDTO.builder()
+                        .name(codeToNameMap.get(entry.getKey()))
+                        .me(entry.getValue())
+                        .avg(total.get(entry.getKey()))
+                        .build())
+                .toList();
+        log.debug("각 항목에 대해 전체, 프로젝트별 객관식 평균 이름과 함께 DTO 빌더 - 반환할 result 수: {}", result.size());
+
+        return result;
+    }
+
+    // projectInfo에 해당하는 6개 항목의 객관식 평균 계산
+    public HashMap<String, Integer> calculateMultipleScore(int projectInfoCode) {
+        log.debug("해당 projectInfo(code = {})의 6개 항목에 대한 객관식 평균(100점) 계산 시작", projectInfoCode);
+
+        ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
+
+        if(projectInfo == null) {
+            log.error("projectInfo에 해당하는 정보 없음");
+            throw new RuntimeException("해당 projectInfo 정보가 없습니다.");
+        }
+
+        if (!projectInfo.isDone()) {
+            log.error("해당 projectInfo는 마감되지 않아 조회 불가");
+            throw new RuntimeException("설문이 마감되지 않아 프로젝트 결과를 조회할 수 없습니다.");
+        }
+
+        HashMap<String, Integer> scores = new HashMap<>();
+
+        // 각 필드의 총점과 필드명을 매핑
+        Map<String, Integer> totalScores = Map.of(
+                "sympathy", projectInfo.getSympathy(),
+                "listening", projectInfo.getListening(),
+                "expression", projectInfo.getExpression(),
+                "problem_solving", projectInfo.getProblemSolving(), // DB와 맞추기 위해 스네이크 네이밍
+                "conflict_resolution", projectInfo.getConflictResolution(),
+                "leadership", projectInfo.getLeadership()
+        );
+
+        // 각 항목별 평균 계산 후 100점 변환
+        int participant = projectInfo.getParticipant();
+        totalScores.forEach((key, totalScore) -> {
+            double average = participant > 0 ? (double) totalScore / participant : 0;
+            scores.put(key, convertTo100Scale(average));
+        });
+
+        return scores;
+    }
+
+    // 5점 만점을 100점으로 변환하는 메서드 (선형 변환)
+    private int convertTo100Scale(double score) {
+        return (int) Math.round((score / 5.0) * 100);
     }
 }
