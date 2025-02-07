@@ -14,9 +14,14 @@ export const getSurveyListAPI = async (): Promise<SurveyListResponse[]> => {
   return response.json();
 };
 
+export interface MultipleQueriesResponse {
+  questionNumber: number;
+  questionText: string;
+}
 // 객관식 설문 시작 Get
-// survey/question
-export const startMultipleSurveyAPI = async () => {
+export const getSurveyMultipleQueryAPI = async (): Promise<
+  MultipleQueriesResponse[]
+> => {
   const response = await fetch(`${apiUrl}/survey/question`, {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -36,19 +41,6 @@ export const sendMultipleSurveyAnswerAPI = async (surveyCode: number) => {
   });
   if (!response.ok) {
     throw new Error("객관식 설문 답변 전송 실패");
-  }
-  return response.json();
-};
-
-// 객관식 설문 조회 Get
-//survey/{surveyCode}/multiple
-export const getMultipleSurveyAnswerAPI = async (surveyCode: number) => {
-  const response = await fetch(`${apiUrl}/survey/${surveyCode}/multiple`, {
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-  });
-  if (!response.ok) {
-    throw new Error("객관식 설문 조회 실패");
   }
   return response.json();
 };
@@ -79,15 +71,49 @@ export const essaySurveyProgressAPI = async (surveyCode: number) => {
   return response.json();
 };
 
-// 주관식 설문 답변 조회 Get
-//survey/{surveyCode}/essay
-export const getEssaySurveyAnswerAPI = async (surveyCode: number) => {
-  const response = await fetch(`${apiUrl}/survey/${surveyCode}/essay`, {
+// 설문 디테일 조회
+export interface SurveyDetailResponse {
+  nickname: string;
+  profileImage: string;
+  surveyEssayResponse: SurveyEssayResponse[];
+  surveyMultipleResponse: SurveyMultipleResponse[];
+  title: string;
+}
+export interface SurveyEssayResponse {
+  question: string;
+  answer: string;
+}
+export interface SurveyMultipleResponse {
+  messages: AIChatResponse[];
+  submittedAt: string;
+}
+export interface AIChatResponse {
+  role: string;
+  content: string;
+  timestamp: string;
+}
+export const getSurveyDetailAPI = async (
+  surveyCode: number,
+): Promise<SurveyDetailResponse> => {
+  const response = await fetch(`${apiUrl}/survey/${surveyCode}`, {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
   });
+
   if (!response.ok) {
-    throw new Error("주관식 설문 답변 조회 실패");
+    throw new Error("설문 디테일 조회 실패");
   }
-  return response.json();
+
+  const data = await response.json();
+  console.log("Survey Detail Response:", {
+    status: response.status,
+    data,
+    surveyCode,
+  });
+
+  if (!data) {
+    throw new Error("응답 데이터가 비어있습니다");
+  }
+
+  return data;
 };
