@@ -497,7 +497,7 @@ public class ProjectService {
     }
 
     // 로그인 유저와 전체 유저의 객관식 데이터 평균값 계산 후 100점 변환
-    public List<GetBarGraphResponseDTO> getBarGraph(String userCode, int projectInfoCode) {
+    public List<GetBarGraphResponseDTO> getBarGraph(int projectInfoCode) {
 
         HashMap<String, Integer> total = calculateMultipleScore(projectInfoCode); // 전체 사용자의 객관식 평균
         HashMap<String, Integer> personal = calculateMultipleScore(projectInfoCode); // 해당 프로젝트의 객관식 평균

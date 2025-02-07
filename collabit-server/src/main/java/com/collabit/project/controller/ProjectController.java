@@ -108,11 +108,11 @@ public class ProjectController {
     @Operation(summary = "프로젝트별 결과의 막대 그래프 데이터 조회", description = "프로젝트별 결과 조회 시 막대 그래프에 들어갈 데이터를 조회하는 API 입니다.")
     @GetMapping("/graph/bar/{code}")
     public ResponseEntity<?> getBarGraph(@PathVariable int code) {
-        String userCode = SecurityUtil.getCurrentUserCode();
-
-        List<GetBarGraphResponseDTO> responseDTO = projectService.getBarGraph(userCode, code);
+        List<GetBarGraphResponseDTO> responseDTO = projectService.getBarGraph(code);
         log.debug("bar 그래프 데이터 조회 완료 - 조회한 데이터 수: {}", responseDTO.size());
 
         return ResponseEntity.ok(responseDTO);
     }
+
+
 }
