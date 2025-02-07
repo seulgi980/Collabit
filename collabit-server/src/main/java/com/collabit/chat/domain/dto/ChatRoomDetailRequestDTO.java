@@ -10,5 +10,4 @@ import lombok.*;
 @NoArgsConstructor
 public class ChatRoomDetailRequestDTO {
     private int roomCode;
-    private int pageNumber;
 }

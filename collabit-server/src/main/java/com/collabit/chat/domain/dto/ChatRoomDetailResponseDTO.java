@@ -1,5 +1,6 @@
 package com.collabit.chat.domain.dto;
 
+import com.collabit.global.common.PageResponseDTO;
 import lombok.*;
 
 import java.util.List;
@@ -14,5 +15,4 @@ public class ChatRoomDetailResponseDTO {
     int roomCode;
     String nickname;
     String profileImage;
-    List<ChatMessageResponseDTO> messages;
 }
