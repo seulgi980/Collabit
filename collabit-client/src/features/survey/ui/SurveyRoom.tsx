@@ -18,7 +18,6 @@ const SurveyRoom = ({ id }: { id: number }) => {
   /* 초기 디테일 데이터 불러오기 */
   const setId = useSurveyStore((state) => state.setId);
   const surveyDetail = useSurveyStore((state) => state.surveyDetail);
-
   const scores = useSurveyStore((state) => state.scores);
   console.log(scores);
 
@@ -72,13 +71,13 @@ const SurveyRoom = ({ id }: { id: number }) => {
           {currentStep >= 24 && (
             <SurveyBubble
               isMe={false}
-              message={`${surveyDetail?.nickname}님의 설문 완료 메시지`}
+              message={`감사합니다! ${userInfo.nickname}님의 이야기를 들으니까 ${surveyDetail?.nickname}님이 어떤 사람인지는 조금 알 것 같아요. \n\n 이제 더 구체적으로 알고 싶은데, 대화로 알려주시겠어요? (지금 나가시면 피드백이 완료되지 않아요!)`}
               animation={currentStep === 24}
               isLoading={false}
               component={
                 <Button
                   disabled={currentStep > 24}
-                  className="fade-in-duration-1000 animate-in fade-in-0 slide-in-from-bottom-4"
+                  className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
                   onClick={handleEndSurvey}
                 >
                   대화 시작하기
@@ -96,7 +95,12 @@ const SurveyRoom = ({ id }: { id: number }) => {
                 <SurveyBubble
                   key={item.questionNumber}
                   isMe={false}
-                  message={item.questionText}
+                  step={reversedIndex + 1}
+                  message={
+                    reversedIndex === 0
+                      ? `감사합니다, 그러면 몇가지 질문을 드릴게요! 5가지 이모티콘 중 제가 드리는 질문에 가장 적합한 이모티콘을 눌러주세요! 첫번째 질문을 시작하겠습니다. ${surveyDetail?.nickname}${item.questionText}`
+                      : `${surveyDetail?.nickname}${item.questionText}`
+                  }
                   isLoading={false}
                   component={
                     <SurveyMultipleSelectButton
@@ -121,7 +125,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
             component={
               <Button
                 disabled={currentStep >= 0}
-                className="fade-in-duration-1000 animate-in fade-in-0 slide-in-from-bottom-4"
+                className="fade-in-duration-700 duration-700 animate-in fade-in-0 slide-in-from-bottom-4"
                 onClick={handleStartSurvey}
               >
                 시작하기
