@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,7 +26,6 @@ public class ProjectService {
     private final ProjectContributorRepository projectContributorRepository;
     private final UserRepository userRepository;
     private final ProjectRedisService projectRedisService;
-    private final RestClient.Builder builder;
     private final DescriptionRepository descriptionRepository;
 
     // User 검증 메소드
@@ -498,14 +496,15 @@ public class ProjectService {
         }
     }
 
-    // 로그인 유저와 전체 유저의 객관식 데이터 평균값으로 조회
+    // 로그인 유저와 전체 유저의 객관식 데이터 평균값 계산 후 100점 변환
     public List<GetBarGraphResponseDTO> getBarGraph(String userCode, int projectInfoCode) {
 
         HashMap<String, Integer> total = calculateMultipleScore(projectInfoCode); // 전체 사용자의 객관식 평균
         HashMap<String, Integer> personal = calculateMultipleScore(projectInfoCode); // 해당 프로젝트의 객관식 평균
         List<Description> descriptions = descriptionRepository.findByIdIsPositiveTrue(); // 각 항목의 이름 조회
+        log.debug("전체, 프로젝트별 객관식 점수 조회 완료, descriptions 조회 완료");
 
-        // code를 key로, name을 value로 하는 Map 생성
+        // description의 code를 key로, name을 value로 하는 Map 생성
         Map<String, String> codeToNameMap = descriptions.stream()
                 .collect(Collectors.toMap(
                         desc -> desc.getId().getCode(),
@@ -520,6 +519,7 @@ public class ProjectService {
                         .avg(total.get(entry.getKey()))
                         .build())
                 .toList();
+        log.debug("각 항목에 대해 전체, 프로젝트별 객관식 평균 이름과 함께 DTO 빌더 - 반환할 result 수: {}", result.size());
 
         return result;
     }
@@ -531,10 +531,12 @@ public class ProjectService {
         ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
 
         if(projectInfo == null) {
+            log.error("projectInfo에 해당하는 정보 없음");
             throw new RuntimeException("해당 projectInfo 정보가 없습니다.");
         }
 
         if (!projectInfo.isDone()) {
+            log.error("해당 projectInfo는 마감되지 않아 조회 불가");
             throw new RuntimeException("설문이 마감되지 않아 프로젝트 결과를 조회할 수 없습니다.");
         }
 
@@ -545,8 +547,8 @@ public class ProjectService {
                 "sympathy", projectInfo.getSympathy(),
                 "listening", projectInfo.getListening(),
                 "expression", projectInfo.getExpression(),
-                "problemSolving", projectInfo.getProblemSolving(),
-                "conflictResolution", projectInfo.getConflictResolution(),
+                "problem_solving", projectInfo.getProblemSolving(), // DB와 맞추기 위해 스네이크 네이밍
+                "conflict_resolution", projectInfo.getConflictResolution(),
                 "leadership", projectInfo.getLeadership()
         );
 
