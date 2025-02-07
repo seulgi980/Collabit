@@ -8,18 +8,19 @@ export interface ChatMessage {
   roomCode: number;
   userCode: string;
   message: string;
-  timestamp: number;
+  timestamp: string;
   isRead: boolean;
-}
-
-export interface WebSocketMessage {
-  messageType: string;
-  roomCode: number;
-  nickname: string;
-  message: string;
 }
 
 export interface ChatUser {
   nickname: string;
   profileImage: string;
 }
+
+export interface WebSocketMessage {
+  nickname: string;
+  message: string;
+  timestamp: string;
+  roomCode: number;
+}
+

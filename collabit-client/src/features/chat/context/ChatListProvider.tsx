@@ -1,4 +1,4 @@
-import { ChatListResponse } from "@/shared/types/response/chat";
+import { ChatRoomListResponse } from "@/shared/types/response/chat";
 import {
   createContext,
   Dispatch,
@@ -9,10 +9,10 @@ import {
 } from "react";
 
 export const ChatListContext = createContext<{
-  chatList: ChatListResponse[] | undefined;
+  chatList: ChatRoomListResponse[] | undefined;
   hasNextPage: boolean;
   fetchNextPage: () => void;
-  setChatList: Dispatch<SetStateAction<ChatListResponse[] | undefined>>;
+  setChatList: Dispatch<SetStateAction<ChatRoomListResponse[] | undefined>>;
 } | null>(null);
 
 export const ChatListProvider = ({
@@ -22,7 +22,7 @@ export const ChatListProvider = ({
   fetchNextPage,
 }: {
   children: React.ReactNode;
-  initialData: ChatListResponse[] | undefined;
+  initialData: ChatRoomListResponse[] | undefined;
   hasNextPage: boolean;
   fetchNextPage: () => void;
 }) => {

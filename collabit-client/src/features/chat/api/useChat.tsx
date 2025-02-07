@@ -4,11 +4,10 @@ import { useChatStore } from "@/shared/lib/stores/chatStore";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-const { userInfo } = useAuth();
-
 export const useChat = () => {
-  const id = useChatStore((state) => state.id);
-  const setChatRoomDetail = useChatStore((state) => state.setChatRoomDetail);
+  const { userInfo } = useAuth();
+  const { chatId, chatRoomDetail, setChatRoomDetail, setChatMessages } =
+    useChatStore();
 
   // 채팅방 디테일 쿼리
   const {
@@ -16,41 +15,52 @@ export const useChat = () => {
     isLoading: chatRoomLoading,
     error: chatRoomError,
   } = useQuery({
-    queryKey: ["chatRoom", userInfo?.nickname, id],
-    queryFn: () => getChatRoomDetailAPI(id!),
-    enabled: !!userInfo?.nickname && !!id,
+    queryKey: ["chatRoom", chatId],
+    queryFn: () => getChatRoomDetailAPI(chatId!),
+    enabled: !!userInfo?.nickname && !!chatId,
     staleTime: 1000 * 60 * 5, //5분 동안 유지
   });
 
   // 채팅 메시지 쿼리
-  const { data, fetchNextPage, hasNextPage, isLoading, error } =
-    useInfiniteQuery({
-      queryKey: ["chatMessages", userInfo?.nickname, id],
-      queryFn: async ({ pageParam = 0 }) => {
-        const response = await getChatMessagesAPI(id!, pageParam);
-        if (!response || response.content.length === 0) {
-          return { content: [], hasNext: false, pageNumber: pageParam };
-        }
-        return response;
-      },
-      getNextPageParam: (lastPage) =>
-        lastPage.hasNext ? lastPage.pageNumber + 1 : undefined,
-      initialPageParam: 0,
-      enabled: !!userInfo?.nickname && !!id,
-    });
+  const {
+    data: chatMessages,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    error,
+  } = useInfiniteQuery({
+    queryKey: ["chatMessages", chatId],
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await getChatMessagesAPI(chatId!, pageParam);
+      if (!response || response.content.length === 0) {
+        return { content: [], hasNext: false, pageNumber: pageParam };
+      }
+      return response;
+    },
+    getNextPageParam: (lastPage) =>
+      lastPage.hasNext ? lastPage.pageNumber + 1 : undefined,
+    initialPageParam: 0,
+    enabled: !!userInfo?.nickname && !!chatId,
+  });
 
-  // 메시지 리스트 평탄화
-  const messages = data?.pages.flatMap((page) => page.content) ?? [];
-
+  // 채팅방 디테일 저장
   useEffect(() => {
-    if (chatRoom) {
+    if (chatRoom && chatMessages && chatRoomDetail !== chatRoom) {
       setChatRoomDetail(chatRoom);
+      const messages =
+        chatMessages?.pages.flatMap((page) => page.content) ?? [];
+      console.log(messages);
+      setChatMessages(messages);
     }
-  }, [chatRoom, setChatRoomDetail, id]);
+  }, [
+    chatRoom,
+    setChatRoomDetail,
+    chatRoomDetail,
+    chatMessages,
+    setChatMessages,
+  ]);
 
   return {
-    chatRoom,
-    messages,
     chatRoomLoading,
     chatRoomError,
     isLoading,
