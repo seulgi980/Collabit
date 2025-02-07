@@ -88,7 +88,6 @@ public class ChatRoomDetailServiceTest {
     void testGetChatRoomDetail_Success() {
         // Given
         String userCode = "user1";
-        ChatRoomDetailRequestDTO requestDTO = new ChatRoomDetailRequestDTO(123);
 
         ChatMessage chatMessage = new ChatMessage();
         chatMessage.setRoomCode(123);
