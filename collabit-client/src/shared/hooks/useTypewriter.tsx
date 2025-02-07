@@ -5,7 +5,7 @@ export const useTypewriter = (
   options: {
     enabled: boolean;
   },
-  speed: number = 50,
+  speed: number = 40,
   chunkSize: number = 3,
 ) => {
   const [displayedText, setDisplayedText] = useState("");

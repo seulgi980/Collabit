@@ -3,12 +3,14 @@ import { Textarea } from "@/shared/ui/textarea";
 import { SendIcon } from "lucide-react";
 
 interface ChatInputProps {
+  disabled: boolean;
   message: string;
   setMessage: (message: string) => void;
   handleSendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const ChatInput = ({
+  disabled,
   message,
   setMessage,
   handleSendMessage,
@@ -31,8 +33,13 @@ const ChatInput = ({
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
         rows={1}
+        disabled={disabled}
       />
-      <Button type="submit" className="flex items-center justify-center">
+      <Button
+        type="submit"
+        className="flex items-center justify-center"
+        disabled={disabled}
+      >
         <SendIcon className="h-full w-full" />
       </Button>
     </form>
