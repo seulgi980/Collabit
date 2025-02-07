@@ -542,30 +542,10 @@ public class ProjectService {
                 .orElseThrow(DescriptionNotFoundException::new);
     }
 
-    // 로그인 유저와 전체 유저의 객관식 데이터 평균값 계산 후 100점 변환
-    public List<GetBarGraphResponseDTO> getBarGraph(int projectInfoCode) {
-        Map<String, Double> averageScores = calculateAverageScores(projectInfoCode);
-        Map<String, Integer> personal = convertTo100Scale(averageScores);
-
-        Map<String, Integer> total = convertTo100Scale(averageScores); // 전체 사용자의 객관식 평균
-
-        List<Description> descriptions = descriptionRepository.findByIdIsPositiveTrue(); // 각 항목의 이름 조회
-        log.debug("전체 / 프로젝트별 객관식 점수 계산 완료, descriptions 조회 완료");
-
-        // 항목에 이름 매핑을 위한 map: description의 code를 key로, name을 value로 하는 Map 생성
-        Map<String, String> codeToNameMap = codeAndNameMapping(descriptions);
-
-        // 모든 Hash의 key를 통일해서 value 조회
-        List<GetBarGraphResponseDTO> result = personal.entrySet().stream()
-                .map(entry -> GetBarGraphResponseDTO.builder()
-                        .name(codeToNameMap.get(entry.getKey()))
-                        .me(entry.getValue())
-                        .avg(total.get(entry.getKey()))
-                        .build())
-                .toList();
-        log.debug("각 항목에 대해 전체, 프로젝트별 객관식 평균 이름과 함께 DTO 빌더 - 반환할 result 수: {}", result.size());
-
-        return result;
+    // 포트폴리오 결과의 프로젝트별 지표 확인 시 해당 메소드 (인터페이스처럼) 사용
+    public Map<String, Integer> calculateMultipleScore(int projectInfoCode) {
+        // 해당 프로젝트의 객관식 평균을 구한 후 100점 변환해서 반환
+        return convertTo100Scale(calculateAverageScores(projectInfoCode));
     }
 
     // 5점 만점의 평균 점수 계산
