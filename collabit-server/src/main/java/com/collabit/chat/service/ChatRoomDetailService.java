@@ -20,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -46,8 +45,10 @@ public class ChatRoomDetailService {
                 .build();
         log.debug("ChatRoomDetail {}", chatRoomDetail);
         return chatRoomDetail;
-    
+    }
 
+    //채팅방 메시지 조회
+    public PageResponseDTO<ChatMessageResponseDTO> getChatRoomMessages(String userCode, int roomCode, int pageNumber) {
         // 채팅방 참여 여부 확인
         if (!isUserInChatRoom(userCode, roomCode)) {
             log.debug("User {} is not in chat room", userCode);
@@ -89,6 +90,11 @@ public class ChatRoomDetailService {
 
         log.debug("ChatMessage saving... {}", chatMessage);
         chatMessageRepository.save(chatMessage);
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomCode).orElseThrow(ChatRoomNotFoundException::new);
+        chatRoom.setUpdatedAt(LocalDateTime.now());
+        chatRoomRepository.save(chatRoom);
+
         log.info("메시지 저장 완료: Room {}, Message {}", roomCode, chatMessageRequestDTO.getMessage());
     }
 
