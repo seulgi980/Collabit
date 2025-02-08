@@ -9,6 +9,5 @@ export type ChatroomRequest = Pick<User, "nickname"> &
   Pick<ChatMessage, "message">;
 
 export type ChatRoomSwitchRequest = {
-  oldRoomCode: number;
   newRoomCode: number;
 };
