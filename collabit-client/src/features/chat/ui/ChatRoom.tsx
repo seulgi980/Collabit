@@ -46,7 +46,13 @@ const ChatRoom = () => {
   const groupMessagesByDate = (messages: ChatMessageResponse[]) => {
     const groups: { [key: string]: ChatMessageResponse[] } = {};
 
-    messages.forEach((message) => {
+    // 메시지를 timestamp 기준으로 내림차순 정렬 (최신 메시지가 나중에 오도록)
+    const sortedMessages = [...messages].sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+    );
+
+    sortedMessages.forEach((message) => {
       const date = new Date(message.timestamp);
       const dateKey = formatDate(date);
       if (!groups[dateKey]) {
@@ -72,21 +78,19 @@ const ChatRoom = () => {
     const newMessage: WebSocketMessage = {
       nickname: userInfo.nickname,
       message: message.trim(),
-      roomCode: chatId!,
       timestamp: new Date().toISOString(),
+      roomCode: chatId!,
     };
 
-    console.log(newMessage);
-    sendMessage(newMessage);
-
-    updateChatMessages((prevMessages: ChatMessageResponse[]) => [
+    updateChatMessages([
       {
         nickname: newMessage.nickname,
         message: newMessage.message,
         timestamp: newMessage.timestamp,
       },
-      ...prevMessages,
+      ...chatMessages,
     ]);
+    sendMessage(newMessage);
     setMessage("");
   };
 
@@ -121,8 +125,9 @@ const ChatRoom = () => {
           }
         }}
       >
-        {Object.entries(groupMessagesByDate(chatMessages)).map(
-          ([date, messages]) => (
+        {Object.entries(groupMessagesByDate(chatMessages))
+          .reverse()
+          .map(([date, messages]) => (
             <div key={date} className="flex flex-col gap-2">
               <div className="flex justify-center">
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
@@ -142,8 +147,7 @@ const ChatRoom = () => {
                 />
               ))}
             </div>
-          ),
-        )}
+          ))}
         <div ref={messagesEndRef} />
       </div>
       <ChatInput
