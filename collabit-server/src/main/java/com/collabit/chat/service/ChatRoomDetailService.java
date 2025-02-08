@@ -11,6 +11,8 @@ import com.collabit.chat.repository.ChatMessageRepository;
 import com.collabit.chat.repository.ChatRoomRepository;
 import com.collabit.global.common.PageResponseDTO;
 import com.collabit.user.domain.entity.User;
+import com.collabit.user.exception.UserNotFoundException;
+import com.collabit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,6 +30,7 @@ public class ChatRoomDetailService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRedisService chatRedisService;
+    private final UserRepository userRepository;
 
     // 채팅방 디테일 조회
     public ChatRoomDetailResponseDTO getChatRoomDetail(String userCode, int roomCode) {
@@ -40,14 +43,12 @@ public class ChatRoomDetailService {
         ChatRoomDetailResponseDTO chatRoomDetail = ChatRoomDetailResponseDTO.builder()
                 .profileImage(otherUser.getProfileImage())
                 .nickname(otherUser.getNickname())
-                .roomCode(roomCode)
                 .build();
         log.debug("ChatRoomDetail {}", chatRoomDetail);
         return chatRoomDetail;
-    }
+    
 
-    //채팅방 메시지 조회
-    public PageResponseDTO<ChatMessageResponseDTO> getChatRoomMessages(String userCode, int roomCode, int pageNumber) {
+        // 채팅방 참여 여부 확인
         if (!isUserInChatRoom(userCode, roomCode)) {
             log.debug("User {} is not in chat room", userCode);
             throw new UserNotInChatRoomException();
@@ -99,16 +100,14 @@ public class ChatRoomDetailService {
 
     private ChatMessageResponseDTO convertToResponseDTO(ChatMessage chatMessage) {
         return ChatMessageResponseDTO.builder()
-                .nickname(getUserByUserCode(chatMessage.getUserCode(), chatMessage.getRoomCode()).getNickname())
+                .nickname(getUserByUserCode(chatMessage.getUserCode()).getNickname())
                 .message(chatMessage.getMessage())
                 .timestamp(chatMessage.getTimestamp())
                 .build();
     }
 
-    private User getUserByUserCode(String userCode, int roomCode) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomCode)
-                .orElseThrow(ChatRoomNotFoundException::new);
-        return chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
+    private User getUserByUserCode(String userCode) {
+        return userRepository.findByCode(userCode).orElseThrow(UserNotFoundException::new);
     }
 
     private User getOtherUser(ChatRoom chatRoom, String userCode) {

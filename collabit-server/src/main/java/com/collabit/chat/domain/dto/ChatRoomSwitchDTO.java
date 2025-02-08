@@ -11,5 +11,4 @@ import lombok.*;
 public class ChatRoomSwitchDTO {
     private int oldRoomCode;
     private int newRoomCode;
-    private String userCode;
 }
