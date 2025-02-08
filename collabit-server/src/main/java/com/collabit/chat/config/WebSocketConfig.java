@@ -16,23 +16,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompHandler stompHandler;
 
-    //웹소켓 엔드포인트 등록
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/chat")
                 .setAllowedOriginPatterns("http://localhost:3000")
                 .withSockJS()
-                .setHeartbeatTime(10_0000_0000);
+                .setSessionCookieNeeded(true)
+                .setHeartbeatTime(1_000_000_000); // Reduced to 25 seconds for better connection management
     }
 
-    //메시지 송수신 주소 설정
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/app");
+        registry.setApplicationDestinationPrefixes("/app")
+                .enableSimpleBroker("/topic", "/queue") // Added /queue for private messages
+                ; // Set heartbeat intervals
     }
 
-    //token 확인 인터셉터
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(stompHandler);
@@ -40,9 +39,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-        registration.setMessageSizeLimit(8192)
-                .setSendBufferSizeLimit(8192)
-                .setTimeToFirstMessage(0);
+        registration.setMessageSizeLimit(64 * 1024)     // Increased to 64KB
+                .setSendBufferSizeLimit(512 * 1024)  // Increased to 512KB
+                .setSendTimeLimit(20 * 1000)         // 20 seconds send timeout
+                .setTimeToFirstMessage(30 * 1000);   // 30 seconds initial connection timeout
     }
-
 }

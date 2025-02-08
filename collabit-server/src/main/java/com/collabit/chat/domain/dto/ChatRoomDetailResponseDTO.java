@@ -12,7 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatRoomDetailResponseDTO {
-    int roomCode;
     String nickname;
     String profileImage;
 }
