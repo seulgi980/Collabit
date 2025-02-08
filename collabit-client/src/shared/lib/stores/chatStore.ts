@@ -1,63 +1,92 @@
 import {
   ChatMessageResponse,
   ChatRoomDetailResponse,
+  ChatRoomListResponse,
 } from "@/shared/types/response/chat";
 import { WebSocketMessage } from "@/shared/types/model/Chat";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { getUnreadMessagesAPI, getChatRoomListAPI } from "@/shared/api/chat";
 
-type ChatMessagesUpdate =
-  | ChatMessageResponse
-  | ChatMessageResponse[]
-  | ((prevMessages: ChatMessageResponse[]) => ChatMessageResponse[]);
-
-interface ChatRoomState {
+interface ChatState {
+  chatMessages: ChatMessageResponse[];
   chatId: number | null;
   chatRoomDetail: ChatRoomDetailResponse | null;
-  chatMessages: ChatMessageResponse[];
+  chatRooms: ChatRoomListResponse[];
+  userStatuses: Record<string, boolean>;
+  unreadCounts: Record<number, number>;
   sendMessage: ((message: WebSocketMessage) => void) | null;
 }
 
-interface ChatRoomActions {
+interface ChatActions {
   setChatId: (chatId: number | null) => void;
   setChatRoomDetail: (chatRoomDetail: ChatRoomDetailResponse) => void;
-  setChatMessages: (messages: ChatMessageResponse[]) => void;
-  updateChatMessages: (update: ChatMessagesUpdate) => void;
+  setChatMessages: (messages: WebSocketMessage[]) => void;
+  addMessage: (message: WebSocketMessage) => void;
   setSendMessage: (
-    sendMessage: ((message: WebSocketMessage) => void) | null
+    sendMessage: ((message: WebSocketMessage) => void) | null,
   ) => void;
+  updateChatMessages: (messages: ChatMessageResponse[]) => void;
+  setChatRooms: (rooms: ChatRoomListResponse[]) => void;
+  updateUserStatus: (userCode: string, isOnline: boolean) => void;
+  updateUnreadCount: (roomCode: number, count: number) => void;
+  fetchChatRooms: (pageNumber: number) => Promise<void>;
+  fetchUnreadCounts: () => Promise<void>;
 }
 
-export const useChatStore = create<ChatRoomState & ChatRoomActions>()(
-  devtools(
-    (set) => ({
-      chatId: null,
-      chatRoomDetail: null,
-      chatMessages: [],
-      sendMessage: null,
+export const useChatStore = create<ChatState & ChatActions>()(
+  devtools((set) => ({
+    chatMessages: [],
+    chatId: null,
+    chatRoomDetail: null,
+    chatRooms: [],
+    userStatuses: {},
+    unreadCounts: {},
+    sendMessage: null,
 
-      setChatId: (chatId: number | null) => set({ chatId }),
-      setChatRoomDetail: (chatRoomDetail: ChatRoomDetailResponse) =>
-        set({ chatRoomDetail }),
+    setChatMessages: (messages: ChatMessageResponse[]) =>
+      set({ chatMessages: messages }),
 
-      setChatMessages: (messages: ChatMessageResponse[]) =>
-        set({ chatMessages: messages }),
+    addMessage: (message: ChatMessageResponse) =>
+      set((state) => ({
+        chatMessages: [...state.chatMessages, message],
+      })),
 
-      updateChatMessages: (update: ChatMessagesUpdate) =>
-        set((state) => {
-          if (typeof update === "function") {
-            return { chatMessages: update(state.chatMessages) };
-          }
-          if (Array.isArray(update)) {
-            return { chatMessages: [...state.chatMessages, ...update] };
-          }
-          return { chatMessages: [...state.chatMessages, update] };
-        }),
+    setChatId: (chatId) => set({ chatId }),
+    setChatRoomDetail: (chatRoomDetail) => set({ chatRoomDetail }),
+    setSendMessage: (sendMessage) => set({ sendMessage }),
+    setChatRooms: (rooms) => set({ chatRooms: rooms }),
+    updateChatMessages: (messages: ChatMessageResponse[]) =>
+      set({ chatMessages: messages }),
+    updateUserStatus: (userCode, isOnline) =>
+      set((state) => ({
+        userStatuses: { ...state.userStatuses, [userCode]: isOnline },
+      })),
 
-      setSendMessage: (sendMessage) => set({ sendMessage }),
-    }),
-    {
-      name: "Chat Store",
-    }
-  )
+    updateUnreadCount: (roomCode, count) =>
+      set((state) => ({
+        unreadCounts: {
+          ...state.unreadCounts,
+          [roomCode]: (state.unreadCounts[roomCode] || 0) + count,
+        },
+      })),
+
+    fetchChatRooms: async (pageNumber) => {
+      try {
+        const response = await getChatRoomListAPI(pageNumber);
+        set({ chatRooms: response.content });
+      } catch (error) {
+        console.error("채팅방 목록 조회 실패:", error);
+      }
+    },
+
+    fetchUnreadCounts: async () => {
+      try {
+        const response = await getUnreadMessagesAPI();
+        set({ unreadCounts: response });
+      } catch (error) {
+        console.error("안 읽은 메시지 조회 실패:", error);
+      }
+    },
+  })),
 );

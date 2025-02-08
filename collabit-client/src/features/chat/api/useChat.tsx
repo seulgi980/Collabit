@@ -1,13 +1,19 @@
 import { useAuth } from "@/features/auth/api/useAuth";
 import { getChatMessagesAPI, getChatRoomDetailAPI } from "@/shared/api/chat";
 import { useChatStore } from "@/shared/lib/stores/chatStore";
+import { WebSocketMessage } from "@/shared/types/model/Chat";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 export const useChat = () => {
   const { userInfo } = useAuth();
-  const { chatId, chatRoomDetail, setChatRoomDetail, setChatMessages } =
-    useChatStore();
+  const {
+    chatId,
+    chatRoomDetail,
+    setChatRoomDetail,
+    setChatMessages,
+    addMessage,
+  } = useChatStore();
 
   // 채팅방 디테일 쿼리
   const {
@@ -49,7 +55,6 @@ export const useChat = () => {
       setChatRoomDetail(chatRoom);
       const messages =
         chatMessages?.pages.flatMap((page) => page.content) ?? [];
-      console.log(messages);
       setChatMessages(messages);
     }
   }, [
@@ -60,12 +65,18 @@ export const useChat = () => {
     setChatMessages,
   ]);
 
+  const handleNewMessage = (message: WebSocketMessage) => {
+    addMessage(message);
+  };
+
   return {
+    data: chatMessages,
     chatRoomLoading,
     chatRoomError,
     isLoading,
     error,
     fetchNextPage,
     hasNextPage,
+    handleNewMessage,
   };
 };
