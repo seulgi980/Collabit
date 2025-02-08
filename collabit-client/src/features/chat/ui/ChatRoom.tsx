@@ -9,6 +9,24 @@ import { useAuth } from "@/features/auth/api/useAuth";
 import { WebSocketMessage } from "@/shared/types/model/Chat";
 import { ChatMessageResponse } from "@/shared/types/response/chat";
 
+// 날짜 포맷팅 함수 추가
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+// 시간 포맷팅 함수 추가
+const formatTime = (date: Date) => {
+  return date.toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+};
+
 const ChatRoom = () => {
   const [message, setMessage] = useState("");
   const { userInfo } = useAuth();
@@ -23,6 +41,22 @@ const ChatRoom = () => {
   } = useChatStore();
   const { chatRoomLoading, chatRoomError, fetchNextPage, hasNextPage } =
     useChat();
+
+  // 메시지를 날짜별로 그룹화하는 함수
+  const groupMessagesByDate = (messages: ChatMessageResponse[]) => {
+    const groups: { [key: string]: ChatMessageResponse[] } = {};
+
+    messages.forEach((message) => {
+      const date = new Date(message.timestamp);
+      const dateKey = formatDate(date);
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(message);
+    });
+
+    return groups;
+  };
 
   // 메시지 전송 핸들러
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
@@ -87,18 +121,29 @@ const ChatRoom = () => {
           }
         }}
       >
-        {chatMessages?.map((chat, index) => (
-          <ChatBubble
-            key={index}
-            isMe={chat.nickname === userInfo?.nickname}
-            message={chat.message}
-            date={new Date(chat.timestamp).toLocaleString()}
-            userInfo={{
-              name: chat.nickname,
-              profileImage: chatRoomDetail.profileImage,
-            }}
-          />
-        ))}
+        {Object.entries(groupMessagesByDate(chatMessages)).map(
+          ([date, messages]) => (
+            <div key={date} className="flex flex-col gap-2">
+              <div className="flex justify-center">
+                <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+                  {date}
+                </span>
+              </div>
+              {messages.map((chat, index) => (
+                <ChatBubble
+                  key={index}
+                  isMe={chat.nickname === userInfo?.nickname}
+                  message={chat.message}
+                  date={formatTime(new Date(chat.timestamp))}
+                  userInfo={{
+                    name: chat.nickname,
+                    profileImage: chatRoomDetail.profileImage,
+                  }}
+                />
+              ))}
+            </div>
+          ),
+        )}
         <div ref={messagesEndRef} />
       </div>
       <ChatInput
