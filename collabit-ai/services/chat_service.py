@@ -42,15 +42,35 @@ class ChatService:
 
 이 질문들을 딱딱하게 느껴지지 않도록 대화형태로 하나씩 질문을 해줘.
 
-6번째 질문을 먼저 하고
+6번째 질문을 요청한 뒤에
 사용자의 다음 응답을 받으면
 '설문을 종료합니다.'
 라는 메세지를 넣어줘.
-이 메시지는 트리거라서 6번째 질문과 같이 응답하면 안돼
+이 메시지는 트리거라서 6번째 질문과 같이  응답하면 안돼
 """
 
+    @staticmethod
+    def get_sentiment_analysis_prompt():
+        return """진행된 대화의 모든 답변에 대해 감정 분석을 진행하여 다음 JSON 형식으로만 응답해주세요:
+[
+    {
+        "answer": "입력된 답변 전체",
+        "sensitive": "positive 또는 negative",
+        "keyword": "협업과 연관된 주요 키워드들"
+    },
+    {
+        "answer": "입력된 답변 전체",
+        "sensitive": "positive 또는 negative",
+        "keyword": "협업과 연관된 주요 키워드들"
+    }
+]
+    긍정(positive)과 부정(negative) 판단 기준:
+    - 긍정: 협조적, 적극적, 건설적, 발전적, 수용적인 태도와 행동
+    - 부정: 비협조적, 소극적, 회피적, 부정적, 거부적인 태도와 행동
+
+    키워드는 답변에서 헙업 능력을 나타내는 주요 단어나 구문을 추출해주세요."""
+
     def generate_response(self, messages):
-        """Generate AI response"""
         return self.client.chat.completions.create(
             model=MODEL_NAME,
             messages=[{"role": m["role"], "content": m["content"]} for m in messages],
@@ -60,5 +80,4 @@ class ChatService:
             stream=True
         )
 
-# Create a singleton instance
 chat_service = ChatService()
