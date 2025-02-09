@@ -1,5 +1,5 @@
 import { ChatroomRequest } from "../types/request/chat";
-import { ChatListResponse } from "../types/response/chat";
+import { ChatRoomListResponse } from "../types/response/chat";
 import { PageResponse } from "../types/response/page";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -25,7 +25,7 @@ export const getOrCreateChatRoomAPI = async (body: ChatroomRequest) => {
 
 export const getChatRoomListAPI = async (
   pageNumber: number,
-): Promise<PageResponse<ChatListResponse>> => {
+): Promise<PageResponse<ChatRoomListResponse>> => {
   const response = await fetch(
     `${apiUrl}/chat/rooms?pageNumber=${pageNumber}`,
     {
