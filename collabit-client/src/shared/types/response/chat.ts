@@ -9,22 +9,14 @@ export interface ChatMessageResponse extends ChatMessageRequest {
   nickname: string;
 }
 
-export interface ChatRoomDetailResponse {
-  messages: {
-    content: ChatMessageResponse[];
-  };
-  pageInfo: {
-    currentPage: number;
-    totalPages: number;
-  };
-}
-
-export interface ChatListResponse extends ChatUser {
+export interface ChatRoomListResponse extends ChatUser {
   roomCode: number;
   lastMessage: string;
   lastMessageTime: string;
   unReadMessageCount: number;
 }
+
+export type ChatRoomDetailResponse = ChatUser;
 
 export type ChatRoomResponse = { roomCode: number };
 

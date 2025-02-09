@@ -1,9 +1,12 @@
 import { useAuth } from "@/features/auth/api/useAuth";
 import { getChatRoomListAPI } from "@/shared/api/chat";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useChatStore } from "@/shared/lib/stores/chatStore";
 
 export const useChatRoomList = () => {
   const { userInfo } = useAuth();
+  const { chatMessages } = useChatStore();
 
   const {
     data,
@@ -13,6 +16,7 @@ export const useChatRoomList = () => {
     isFetching,
     isFetchingNextPage,
     status,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ["chatList", userInfo?.nickname],
     queryFn: async ({ pageParam = 0 }) => {
@@ -28,6 +32,13 @@ export const useChatRoomList = () => {
     enabled: !!userInfo?.nickname,
   });
 
+  // messages가 변경될 때마다 chatRoomList를 다시 가져옴
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      refetch();
+    }
+  }, [chatMessages, refetch]);
+
   const chatList = data?.pages.flatMap((page) => page.content);
 
   return {
@@ -38,5 +49,6 @@ export const useChatRoomList = () => {
     isFetching,
     isFetchingNextPage,
     fetchNextPage,
+    refetch,
   };
 };
