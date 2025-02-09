@@ -4,12 +4,16 @@ import ChatInput from "@/entities/chat/ui/ChatInput";
 import SurveyBubble from "@/entities/survey/ui/SurveyBubble";
 import SurveyMultipleSelectButton from "@/entities/survey/ui/SurveyMultipleSelectButton";
 import { useAuth } from "@/features/auth/api/useAuth";
-import { getSurveyMultipleQueryAPI } from "@/shared/api/survey";
+import {
+  getSurveyMultipleQueryAPI,
+  startEssaySurveyAPI,
+} from "@/shared/api/survey";
 import { useSurveyStore } from "@/shared/lib/stores/surveyStore";
 import { Button } from "@/shared/ui/button";
 import generateGreetingMessage from "@/shared/utils/generateGreetingMessage";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import useSendMultipleAnswer from "../api/useSendMultipleAnswer";
 
 const SurveyRoom = ({ id }: { id: number }) => {
   const { userInfo } = useAuth();
@@ -18,28 +22,23 @@ const SurveyRoom = ({ id }: { id: number }) => {
   /* 초기 디테일 데이터 불러오기 */
   const setId = useSurveyStore((state) => state.setId);
   const surveyDetail = useSurveyStore((state) => state.surveyDetail);
-  const scores = useSurveyStore((state) => state.scores);
-  console.log(scores);
+  const multipleAnswers = useSurveyStore((state) => state.multipleAnswers);
+  console.log(multipleAnswers);
 
   // 디테일 스토어 업데이트
   useEffect(() => {
     setId(id);
   }, [id, setId]);
 
-  /* 설문 스텝 관리 */
-  const [currentStep, setCurrentStep] = useState(-1);
-
-  const handleStartSurvey = () => {
-    setCurrentStep(0);
-  };
-  const handleEndSurvey = () => {
-    setCurrentStep((prev) => prev + 1);
-  };
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
-    setCurrentStep((prev) => prev + 1);
   };
+
+  /* 설문 스텝 관리 */
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [mutipleStep, setMutipleStep] = useState(0);
+
   // 객관식 설문 리스트
   const { data: surveyMultipleQuery } = useQuery({
     queryKey: ["surveyMultiple"],
@@ -47,10 +46,38 @@ const SurveyRoom = ({ id }: { id: number }) => {
     enabled: !!userInfo && !!id && currentStep === 0,
     staleTime: 1000 * 60,
   });
+  const { sendMultipleAnswer } = useSendMultipleAnswer();
+
+  const handleStartMultiple = () => {
+    setCurrentStep(0);
+  };
 
   const handleSelectAnswer = (currentIndex: number) => {
+    console.log(currentIndex, currentStep);
     if (currentIndex === currentStep) {
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep(currentIndex + 1);
+      if (mutipleStep < 23) {
+        setMutipleStep(mutipleStep + 1);
+      }
+    }
+  };
+
+  const handleEndMultiple = async () => {
+    setCurrentStep((prev) => prev + 1);
+    sendMultipleAnswer({
+      surveyCode: id,
+      answer: multipleAnswers,
+    });
+    const { stream } = await startEssaySurveyAPI(id);
+    const reader = stream.getReader();
+    const decoder = new TextDecoder();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      const text = decoder.decode(value);
+      console.log(text);
     }
   };
 
@@ -78,7 +105,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
                 <Button
                   disabled={currentStep > 24}
                   className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
-                  onClick={handleEndSurvey}
+                  onClick={handleEndMultiple}
                 >
                   대화 시작하기
                 </Button>
@@ -95,7 +122,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
                 <SurveyBubble
                   key={item.questionNumber}
                   isMe={false}
-                  step={reversedIndex + 1}
+                  step={mutipleStep - index + 1}
                   message={
                     reversedIndex === 0
                       ? `감사합니다, 그러면 몇가지 질문을 드릴게요! 5가지 이모티콘 중 제가 드리는 질문에 가장 적합한 이모티콘을 눌러주세요! 첫번째 질문을 시작하겠습니다. ${surveyDetail?.nickname}${item.questionText}`
@@ -126,7 +153,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
               <Button
                 disabled={currentStep >= 0}
                 className="fade-in-duration-700 duration-700 animate-in fade-in-0 slide-in-from-bottom-4"
-                onClick={handleStartSurvey}
+                onClick={handleStartMultiple}
               >
                 시작하기
               </Button>
