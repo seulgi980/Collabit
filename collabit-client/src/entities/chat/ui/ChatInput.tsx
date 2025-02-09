@@ -16,7 +16,11 @@ const ChatInput = ({
   handleSendMessage,
 }: ChatInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey &&
+      e.nativeEvent.isComposing === false
+    ) {
       e.preventDefault();
       if (message.trim() !== "") {
         handleSendMessage(e as unknown as React.FormEvent<HTMLFormElement>);
