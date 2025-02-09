@@ -64,10 +64,10 @@ const SurveyRoom = ({ id }: { id: number }) => {
 
   const handleEndMultiple = async () => {
     setCurrentStep((prev) => prev + 1);
-    sendMultipleAnswer({
-      surveyCode: id,
-      answer: multipleAnswers,
-    });
+    // sendMultipleAnswer({
+    //   surveyCode: id,
+    //   answer: multipleAnswers,
+    // });
     const { stream } = await startEssaySurveyAPI(id);
     const reader = stream.getReader();
     const decoder = new TextDecoder();
@@ -95,23 +95,23 @@ const SurveyRoom = ({ id }: { id: number }) => {
       <div className="flex h-[calc(100vh-256px)] w-full flex-col-reverse overflow-y-auto bg-white px-2 py-3 md:px-4">
         <div className="flex flex-col-reverse gap-6">
           {/*객관식 마지막 메시지 */}
-          {currentStep >= 24 && (
-            <SurveyBubble
-              isMe={false}
-              message={`감사합니다! ${userInfo.nickname}님의 이야기를 들으니까 ${surveyDetail?.nickname}님이 어떤 사람인지는 조금 알 것 같아요. \n\n 이제 더 구체적으로 알고 싶은데, 대화로 알려주시겠어요? (지금 나가시면 피드백이 완료되지 않아요!)`}
-              animation={currentStep === 24}
-              isLoading={false}
-              component={
-                <Button
-                  disabled={currentStep > 24}
-                  className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
-                  onClick={handleEndMultiple}
-                >
-                  대화 시작하기
-                </Button>
-              }
-            />
-          )}
+          {/* {currentStep >= 24 && ( */}
+          <SurveyBubble
+            isMe={false}
+            message={`감사합니다! ${userInfo.nickname}님의 이야기를 들으니까 ${surveyDetail?.nickname}님이 어떤 사람인지는 조금 알 것 같아요. \n\n 이제 더 구체적으로 알고 싶은데, 대화로 알려주시겠어요? (지금 나가시면 피드백이 완료되지 않아요!)`}
+            animation={currentStep === 24}
+            isLoading={false}
+            component={
+              <Button
+                disabled={currentStep > 24}
+                className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
+                onClick={handleEndMultiple}
+              >
+                대화 시작하기
+              </Button>
+            }
+          />
+          {/* )} */}
           {/* 우선 스텝에 따른 챗봇의 메세지 렌더링 */}
           {surveyMultipleQuery
             ?.slice(0, currentStep + 1)

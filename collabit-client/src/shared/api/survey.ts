@@ -6,7 +6,8 @@ import {
 } from "../types/response/survey";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-const flaskApiUrl = process.env.NEXT_FLASK_API_URL;
+const flaskApiUrl = process.env.NEXT_PUBLIC_FLASK_API_URL;
+
 // 설문 리스트 조회
 export const getSurveyListAPI = async (): Promise<SurveyListResponse[]> => {
   const response = await fetch(`${apiUrl}/survey`, {
@@ -56,6 +57,7 @@ export const sendMultipleSurveyAnswerAPI = async (
 // 주관식 설문 시작 post
 //survey/{surveyCode}
 export const startEssaySurveyAPI = async (surveyCode: number) => {
+  console.log("Flask API URL:", flaskApiUrl);
   const response = await fetch(`${flaskApiUrl}/survey/${surveyCode}`, {
     headers: {
       "Content-Type": "application/json",
