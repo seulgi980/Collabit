@@ -30,7 +30,6 @@ public class WebSocketService {
     public void handleChatMessage(WebSocketMessageDTO messageDTO, String userCode) {
         int roomCode = messageDTO.getRoomCode();
         log.debug("Handling chat message: room={}, user={}", roomCode, userCode);
-        
         // Redis에 메시지 발행 (다중 서버 환경을 위해)
         String channelKey = RedisKeyUtil.getChatMessageChannelKey(roomCode);
         redisPublisher.publish(channelKey, messageDTO);

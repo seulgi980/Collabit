@@ -62,8 +62,11 @@ public class StompHandler implements ChannelInterceptor {
             SecurityContextHolder.setContext(context);
 
             log.debug("WebSocket authentication success: userCode={}", user.getCode());
-            return message;
 
+            // Publish user connection event
+            eventPublisher.publishEvent(new WebSocketEvent.UserConnectEvent(nickname));
+
+            return message;
         } catch (Exception e) {
             log.error("WebSocket authentication failed: {}", e.getMessage());
             throw new RuntimeException("WebSocket authentication failed", e);
@@ -114,39 +117,13 @@ public class StompHandler implements ChannelInterceptor {
         SecurityContextHolder.clearContext();
         if (ex != null) {
             log.error("Message sending failed: {}", ex.getMessage());
-        }
-    }
-}
-            return handleConnect(message, accessor);
-        } else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            handleSubscribe(accessor);
-        } else if (StompCommand.DISCONNECT.equals(accessor.getCommand())) {
-            handleDisconnect(accessor);
-        }
-
-        return message;
-    }
-
-    private Message<?> handleConnect(Message<?> message, StompHeaderAccessor accessor) {
-        try {
-            String nickname = extractNickname(accessor);
-            User user = userRepository.findByNickname(nickname)
-                    .orElseThrow(() -> new RuntimeException("User not found: " + nickname));
-
-            Authentication auth = createAuthentication(user);
-            accessor.setUser(auth);
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            context.setAuthentication(auth);
-            SecurityContextHolder.setContext(context);
-
-            eventPublisher.publishEvent(new WebSocketEvent.UserConnectEvent(nickname));
-            
-            log.debug("WebSocket connection established: nickname={}", nickname);
-            return message;
-
-        } catch (Exception e) {
-            log.error("WebSocket connection failed: {}", e.getMessage());
-            throw new RuntimeException("WebSocket connection failed", e);
+        } else {
+            StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+            if (accessor != null && StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                handleSubscribe(accessor);
+            } else if (accessor != null && StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+                handleDisconnect(accessor);
+            }
         }
     }
 
@@ -158,13 +135,11 @@ public class StompHandler implements ChannelInterceptor {
         String destination = accessor.getDestination();
         if (destination != null && destination.startsWith("/topic/chat/")) {
             try {
-                int roomCode = Integer.parseInt(
-                    destination.substring(destination.lastIndexOf('/') + 1)
-                );
+                int roomCode = Integer.parseInt(destination.substring(destination.lastIndexOf('/') + 1));
                 String nickname = accessor.getUser().getName();
-                
+
                 eventPublisher.publishEvent(new WebSocketEvent.UserSubscribeEvent(nickname, roomCode));
-                
+
                 log.debug("User {} subscribed to room {}", nickname, roomCode);
             } catch (Exception e) {
                 log.error("Failed to process subscription", e);
@@ -176,44 +151,11 @@ public class StompHandler implements ChannelInterceptor {
     private void handleDisconnect(StompHeaderAccessor accessor) {
         if (accessor.getUser() != null) {
             String nickname = accessor.getUser().getName();
-            
+
             eventPublisher.publishEvent(new WebSocketEvent.UserDisconnectEvent(nickname));
-            
+
             SecurityContextHolder.clearContext();
             log.debug("User {} disconnected", nickname);
-        }
-    }
-
-    private String extractNickname(StompHeaderAccessor accessor) {
-        return accessor.getNativeHeader("nickname").stream()
-                .findFirst()
-                .filter(nick -> !nick.isBlank())
-                .orElseThrow(() -> new RuntimeException("Nickname is required"));
-    }
-
-    private Authentication createAuthentication(User user) {
-        CustomUserDetails userDetails = new CustomUserDetails(
-                user.getCode(),
-                user.getEmail(),
-                null,
-                user.getNickname(),
-                user.getGithubId(),
-                user.getProfileImage(),
-                Collections.emptyList()
-        );
-
-        return new UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                userDetails.getAuthorities()
-        );
-    }
-
-    @Override
-    public void afterSendCompletion(Message<?> message, MessageChannel channel, boolean sent, Exception ex) {
-        SecurityContextHolder.clearContext();
-        if (ex != null) {
-            log.error("Message sending failed: {}", ex.getMessage());
         }
     }
 }

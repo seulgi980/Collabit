@@ -54,16 +54,16 @@ public class ChatController {
     @Operation(summary = "채팅방 메시지 조회", description = "채팅방의 메시지를 조회합니다.")
     @GetMapping("/rooms/{roomCode}/messages")
     public ResponseEntity<PageResponseDTO<ChatMessageResponseDTO>> getChatMessages(
-            @PathVariable int roomCode, 
+            @PathVariable int roomCode,
             @RequestParam("pageNumber") int pageNumber) {
         String userCode = SecurityUtil.getCurrentUserCode();
-        PageResponseDTO<ChatMessageResponseDTO> responseDTO = 
+        PageResponseDTO<ChatMessageResponseDTO> responseDTO =
             chatRoomDetailService.getChatRoomMessages(userCode, roomCode, pageNumber);
-        
+
         if (responseDTO.getContent().isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        
+
         chatRoomDetailService.markMessagesAsRead(roomCode, userCode);
         log.debug("Messages retrieved and marked as read - room: {}, user: {}", roomCode, userCode);
         return ResponseEntity.ok(responseDTO);
@@ -71,7 +71,7 @@ public class ChatController {
 
     @Operation(summary = "읽지 않은 메시지 조회", description = "사용자가 읽지 않은 메시지 수를 조회합니다.")
     @GetMapping("/messages/unread")
-    public ResponseEntity<?> getUnreadMessages() {
+    public ResponseEntity<ChatUnreadResponseDTO> getUnreadMessages() {
         String userCode = SecurityUtil.getCurrentUserCode();
         ChatUnreadResponseDTO responseDTO = chatRoomListService.getUnreadMessagesCount(userCode);
         log.debug("getUnreadMessages responseDTO: {}", responseDTO.toString());
@@ -80,12 +80,20 @@ public class ChatController {
 
     @Operation(summary = "닉네임으로 채팅방 조회", description = "닉네임을 기반으로 채팅방을 조회합니다.")
     @PostMapping("/rooms/search")
-    public ResponseEntity<?> getChatRoomWithNickname(@RequestParam("nickname") String nickname) {
+    public ResponseEntity<ChatRoomResponseDTO> getChatRoomWithNickname(@RequestParam("nickname") String nickname) {
         log.debug("getChatRoomWithNickname requestDTO: {}", nickname);
         String userCode = SecurityUtil.getCurrentUserCode();
         ChatRoomResponseDTO responseDTO = chatRoomListService.getChatRoomByNickname(userCode, nickname);
         log.debug("getChatRoomWithNickname responseDTO: {}", responseDTO.toString());
         if (responseDTO.getRoomCode() == 0) return ResponseEntity.noContent().build();
         return ResponseEntity.ok(responseDTO);
+    }
+
+    @Operation(summary = "채팅 메시지 읽음 처리", description = "현재 보고 있는 채팅방의 메시지를 읽음처리합니다.")
+    @GetMapping("/rooms/{roomCode}/messages/read")
+    public ResponseEntity<?> markMessagesRead(@PathVariable int roomCode) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+        chatRoomDetailService.markMessagesAsRead(roomCode, userCode);
+        return ResponseEntity.ok().build();
     }
 }

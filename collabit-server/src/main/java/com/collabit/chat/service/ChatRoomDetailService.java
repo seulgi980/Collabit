@@ -92,6 +92,12 @@ public class ChatRoomDetailService {
         chatMessageRepository.save(chatMessage);
 
         ChatRoom chatRoom = chatRoomRepository.findById(roomCode).orElseThrow(ChatRoomNotFoundException::new);
+        String receiverCode;
+        if (chatRoom.getUser1().getCode().equals(userCode)) {receiverCode = chatRoom.getUser2().getCode();}
+        else {receiverCode = chatRoom.getUser1().getCode();}
+
+        chatRedisService.updateRoomMessageStatus(roomCode, receiverCode, false);
+
         chatRoom.setUpdatedAt(LocalDateTime.now());
         chatRoomRepository.save(chatRoom);
 

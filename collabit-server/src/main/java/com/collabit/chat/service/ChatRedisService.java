@@ -1,6 +1,6 @@
 package com.collabit.chat.service;
-
 import com.collabit.chat.redis.RedisKeyUtil;
+import com.collabit.chat.repository.ChatRoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -75,12 +75,21 @@ public class ChatRedisService {
     // 메시지 상태 업데이트
     public void updateRoomMessageStatus(int roomCode, String userCode, boolean isRead) {
         String key = RedisKeyUtil.getChatMessageChannelKey(roomCode);
+        System.out.println("✅  메시지 상태 업데이트 합니다!");
+
+        System.out.println("✅  메시지 상태 !" + isRead);
+
+        // 메시지 읽기 처리
         if (isRead) {
+            // 수신자가 메시지를 읽었으면, UnreadCount 삭제
             redisTemplate.opsForHash().delete(key, userCode);
+            System.out.println("전체 결과!!" + redisTemplate.opsForHash().entries(key));
+            log.debug("수신자가 메시지를 읽었음! Removed room {} from user {}", roomCode, userCode);
         } else {
             redisTemplate.opsForHash().increment(key, userCode, 1);
         }
-        log.debug("Updated message status for user {} in room {}: read={}", 
-                 userCode, roomCode, isRead);
+        log.debug("Updated message status for sender {} and receiver {} in room {}: read={}",
+                userCode, roomCode, isRead);
     }
+
 }
