@@ -8,7 +8,7 @@ import lombok.Getter;
 @Builder
 @Getter
 public class SkillData {
-    int score;
+    Double score;
     String name;
     String description;
 }
