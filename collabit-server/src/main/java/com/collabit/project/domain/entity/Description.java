@@ -1,9 +1,6 @@
 package com.collabit.project.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,8 +14,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Description {
 
-    @EmbeddedId
-    private DescriptionId id;
+    @Id
+    private String code;
 
     @Column(nullable = false)
     private String name;
