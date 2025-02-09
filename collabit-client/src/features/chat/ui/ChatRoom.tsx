@@ -2,12 +2,12 @@
 import ChatBubble from "@/entities/chat/ui/ChatBubble";
 import ChatHeader from "@/entities/chat/ui/ChatHeader";
 import ChatInput from "@/entities/chat/ui/ChatInput";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useChat } from "../api/useChat";
-import { useChatStore } from "@/shared/lib/stores/chatStore";
 import { useAuth } from "@/features/auth/api/useAuth";
 import { WebSocketMessage } from "@/shared/types/model/Chat";
 import { ChatMessageResponse } from "@/shared/types/response/chat";
+import { useChatStore } from "@/shared/lib/stores/chatStore";
 
 // 날짜 포맷팅 함수 추가
 const formatDate = (date: Date) => {
@@ -32,15 +32,17 @@ const ChatRoom = () => {
   const { userInfo } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
-  const {
-    chatId,
-    chatRoomDetail,
-    chatMessages,
-    updateChatMessages,
-    sendMessage,
-  } = useChatStore();
+  const { sendMessage } = useChatStore();
+  const { chatId, chatRoomDetail, resetUnreadMessages } = useChatStore();
+  const { messages } = useChat();
   const { chatRoomLoading, chatRoomError, fetchNextPage, hasNextPage } =
     useChat();
+
+  useEffect(() => {
+    if (chatId) {
+      resetUnreadMessages(chatId);
+    }
+  }, [chatId, resetUnreadMessages]);
 
   // 메시지를 날짜별로 그룹화하는 함수
   const groupMessagesByDate = (messages: ChatMessageResponse[]) => {
@@ -81,15 +83,6 @@ const ChatRoom = () => {
       timestamp: new Date().toISOString(),
       roomCode: chatId!,
     };
-
-    updateChatMessages([
-      {
-        nickname: newMessage.nickname,
-        message: newMessage.message,
-        timestamp: newMessage.timestamp,
-      },
-      ...chatMessages,
-    ]);
     sendMessage(newMessage);
     setMessage("");
   };
@@ -125,7 +118,7 @@ const ChatRoom = () => {
           }
         }}
       >
-        {Object.entries(groupMessagesByDate(chatMessages))
+        {Object.entries(groupMessagesByDate(messages))
           .reverse()
           .map(([date, messages]) => (
             <div key={date} className="flex flex-col gap-2">
