@@ -92,3 +92,16 @@ export const getChatRoomWithNicknameAPI = async (nickname: string) => {
   }
   return response.json();
 };
+
+export const markMessageAsReadAPI = async (roomCode: number) => {
+  const response = await fetch(
+    `${apiUrl}/chat/rooms/${roomCode}/messages/read`,
+    {
+      method: "GET",
+      ...fetchOptions,
+    },
+  );
+  if (!response.ok) {
+    throw new Error("메시지 읽음 처리 실패");
+  }
+};
