@@ -15,20 +15,24 @@ public class Feedback {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // 한글이름
-    @Column(nullable = false, length = 255)
-    private String name;
+    private int id;
 
     // 영어이름
     @Column(nullable = false, length = 255)
     private String code;
 
+    // 한글이름
+    @Column(nullable = false, length = 255)
+    private String name;
+
+    @Column(name = "is_positive", nullable = false)
+    private Boolean isPositive;
+
     @Column(nullable = false, length = 1000)
     private String feedback;
 
-    @Column(nullable = false)
-    private Boolean isPositive;
-
+    // 다른 도메인에서 get하기 위해 생성
+    public boolean isPositive() {
+        return isPositive;
+    }
 }

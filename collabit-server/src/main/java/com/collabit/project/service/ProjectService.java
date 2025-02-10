@@ -1,5 +1,9 @@
 package com.collabit.project.service;
 
+import com.collabit.portfolio.domain.entity.Description;
+import com.collabit.portfolio.domain.entity.Feedback;
+import com.collabit.portfolio.repository.DescriptionRepository;
+import com.collabit.portfolio.repository.FeedbackRepository;
 import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
 import com.collabit.project.exception.ProjectInfoNotFoundException;
