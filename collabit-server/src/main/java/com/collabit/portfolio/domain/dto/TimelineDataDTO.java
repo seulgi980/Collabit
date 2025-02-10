@@ -14,5 +14,11 @@ public class TimelineDataDTO {
     private String projectName;
     private String organization;
     private LocalDateTime completedAt;
-    private Map<String, ScoreDTO> scores;
+
+    private ScoreDTO sympathy;
+    private ScoreDTO listening;
+    private ScoreDTO expression;
+    private ScoreDTO problemSolving;
+    private ScoreDTO conflictResolution;
+    private ScoreDTO leadership;
 }

@@ -11,7 +11,13 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 public class ProgressDTO {
-    private Map<String, ProgressDataDTO> progressData;
+    private ProgressDataDTO sympathy;
+    private ProgressDataDTO listening;
+    private ProgressDataDTO expression;
+    private ProgressDataDTO problemSolving;
+    private ProgressDataDTO conflictResolution;
+    private ProgressDataDTO leadership;
+
     private int minScore;
     private int maxScore;
 }

@@ -11,6 +11,7 @@ import java.util.List;
 @Getter
 public class MultipleTimelineResponseDTO {
     private List<TimelineDataDTO> timeline;
+
     private int minScore;
     private int maxScore;
 }

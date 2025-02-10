@@ -73,7 +73,17 @@ public class PortfolioService {
                         ));
         log.debug("hexagonDataMap: {}", hexagonDataMap);
 
-        HexagonDTO hexagonDTO =  new HexagonDTO(hexagonDataMap, 1, 5);
+        HexagonDTO hexagonDTO = HexagonDTO.builder()
+                .sympathy(hexagonDataMap.get("sympathy"))
+                .listening(hexagonDataMap.get("listening"))
+                .expression(hexagonDataMap.get("expression"))
+                .problemSolving(hexagonDataMap.get("problemSolving"))
+                .conflictResolution(hexagonDataMap.get("conflictResolution"))
+                .leadership(hexagonDataMap.get("leadership"))
+                .minScore(1)
+                .maxScore(5)
+                .build();
+
 
         // =========== ProgressBar ==========
         Map<String, ProgressDataDTO> progressDataMap = userAverages.entrySet().stream()
@@ -96,7 +106,16 @@ public class PortfolioService {
                 ));
 
 
-        ProgressDTO progressDTO = new ProgressDTO(progressDataMap, 1, 5);
+        ProgressDTO progressDTO = ProgressDTO.builder()
+                .sympathy(progressDataMap.get("sympathy"))
+                .listening(progressDataMap.get("listening"))
+                .expression(progressDataMap.get("expression"))
+                .problemSolving(progressDataMap.get("problemSolving"))
+                .conflictResolution(progressDataMap.get("conflictResolution"))
+                .leadership(progressDataMap.get("leadership"))
+                .minScore(1)
+                .maxScore(5)
+                .build();
 
 
         return new MultipleHexagonProgressResponseDTO(hexagonDTO, progressDTO);
@@ -139,8 +158,8 @@ public class PortfolioService {
             totalScores.merge("sympathy", projectInfo.getSympathy(), Integer::sum);
             totalScores.merge("listening", projectInfo.getListening(), Integer::sum);
             totalScores.merge("expression", projectInfo.getExpression(), Integer::sum);
-            totalScores.merge("problem_solving", projectInfo.getProblemSolving(), Integer::sum);
-            totalScores.merge("conflict_resolution", projectInfo.getConflictResolution(), Integer::sum);
+            totalScores.merge("problemSolving", projectInfo.getProblemSolving(), Integer::sum);
+            totalScores.merge("conflictResolution", projectInfo.getConflictResolution(), Integer::sum);
             totalScores.merge("leadership", projectInfo.getLeadership(), Integer::sum);
 
             totalParticipant += projectInfo.getParticipant();
@@ -228,8 +247,8 @@ public class PortfolioService {
                             "sympathy", projectInfo.getSympathy(),
                             "listening", projectInfo.getListening(),
                             "expression", projectInfo.getExpression(),
-                            "problem_solving", projectInfo.getProblemSolving(),
-                            "conflict_resolution", projectInfo.getConflictResolution(),
+                            "problemSolving", projectInfo.getProblemSolving(),
+                            "conflictResolution", projectInfo.getConflictResolution(),
                             "leadership", projectInfo.getLeadership()
                     );
 
@@ -248,14 +267,23 @@ public class PortfolioService {
                             .projectName(project.getTitle())
                             .organization(project.getOrganization())
                             .completedAt(projectInfo.getCompletedAt())
-                            .scores(scores)
+                            .sympathy(scores.get("sympathy"))
+                            .listening(scores.get("listening"))
+                            .expression(scores.get("expression"))
+                            .problemSolving(scores.get("problemSolving"))
+                            .conflictResolution(scores.get("conflictResolution"))
+                            .leadership(scores.get("leadership"))
                             .build();
 
                 })
                 .collect(Collectors.toList());
 
 
-        return new MultipleTimelineResponseDTO(timelinedDataDTOs, 1, 5);
+        return MultipleTimelineResponseDTO.builder()
+                .timeline(timelinedDataDTOs)
+                .minScore(1)
+                .maxScore(5)
+                .build();
     }
 
     // name 가져오기
@@ -264,9 +292,6 @@ public class PortfolioService {
                 .stream()
                 .collect(Collectors.toMap(CodeNameProjection::getCode, CodeNameProjection::getName));
     }
-
-
-
 
 }
 

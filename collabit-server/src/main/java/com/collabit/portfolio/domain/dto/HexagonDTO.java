@@ -10,7 +10,13 @@ import java.util.Map;
 @NoArgsConstructor
 @Getter
 public class HexagonDTO {
-    private Map<String, HexagonDataDTO> hexagonData;
+    private HexagonDataDTO sympathy;
+    private HexagonDataDTO listening;
+    private HexagonDataDTO expression;
+    private HexagonDataDTO problemSolving;
+    private HexagonDataDTO conflictResolution;
+    private HexagonDataDTO leadership;
+
     private int minScore;
     private int maxScore;
 
