@@ -36,9 +36,8 @@ public class ProjectInfo {
     @Column(nullable = false)
     private int participant = 0;
 
-    @Builder.Default
-    @Column(name = "is_done", nullable = false)
-    private boolean isDone = false;
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 
     @Column(name = "created_at", nullable = false, insertable = false)
     private LocalDateTime createdAt;
@@ -71,7 +70,7 @@ public class ProjectInfo {
     private List<ProjectContributor> projectContributors;
 
     public void completeSurvey() {
-        this.isDone = true;
+        this.completedAt = LocalDateTime.now();
     }
 
     public void increaseParticipant(int amount) {
