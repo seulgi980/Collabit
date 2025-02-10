@@ -7,7 +7,7 @@ import lombok.*;
 @Getter
 @ToString
 @Builder
-public class MultipleResponseDTO {
+public class MultipleHexagonProgressResponseDTO {
     private HexagonDTO hexagon;
     private ProgressDTO progress;
 }
