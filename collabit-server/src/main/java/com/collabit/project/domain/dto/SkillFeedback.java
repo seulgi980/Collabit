@@ -6,11 +6,10 @@ import lombok.Getter;
 import lombok.ToString;
 
 @AllArgsConstructor
-@Builder
 @Getter
+@Builder
 @ToString
-public class GetBarGraphResponseDTO {
+public class SkillFeedback {
     String name;
-    int me;
-    int avg;
+    String feedback;
 }
