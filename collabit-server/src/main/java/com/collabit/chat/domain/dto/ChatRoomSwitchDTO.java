@@ -9,6 +9,5 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatRoomSwitchDTO {
-    private int oldRoomCode;
     private int newRoomCode;
 }
