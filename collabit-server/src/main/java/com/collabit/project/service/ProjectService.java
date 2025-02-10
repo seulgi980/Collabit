@@ -91,6 +91,13 @@ public class ProjectService {
         else {
             log.debug("기존 프로젝트 발견 - projectCode: {}, title: {}, organization: {}",
                     project.getCode(), project.getTitle(), project.getOrganization());
+
+            // 기존에 있던 organization 이미지 변경이 발생한 경우 이미지 업데이트
+            if(!project.getOrganizationImage().equals(createProjectRequestDTO.getOrganizationImage())) {
+                project.updateOrganizationImage(createProjectRequestDTO.getOrganizationImage());
+                project = projectRepository.save(project);
+                log.debug("기존 프로젝트의 organization 이미지 업데이트");
+            }
         }
 
         // 3. ProjectInfo 저장
@@ -119,6 +126,12 @@ public class ProjectService {
 
             // 로그인 user는 해당 projectInfo의 contributor로 저장하지 않음
             if(contributorDetailDTO.getGithubId().equals(user.getGithubId())){
+                // 기존에 있던 contributor의 프로필 이미지 변경이 발생한 경우 이미지 업데이트
+                if(!contributorDetailDTO.getProfileImage().equals(user.getProfileImage())) {
+                    user.updateProfileImage(contributorDetailDTO.getProfileImage());
+                    userRepository.save(user);
+                    log.debug("기존 contributor의 프로필 이미지 업데이트");
+                }
                 continue;
             }
 
