@@ -2,8 +2,8 @@ package com.collabit.portfolio.controller;
 
 
 import com.collabit.global.security.SecurityUtil;
+import com.collabit.portfolio.domain.dto.GetTimelineResponseDTO;
 import com.collabit.portfolio.domain.dto.getMultipleHexagonProgressResponseDTO;
-import com.collabit.portfolio.domain.dto.getProgressResponseDTO;
 import com.collabit.portfolio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +27,16 @@ public class PortfolioController {
         String userCode = SecurityUtil.getCurrentUserCode();
 
         return ResponseEntity.ok()
-                .body(portfolioService.getHexagonAndProgressbarGraph(userCode);
+                .body(portfolioService.getHexagonAndProgressbarGraph(userCode));
     }
+
+    @Operation(summary = "timeline 그래프 데이터 조회", description = "최근 8개 프로젝트에 대한 역량별 점수를 조회하는 API입니다.")
+    @GetMapping("/multiple/timeline")
+    public ResponseEntity<?> getTimelineGraph() {
+        String userCode = SecurityUtil.getCurrentUserCode();
+        GetTimelineResponseDTO responseDTO = portfolioService.getTimelineGraph(userCode);
+        return ResponseEntity.ok(responseDTO);
+    }
+
 }
 

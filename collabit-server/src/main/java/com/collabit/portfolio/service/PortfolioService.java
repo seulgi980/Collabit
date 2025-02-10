@@ -5,29 +5,28 @@ import com.collabit.global.error.exception.BusinessException;
 import com.collabit.portfolio.domain.dto.*;
 import com.collabit.portfolio.repository.DescriptionRepository;
 import com.collabit.portfolio.repository.FeedbackRepository;
-import com.collabit.portfolio.repository.projection.CodeNameProjection;
-import com.collabit.portfolio.repository.projection.DescriptionProjection;
-import com.collabit.portfolio.repository.projection.FeedbackProjection;
-import com.collabit.project.domain.entity.Project;
 import com.collabit.project.domain.entity.ProjectInfo;
 import com.collabit.project.domain.entity.TotalScore;
 import com.collabit.project.repository.ProjectInfoRepository;
+import com.collabit.project.repository.ProjectRepository;
 import com.collabit.project.repository.TotalScoreRepository;
+import com.collabit.project.service.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PortfolioService {
+    private final ProjectRepository projectRepository;
     private final ProjectInfoRepository projectInfoRepository;
     private final DescriptionRepository descriptionRepository;
     private final FeedbackRepository feedbackRepository;
     private final TotalScoreRepository totalScoreRepository;
+    private final ProjectService projectService;
 
     public getMultipleHexagonProgressResponseDTO getHexagonAndProgressbarGraph(String userCode) {
         Map<String, Double> userAverages = getUserAverage(userCode);
@@ -43,7 +42,8 @@ public class PortfolioService {
             .minScore(1)
             .maxScore(5)
             .build();
-        
+
+        return null;
     }
 
     private ScoreData buildScoreData(String name, Double userScore, Double totalScore) {
@@ -148,6 +148,43 @@ public class PortfolioService {
             averageScores.put(key, average);
         });
         return averageScores;
+    }
+
+    // 프로젝트 기간별 비교 그래프 데이터 조회
+    public GetTimelineResponseDTO getTimelineGraph(String userCode) {
+        // 현재 로그인된 유저의 설문이 마감된 최근 8개 projectInfo 조회
+        List<ProjectInfo> projectInfoList = projectInfoRepository.findTop8ByUserCodeAndCompletedAtIsNotNullOrderByCompletedAtDesc(userCode);
+
+        if(projectInfoList == null || projectInfoList.isEmpty()) {
+            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
+        }
+
+        List<TimelineData> timelineDataList = new ArrayList<>();
+
+        // 각 projectInfo의 항목별 객관식 점수 구하기
+        for (ProjectInfo projectInfo : projectInfoList) {
+            Map<String, ScoreData> nameAndScores = projectService.getProjectInfoAverageWithName(projectInfo.getCode());
+
+            TimelineData timelineData = TimelineData.builder()
+                    .projectName(projectInfo.getProject().getTitle())
+                    .organization(projectInfo.getProject().getOrganization())
+                    .completedAt(projectInfo.getCompletedAt())
+                    .sympathy(nameAndScores.get("sympathy"))
+                    .listening(nameAndScores.get("listening"))
+                    .expression(nameAndScores.get("expression"))
+                    .problemSolving(nameAndScores.get("problem_solving"))
+                    .conflictResolution(nameAndScores.get("conflict_resolution"))
+                    .leadership(nameAndScores.get("leadership"))
+                    .build();
+
+            timelineDataList.add(timelineData);
+        }
+
+        return GetTimelineResponseDTO.builder()
+                .timeline(timelineDataList)
+                .minScore(1)
+                .maxScore(5)
+                .build();
     }
 }
 
