@@ -227,7 +227,7 @@ public class ProjectService {
                                         .code(projectInfo.getCode())
                                         .title(project.getTitle())
                                         .participant(projectInfo.getParticipant())
-                                        .isDone(projectInfo.isDone())
+                                        .isDone(projectInfo.getCompletedAt() != null)
                                         .newSurveyResponse(newSurveyResponseMap.getOrDefault(projectInfo.getCode(), false))
                                         .createdAt(projectInfo.getCreatedAt())
                                         .contributors(contributors)
@@ -285,12 +285,12 @@ public class ProjectService {
     }
 
     // 프로젝트 설문조사 마감
-    public void updateProjectSurveyState(String userCode, int code) {
+    public void updateProjectSurveyState(String userCode, int projectInfoCode) {
         // 해당 projectInfo가 현재 로그인된 user의 소유가 맞는지 검증
-        ProjectInfo projectInfo = validateProjectInfo(userCode, code);
+        ProjectInfo projectInfo = validateProjectInfo(userCode, projectInfoCode);
 
-        if (projectInfo.isDone()) {
-            log.error("isDone이 이미 true인 경우 - 해당 ProjectInfo의 isDone: {}", true);
+        if (projectInfo.getCompletedAt() != null) {
+            log.error("completedAt에 날짜가 있는 경우 - 해당 ProjectInfo의 completedAt: {}", projectInfo.getCompletedAt());
             throw new RuntimeException("해당 프로젝트의 설문조사는 이미 마감되었습니다.");
         }
 
@@ -300,12 +300,38 @@ public class ProjectService {
             throw new RuntimeException("해당 프로젝트의 설문 참여자 수가 부족합니다. 전체 인원의 반 이상이 참여해야 마감이 가능합니다.");
         }
 
-       log.debug("해당 프로젝트 설문조사 마감 시작 - 해당 ProjectInfo의 isDone: {}", false);
-       projectInfo.completeSurvey();
-       projectInfoRepository.save(projectInfo);
-       log.debug("해당 프로젝트 설문조사 마감 완료");
+        // Redis에 남아있는 알림 정보, 업데이트 되지 않은 참여자 업데이트
+        removeNotification(userCode, projectInfoCode);
 
-       // 포트폴리오 개발 시 isUpdate 함께 변경
+        // 설문조사 마감 시간 업데이트
+        log.debug("해당 프로젝트 설문조사 마감 시작 - 현재 completedAt: {}", (Object) null);
+        projectInfo.completeSurvey();
+        projectInfoRepository.save(projectInfo);
+        log.debug("해당 프로젝트 설문조사 마감 완료 - 현재 completedAt: {}", projectInfo.getCompletedAt());
+
+        // ======================================
+        // 포트폴리오 개발 시 isUpdate 변경 메소드 호출
+        // ======================================
+
+        // 마감된 해당 프로젝트의 객관식 점수, 참여자 수 업데이트
+        updateAllUserScore(projectInfo);
+    }
+
+    private void updateAllUserScore(ProjectInfo projectInfo){
+        TotalScore totalScore = totalScoreRepository.findAll().get(0);
+
+        totalScore = TotalScore.builder()
+                .code(totalScore.getCode())
+                .totalParticipant(totalScore.getTotalParticipant() + projectInfo.getParticipant())
+                .sympathy(totalScore.getSympathy() + projectInfo.getSympathy())
+                .listening(totalScore.getListening() + projectInfo.getListening())
+                .expression(totalScore.getExpression() + projectInfo.getExpression())
+                .problemSolving(totalScore.getProblemSolving() + projectInfo.getProblemSolving())
+                .conflictResolution(totalScore.getConflictResolution() + projectInfo.getConflictResolution())
+                .leadership(totalScore.getLeadership() + projectInfo.getLeadership())
+                .build();
+
+        totalScoreRepository.save(totalScore);
     }
 
     // 해당 프로젝트 설문에 참여한 사람이 없을 경우 프로젝트 삭제
@@ -314,7 +340,7 @@ public class ProjectService {
         ProjectInfo projectInfo = validateProjectInfo(userCode, code);
 
         // 설문 참여자가 있거나 마감됐을 경우 삭제 불가
-        if(projectInfo.isDone() || projectInfo.getParticipant() >= 1) {
+        if(projectInfo.getCompletedAt() != null || projectInfo.getParticipant() >= 1) {
             log.error("설문 참여자가 있거나 설문이 마감됐을 경우 삭제 불가");
             throw new RuntimeException("설문 참여자가 있거나 설문을 마감하였을 경우 삭제가 불가능합니다.");
         }
@@ -435,7 +461,7 @@ public class ProjectService {
                             .code(projectInfo.getCode())
                             .title(project.getTitle())
                             .participant(projectInfo.getParticipant())
-                            .isDone(projectInfo.isDone())
+                            .isDone(projectInfo.getCompletedAt() != null)
                             .newSurveyResponse(newSurveyResponseMap.getOrDefault(projectInfo.getCode(), false))
                             .createdAt(projectInfo.getCreatedAt())
                             .contributors(contributors)
@@ -481,20 +507,20 @@ public class ProjectService {
     }
 
     // 해당 프로젝트의 알림만 삭제
-    public void removeNotification(String userCode, int code){
+    public void removeNotification(String userCode, int projectInfoCode){
         log.debug("특정 프로젝트 알림 삭제 시작");
 
         // Redis에서 특정 프로젝트 알림 삭제하며 값 가져오기
-        Object value = projectRedisService.removeNotificationByUserCodeAndProjectCode(userCode, code);
+        Object value = projectRedisService.removeNotificationByUserCodeAndProjectCode(userCode, projectInfoCode);
 
         if (value != null) {
-            projectInfoRepository.findById(code) // projectInfo 조회
+            projectInfoRepository.findById(projectInfoCode) // projectInfo 조회
                     .ifPresent(info -> {
                         // Redis에서 가져온 값으로 participant 수 업데이트
                         info.increaseParticipant(((Number) value).intValue());
                         projectInfoRepository.save(info);
                         log.debug("ProjectInfo(code: {}) participant 수 업데이트 완료: {}",
-                                code, value);
+                                projectInfoCode, value);
                     });
         }
     }
@@ -558,7 +584,7 @@ public class ProjectService {
         ProjectInfo projectInfo = projectInfoRepository.findById(projectInfoCode)
                 .orElseThrow(ProjectInfoNotFoundException::new);
 
-        if (!projectInfo.isDone()) {
+        if (projectInfo.getCompletedAt() == null) {
             throw new RuntimeException("설문이 마감되지 않아 프로젝트 결과를 조회할 수 없습니다.");
         }
 

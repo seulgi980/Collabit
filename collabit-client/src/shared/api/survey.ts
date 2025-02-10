@@ -105,11 +105,6 @@ export const getSurveyDetailAPI = async (
   }
 
   const data = await response.json();
-  console.log("Survey Detail Response:", {
-    status: response.status,
-    data,
-    surveyCode,
-  });
 
   if (!data) {
     throw new Error("응답 데이터가 비어있습니다");
