@@ -3,7 +3,7 @@ export interface Skill {
   score: number;
   description?: string;
   feedback?: string;
-  isPositive?: boolean;
+  positive?: boolean;
 }
 
 export interface ChartRangeData {
@@ -20,6 +20,4 @@ export interface SkillData {
   leadership: Skill;
 }
 
-export type ChartResponse = ChartRangeData & {
-  hexagonData: SkillData;
-};
+export type ChartResponse = ChartRangeData & SkillData;

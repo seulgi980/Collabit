@@ -15,7 +15,7 @@ const HexagonSection = ({ hexagon }: HexagonSectionProps) => {
     conflictResolution,
     problemSolving,
     leadership,
-  } = hexagon.hexagonData;
+  } = hexagon;
 
   const hexagonItems = [
     { key: "sympathy", ...sympathy, position: "col-start-2 row-start-1" },
@@ -47,15 +47,17 @@ const HexagonSection = ({ hexagon }: HexagonSectionProps) => {
 
   return (
     <div>
-      <div className="grid grid-cols-2 justify-center gap-2 md:flex md:flex-row">
+      <div className="grid grid-cols-2 justify-center gap-2 md:grid-cols-6 md:grid-rows-1">
         {hexagonItems.map(({ key, name, description }) => (
           <div
             key={key}
-            className={`max-w-40 rounded-xl bg-violet-50 p-2 text-center text-sm text-gray-600`}
+            className={`flex max-w-40 flex-col items-center justify-center rounded-xl bg-violet-50 p-2 text-center text-sm text-gray-600`}
           >
-            <Badge className="mb-2 bg-violet-400 text-white">{name}</Badge>
+            <Badge className="mb-2 text-nowrap bg-violet-400 text-white">
+              {name}
+            </Badge>
             {description && (
-              <span className="m-auto block text-xs">{description}</span>
+              <span className="flex-1 text-balance text-xs">{description}</span>
             )}
           </div>
         ))}
@@ -69,17 +71,19 @@ const HexagonSection = ({ hexagon }: HexagonSectionProps) => {
         </div>
 
         {/* 역량별 피드백 */}
-        {hexagonItems.map(({ key, name, feedback, position, isPositive }) => (
+        {hexagonItems.map(({ key, name, feedback, position, positive }) => (
           <div
             key={key}
             className={`text-center text-sm text-gray-600 ${position} m-auto`}
           >
             <Badge
-              className={`md:text-md mb-2 ${isPositive ? "bg-blue-400" : "bg-red-400"} text-white`}
+              className={`md:text-md mb-2 ${positive ? "bg-blue-400" : "bg-red-400"} text-white`}
             >
               {name}
             </Badge>
-            {feedback && <span className="block text-xs">{feedback}</span>}
+            {feedback && (
+              <span className="text-pretty] block text-xs">{feedback}</span>
+            )}
           </div>
         ))}
       </div>

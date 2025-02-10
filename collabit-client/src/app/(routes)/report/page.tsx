@@ -4,7 +4,6 @@ import { useState } from "react";
 
 import NoReport from "@/entities/report/ui/NoReport";
 import ReportHeader from "@/entities/report/ui/ReportHeader";
-import { useAuth } from "@/features/auth/api/useAuth";
 import AISummarySection from "@/features/report/ui/AISummarySection";
 import CloudSection from "@/features/report/ui/CloudSection";
 import CompareSection from "@/features/report/ui/CompareSection";
@@ -16,7 +15,6 @@ import HistoryRateSection from "@/features/report/ui/HistoryRateSection";
 export default function Page() {
   const { toast } = useToast();
   const { openModal, closeModal } = useModalStore();
-  const { userInfo } = useAuth();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [reportData, setReportData] = useState<any>(null);
@@ -55,9 +53,7 @@ export default function Page() {
     <div className="mx-auto mb-20 mt-5 w-full p-4 md:max-w-5xl">
       <ReportHeader />
       <div className="flex flex-col gap-10 py-4">
-        <ScoreAnalysisSection
-          hexagon={reportData.hexagon}
-        />
+        <ScoreAnalysisSection hexagon={reportData.hexagon} />
 
         <CloudSection
           positive={reportData.wordCloud.positive}
