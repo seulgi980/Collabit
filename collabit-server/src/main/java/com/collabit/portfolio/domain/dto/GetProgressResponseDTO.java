@@ -7,7 +7,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @Getter
-public class getProgressResponseDTO {
+public class GetProgressResponseDTO {
     private ScoreData sympathy;
     private ScoreData listening;
     private ScoreData expression;

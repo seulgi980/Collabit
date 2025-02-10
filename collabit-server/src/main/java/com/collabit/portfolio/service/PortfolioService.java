@@ -4,6 +4,9 @@ import com.collabit.global.common.ErrorCode;
 import com.collabit.global.error.exception.BusinessException;
 import com.collabit.portfolio.domain.dto.*;
 import com.collabit.portfolio.domain.entity.Portfolio;
+import com.collabit.portfolio.domain.entity.Description;
+import com.collabit.portfolio.domain.entity.Feedback;
+import com.collabit.portfolio.domain.entity.Portfolio;
 import com.collabit.portfolio.repository.DescriptionRepository;
 import com.collabit.portfolio.repository.FeedbackRepository;
 import com.collabit.portfolio.repository.PortfolioRepository;
@@ -13,11 +16,14 @@ import com.collabit.project.repository.ProjectInfoRepository;
 import com.collabit.project.repository.ProjectRepository;
 import com.collabit.project.repository.TotalScoreRepository;
 import com.collabit.project.service.ProjectService;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -33,11 +39,63 @@ public class PortfolioService {
 
     private final int MIN_PEOPLE_COUNT = 6;
 
-    public getMultipleHexagonProgressResponseDTO getHexagonAndProgressbarGraph(String userCode) {
+    public GetMultipleHexagonProgressResponseDTO getHexagonAndProgressbarGraph(String userCode) {
+
+        // 개인 역량별 평균 계산
         Map<String, Double> userAverages = getUserAverage(userCode);
+
+        // 전체 사용자의 역량별 평균 계산
         Map<String, Double> totalUserAverages = getTotalUserAverage();
 
-        getProgressResponseDTO.builder()
+        // 각 항목에 대해 개인 평균, 전체 평균 비교하여 isPositive만 세팅
+        Map<String, Boolean> isAboveAverageBySkill = getSkillAboveAverageMap(userAverages, totalUserAverages);
+
+        // Description 데이터 Map 변환
+        Map<String, Description> descriptionMap = descriptionRepository.findAll().stream()
+            .collect(Collectors.toMap(Description::getCode, desc -> desc));
+
+        // Feedback 데이터 Map 변환
+        Map<String, List<Feedback>> feedbackMap = feedbackRepository.findAll().stream()
+            .collect(Collectors.groupingBy(Feedback::getCode));
+
+        // List<SkillData>를 Map으로 변환하여 필드명에 맞게 매핑
+        Map<String, SkillData> skillDataMap = userAverages.entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                entry -> {
+                    // 각 code와 isPositive에 맞는 설명, 피드백을 매핑
+                    String code = entry.getKey();
+                    Description description = descriptionMap.get(code);
+                    boolean isPositive = isAboveAverageBySkill.get(code);
+
+                    String feedback = feedbackMap.get(code).stream()
+                        .filter(f -> f.isPositive() == isPositive)
+                        .findFirst()
+                        .map(Feedback::getFeedback)
+                        .orElse("");
+
+                    return SkillData.builder()
+                        .score(entry.getValue())
+                        .name(description.getName())
+                        .description(description.getDescription())
+                        .feedback(feedback)
+                        .isPositive(isPositive)
+                        .build();
+                }
+            ));
+
+        GetHexagonResponseDTO hexagon = GetHexagonResponseDTO.builder()
+            .minScore(1)
+            .maxScore(5)
+            .sympathy(skillDataMap.get("sympathy"))
+            .listening(skillDataMap.get("listening"))
+            .expression(skillDataMap.get("expression"))
+            .problemSolving(skillDataMap.get("problem_solving"))
+            .conflictResolution(skillDataMap.get("conflict_resolution"))
+            .leadership(skillDataMap.get("leadership"))
+            .build();
+
+        GetProgressResponseDTO progress = GetProgressResponseDTO.builder()
             .sympathy(buildScoreData("sympathy", userAverages.get("sympathy"), totalUserAverages.get("sympathy")))
             .listening(buildScoreData("listening", userAverages.get("listening"), totalUserAverages.get("listening")))
             .expression(buildScoreData("expression", userAverages.get("expression"), totalUserAverages.get("expression")))
@@ -48,7 +106,23 @@ public class PortfolioService {
             .maxScore(5)
             .build();
 
-        return null;
+        return GetMultipleHexagonProgressResponseDTO.builder()
+            .hexagon(hexagon)
+            .progress(progress)
+            .build();
+    }
+
+    private Map<String, Boolean> getSkillAboveAverageMap(Map<String, Double> userAverages, Map<String, Double> totalUserAverages){
+        Map<String, Boolean> isAboveAverageMap = new HashMap<>();
+        userAverages.forEach((key, personalScore) -> {
+            if (personalScore >= totalUserAverages.get(key)) {
+                isAboveAverageMap.put(key, true);
+            }
+            else{
+                isAboveAverageMap.put(key, false);
+            }
+        });
+        return isAboveAverageMap;
     }
 
     private ScoreData buildScoreData(String name, Double userScore, Double totalScore) {
@@ -259,6 +333,61 @@ public class PortfolioService {
             isUpdate = true;
         }
         return isUpdate;
+    }
+
+    @Transactional
+    public void generatePortfolio(String userCode) {
+        Portfolio portfolio = portfolioRepository.findByUserCode(userCode)
+            .orElse(new Portfolio());
+
+        List<ProjectInfo> newProjectInfos = projectInfoRepository.findAllByUserCodeAndCompletedAtAfter(
+            userCode,
+            portfolio.getUpdatedAt() != null ? portfolio.getUpdatedAt() : LocalDateTime.MIN
+        );
+
+        if (!newProjectInfos.isEmpty()) {
+            Map<String, Long> totalScores = new HashMap<>();
+            int totalProjects = portfolio.getProject() + newProjectInfos.size();
+            int totalParticipants = portfolio.getParticipant();
+
+            for (ProjectInfo info : newProjectInfos) {
+                totalScores.merge("sympathy", (long) info.getSympathy(), Long::sum);
+                totalScores.merge("listening", (long) info.getListening(), Long::sum);
+                totalScores.merge("expression", (long) info.getExpression(), Long::sum);
+                totalScores.merge("problemSolving", (long) info.getProblemSolving(), Long::sum);
+                totalScores.merge("conflictResolution", (long) info.getConflictResolution(), Long::sum);
+                totalScores.merge("leadership", (long) info.getLeadership(), Long::sum);
+                totalParticipants += info.getParticipant();
+            }
+
+            portfolio.update(
+                userCode,
+                totalProjects,
+                totalParticipants,
+                totalScores.getOrDefault("sympathy", 0L),
+                totalScores.getOrDefault("listening", 0L),
+                totalScores.getOrDefault("expression", 0L),
+                totalScores.getOrDefault("problemSolving", 0L),
+                totalScores.getOrDefault("conflictResolution", 0L),
+                totalScores.getOrDefault("leadership", 0L),
+                LocalDateTime.now()
+            );
+
+            portfolioRepository.save(portfolio);
+        }
+    }
+
+    public GetAverageResponseDTO getAverage() {
+        Map<String, Double> averages = getTotalUserAverage();
+
+        return GetAverageResponseDTO.builder()
+            .sympathy(averages.get("sympathy"))
+            .listening(averages.get("listening"))
+            .expression(averages.get("expression"))
+            .problemSolving(averages.get("problem_solving"))
+            .conflictResolution(averages.get("conflict_resolution"))
+            .leadership(averages.get("leadership"))
+            .build();
     }
 }
 

@@ -2,6 +2,7 @@ package com.collabit.project.repository;
 
 import com.collabit.project.domain.entity.ProjectInfo;
 import io.lettuce.core.dynamic.annotation.Param;
+import java.time.LocalDateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -48,4 +49,6 @@ public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Intege
     List<ProjectInfo> findTop8ByUserCodeAndCompletedAtIsNotNullOrderByCompletedAtDesc(String userCode);
 
     List<ProjectInfo> findByUser_CodeAndCompletedAtIsNotNull(String userCode);
+
+    List<ProjectInfo> findAllByUserCodeAndCompletedAtAfter(String userCode, LocalDateTime completedAtAfter);
 }
