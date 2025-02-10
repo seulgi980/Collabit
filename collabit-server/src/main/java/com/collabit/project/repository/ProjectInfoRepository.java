@@ -20,7 +20,7 @@ public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Intege
     @Query("SELECT DISTINCT pi FROM ProjectInfo pi " +
             "JOIN FETCH pi.project p " +
             "WHERE pi.user.code = :userCode")
-    List<ProjectInfo> findByUserCodeWithProject(@Param("userCode") String userCode);
+    List<ProjectInfo> findByUserCodeWithProject(String userCode);
 
     List<ProjectInfo> findByUserCode(String userCode);
 

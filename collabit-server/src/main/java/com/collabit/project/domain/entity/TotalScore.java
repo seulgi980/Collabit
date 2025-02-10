@@ -1,8 +1,6 @@
 package com.collabit.project.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,9 +13,13 @@ import java.time.LocalDateTime;
 @Builder
 @ToString
 public class TotalScore {
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int code;
+
     @Column(name = "total_participant")
-    private Integer totalParticipant;  // 이미 있는 필드를 PK로 사용
+    private Integer totalParticipant;
 
     @Column(name = "sympathy")
     private Long sympathy;
