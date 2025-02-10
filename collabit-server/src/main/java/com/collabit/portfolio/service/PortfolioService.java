@@ -3,8 +3,10 @@ package com.collabit.portfolio.service;
 import com.collabit.global.common.ErrorCode;
 import com.collabit.global.error.exception.BusinessException;
 import com.collabit.portfolio.domain.dto.*;
+import com.collabit.portfolio.domain.entity.Portfolio;
 import com.collabit.portfolio.repository.DescriptionRepository;
 import com.collabit.portfolio.repository.FeedbackRepository;
+import com.collabit.portfolio.repository.PortfolioRepository;
 import com.collabit.project.domain.entity.ProjectInfo;
 import com.collabit.project.domain.entity.TotalScore;
 import com.collabit.project.repository.ProjectInfoRepository;
@@ -27,6 +29,9 @@ public class PortfolioService {
     private final FeedbackRepository feedbackRepository;
     private final TotalScoreRepository totalScoreRepository;
     private final ProjectService projectService;
+    private final PortfolioRepository portfolioRepository;
+
+    private final int MIN_PEOPLE_COUNT = 6;
 
     public getMultipleHexagonProgressResponseDTO getHexagonAndProgressbarGraph(String userCode) {
         Map<String, Double> userAverages = getUserAverage(userCode);
@@ -184,6 +189,40 @@ public class PortfolioService {
                 .timeline(timelineDataList)
                 .minScore(1)
                 .maxScore(5)
+                .build();
+    }
+
+    // 포트폴리오 상태 (갱신 가능 여부, 포트폴리오 존재 여부, 포트폴리오 참여자 수) 조회
+    public GetPortfolioStatusResponseDTO getPortfolioStatus(String userCode) {
+
+        // 포트폴리오 존재 여부
+        Portfolio portfolio = portfolioRepository.findById(userCode).orElse(null);
+
+        // 포트폴리오 참여자 수
+        List<ProjectInfo> completedProjectList = projectInfoRepository.findByUser_CodeAndCompletedAtIsNotNull(userCode);
+
+        int totalParticipant = completedProjectList.stream()
+                .mapToInt(ProjectInfo::getParticipant)
+                .sum();
+
+        // 포트폴리오 갱신 가능 여부
+        boolean isUpdate;
+        // 포트폴리오가 아직 생성 전이면 6명 이상인지 확인
+        if(portfolio == null && totalParticipant >= MIN_PEOPLE_COUNT){
+            isUpdate = true;
+        }
+        // 포트폴리오가 이미 생성되었다면 포트폴리오 테이블의 isUpdate도 확인
+        else if(portfolio != null && portfolio.getIsUpdate() && totalParticipant >= MIN_PEOPLE_COUNT){
+            isUpdate = true;
+        }
+        else {
+            isUpdate = false;
+        }
+
+        return GetPortfolioStatusResponseDTO.builder()
+                .isUpdate(isUpdate)
+                .isExist(portfolio!=null)
+                .totalParticipant(totalParticipant)
                 .build();
     }
 }

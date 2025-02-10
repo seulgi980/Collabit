@@ -47,4 +47,5 @@ public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Intege
 
     List<ProjectInfo> findTop8ByUserCodeAndCompletedAtIsNotNullOrderByCompletedAtDesc(String userCode);
 
+    List<ProjectInfo> findByUser_CodeAndCompletedAtIsNotNull(String userCode);
 }
