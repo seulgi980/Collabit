@@ -14,17 +14,17 @@ export interface MultipleQueriesResponse {
 export interface SurveyDetailResponse {
   nickname: string;
   profileImage: string;
-  surveyEssayResponse: SurveyEssayResponse[];
-  surveyMultipleResponse: SurveyMultipleResponse[];
+  surveyEssayResponse: SurveyEssayResponse;
+  surveyMultipleResponse: SurveyMultipleResponse;
   title: string;
 }
 export interface SurveyEssayResponse {
-  question: string;
-  answer: string;
+  messages: AIChatResponse[];
+  submittedAt: string;
 }
 
 export interface SurveyMultipleResponse {
-  messages: AIChatResponse[];
+  scores: number[];
   submittedAt: string;
 }
 export interface AIChatResponse {
