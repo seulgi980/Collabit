@@ -6,14 +6,12 @@ import com.collabit.portfolio.domain.dto.*;
 import com.collabit.portfolio.domain.entity.Portfolio;
 import com.collabit.portfolio.domain.entity.Description;
 import com.collabit.portfolio.domain.entity.Feedback;
-import com.collabit.portfolio.domain.entity.Portfolio;
 import com.collabit.portfolio.repository.DescriptionRepository;
 import com.collabit.portfolio.repository.FeedbackRepository;
 import com.collabit.portfolio.repository.PortfolioRepository;
 import com.collabit.project.domain.entity.ProjectInfo;
 import com.collabit.project.domain.entity.TotalScore;
 import com.collabit.project.repository.ProjectInfoRepository;
-import com.collabit.project.repository.ProjectRepository;
 import com.collabit.project.repository.TotalScoreRepository;
 import com.collabit.project.service.ProjectService;
 import java.time.LocalDateTime;
@@ -29,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class PortfolioService {
-    private final ProjectRepository projectRepository;
     private final ProjectInfoRepository projectInfoRepository;
     private final DescriptionRepository descriptionRepository;
     private final FeedbackRepository feedbackRepository;
@@ -148,55 +145,30 @@ public class PortfolioService {
     // 유저별 평균 계산
     private Map<String, Double>  getUserAverage(String userCode) {
         // 유저가 참여한 모든 프로젝트 조회(단 설문이 종료된 것만)
-        List<ProjectInfo> projectInfos = projectInfoRepository.findAllCompletedByUserCode(userCode);
-        log.debug("projectInfos: {}", projectInfos);
+        Portfolio portfolio = portfolioRepository.findByUserCode(userCode).orElseThrow(()->{
+            throw new RuntimeException("포트폴리오가 업데이트 되지 않았습니다.");
+        });
+        log.debug("portfolio: {}", portfolio);
 
-        if (projectInfos.isEmpty()) {
-            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
-        }
-
-        return calculateProjectInfosAverageScores(projectInfos);
+        return calculateUserAverageScores(portfolio);
     }
 
-    // 여러개의 projectinfo 들의 평균 계산 메서드
-    private Map<String, Double> calculateProjectInfosAverageScores(List<ProjectInfo> projectInfos) {
-        // 점수합, 참여자합 누적할 변수
-        Map<String, Integer> totalScores = new HashMap<>();
-        int totalParticipant = 0;
+    private Map<String, Double> calculateUserAverageScores(Portfolio portfolio) {
+        int participant = portfolio.getParticipant();
+        Map<String, Long> scores = Map.of(
+            "sympathy", portfolio.getSympathy(),
+            "listening", portfolio.getListening(),
+            "expression", portfolio.getExpression(),
+            "problem_solving", portfolio.getProblemSolving(),
+            "conflict_resolution", portfolio.getConflictResolution(),
+            "leadership", portfolio.getLeadership()
+        );
 
-        // 각 프로젝트마다의 점수 합산
-        for (ProjectInfo projectInfo : projectInfos) {
-
-            totalScores.merge("sympathy", projectInfo.getSympathy(), Integer::sum);
-            totalScores.merge("listening", projectInfo.getListening(), Integer::sum);
-            totalScores.merge("expression", projectInfo.getExpression(), Integer::sum);
-            totalScores.merge("problemSolving", projectInfo.getProblemSolving(), Integer::sum);
-            totalScores.merge("conflictResolution", projectInfo.getConflictResolution(), Integer::sum);
-            totalScores.merge("leadership", projectInfo.getLeadership(), Integer::sum);
-
-            totalParticipant += projectInfo.getParticipant();
-        }
-
-        // 총점 데이터와 참여자 수로 5점 만점의 평균 계산
-        Map<String, Double> averageScores = new HashMap<>();
-
-        if (totalParticipant > 0) {
-            for (Map.Entry<String, Integer> entry : totalScores.entrySet()) {
-                String code = entry.getKey();
-                int totalScore = entry.getValue();
-                double average = (double) totalScore / totalParticipant;
-                average = Math.round(average * 10.0) / 10.0; // 소수점 1자리 반올림
-                averageScores.put(code, average);
-            }
-        } else {
-            // 참여자가 0명인 경우 0.0으로 설정
-            totalScores.keySet()
-                .forEach(key -> averageScores.put(key, 0.0));
-        }
-
-        log.debug("averageScores: {}", averageScores);
-
-        return averageScores;
+        return calculateAverageScores(scores.entrySet().stream()
+            .collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> e.getValue().intValue()
+            )), participant);
     }
 
     // 전체 사용자 평균 계산
@@ -338,7 +310,18 @@ public class PortfolioService {
     @Transactional
     public void generatePortfolio(String userCode) {
         Portfolio portfolio = portfolioRepository.findByUserCode(userCode)
-            .orElse(new Portfolio());
+            .orElse(null);
+
+        // 포트폴리오 참여자 수
+        List<ProjectInfo> completedProjectList = projectInfoRepository.findByUser_CodeAndCompletedAtIsNotNull(userCode);
+        int totalParticipant = calTotalParticipant(completedProjectList);
+
+        // 포트폴리오 갱신 가능 여부
+        if(!canUpdatePortfolio(portfolio, totalParticipant)){
+            throw new RuntimeException("포트폴리오를 생성할 수 없는 상태입니다.");
+        }
+
+        if(portfolio==null) portfolio = new Portfolio();
 
         List<ProjectInfo> newProjectInfos = projectInfoRepository.findAllByUserCodeAndCompletedAtAfter(
             userCode,

@@ -1,15 +1,18 @@
 package com.collabit.portfolio.controller;
 
 
+import com.collabit.community.service.PostService;
 import com.collabit.global.security.SecurityUtil;
 import com.collabit.portfolio.domain.dto.GetAverageResponseDTO;
 import com.collabit.portfolio.domain.dto.GetMultipleHexagonProgressResponseDTO;
 import com.collabit.portfolio.domain.dto.GetPortfolioInfoResponseDTO;
 import com.collabit.portfolio.domain.dto.GetPortfolioStatusResponseDTO;
+import com.collabit.portfolio.domain.dto.GetRecommendedPostResponseDTO;
 import com.collabit.portfolio.domain.dto.GetTimelineResponseDTO;
 import com.collabit.portfolio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +22,30 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/portfolio")
 @RequiredArgsConstructor
-@Tag(name = "PortfolioController", description = "Portfolio 생성 관련 API입니다.")
+@Tag(name = "PortfolioController", description = "포트폴리오 API")
 public class PortfolioController {
     private final PortfolioService portfolioService;
+    private final PostService postService;
 
-    @Operation(summary = "육각형과 상대위치 progress bar를 채우기 위한 데이터를 조회하는 API입니다."
-        , description = "객관식 6개 영역별 1.평균값+피드백문구,  2.각 영역별 description 3.상대적 위치백분율값 조회(progressbar)")
+    @Operation(summary = "포트폴리오 상태 조회", description = "리포트 페이지 진입 시 필요한 포트폴리오 상태를 조회하는 API입니다.")
+    @GetMapping
+    public ResponseEntity<?> getPortfolioStatus() {
+        String userCode = SecurityUtil.getCurrentUserCode();
+        GetPortfolioStatusResponseDTO responseDTO = portfolioService.getPortfolioStatus(userCode);
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @Operation(summary = "포트폴리오 생성/재생성"
+        , description = "포트폴리오를 생성/재생성하는 API입니다.")
+    @PostMapping
+    public ResponseEntity<?> generatePortfolio() {
+        String userCode = SecurityUtil.getCurrentUserCode();
+        portfolioService.generatePortfolio(userCode);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "육각형 그래프 및 상대위치 그래프 데이터 조회"
+        , description = "나의 육각형 그래프 및 상대위치 그래프를 조회하는 API입니다.")
     @GetMapping("/multiple/graph")
     public ResponseEntity<GetMultipleHexagonProgressResponseDTO> getHexagonAndProgressbarGraph() {
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -33,32 +54,12 @@ public class PortfolioController {
                 .body(portfolioService.getHexagonAndProgressbarGraph(userCode));
     }
 
-    @PostMapping("/")
-    public ResponseEntity<?> generate() {
-        String userCode = SecurityUtil.getCurrentUserCode();
-        portfolioService.generatePortfolio(userCode);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/portfolio/main")
-    public ResponseEntity<?> getAverage() {
-        GetAverageResponseDTO responseDTO = portfolioService.getAverage();
-        return ResponseEntity.ok().body(responseDTO);
-    }
 
     @Operation(summary = "timeline 그래프 데이터 조회", description = "최근 8개 프로젝트에 대한 역량별 점수를 조회하는 API입니다.")
     @GetMapping("/multiple/timeline")
     public ResponseEntity<?> getTimelineGraph() {
         String userCode = SecurityUtil.getCurrentUserCode();
         GetTimelineResponseDTO responseDTO = portfolioService.getTimelineGraph(userCode);
-        return ResponseEntity.ok(responseDTO);
-    }
-
-    @Operation(summary = "포트폴리오 상태 조회", description = "리포트 페이지 진입 시 필요한 포트폴리오 상태를 조회하는 API입니다.")
-    @GetMapping
-    public ResponseEntity<?> getPortfolioStatus() {
-        String userCode = SecurityUtil.getCurrentUserCode();
-        GetPortfolioStatusResponseDTO responseDTO = portfolioService.getPortfolioStatus(userCode);
         return ResponseEntity.ok(responseDTO);
     }
 
@@ -70,5 +71,19 @@ public class PortfolioController {
         return ResponseEntity.ok(responseDTO);
     }
 
+    @Operation(summary = "추천 게시글 조회", description = "포트폴리오 조회 시 추천 게시글을 조회하는 API입니다.")
+    @GetMapping("/recommend")
+    public ResponseEntity<?> getRecommendedPost() {
+        List<GetRecommendedPostResponseDTO> list = postService.recommendedPost();
+        return ResponseEntity.ok().body(list);
+    }
+
+    @Operation(summary = "전체평균 조회"
+        , description = "메인페이지에서 전체 평균을 조회하는 API입니다.")
+    @GetMapping("/main")
+    public ResponseEntity<?> getAverage() {
+        GetAverageResponseDTO responseDTO = portfolioService.getAverage();
+        return ResponseEntity.ok().body(responseDTO);
+    }
 }
 
