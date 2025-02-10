@@ -53,4 +53,8 @@ public class Portfolio {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_code")
     private User user;
+
+    public void changeUpdateStatus(){
+        this.isUpdate = true;
+    }
 }

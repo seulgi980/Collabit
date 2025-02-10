@@ -194,30 +194,15 @@ public class PortfolioService {
 
     // 포트폴리오 상태 (갱신 가능 여부, 포트폴리오 존재 여부, 포트폴리오 참여자 수) 조회
     public GetPortfolioStatusResponseDTO getPortfolioStatus(String userCode) {
-
         // 포트폴리오 존재 여부
         Portfolio portfolio = portfolioRepository.findById(userCode).orElse(null);
 
         // 포트폴리오 참여자 수
         List<ProjectInfo> completedProjectList = projectInfoRepository.findByUser_CodeAndCompletedAtIsNotNull(userCode);
-
-        int totalParticipant = completedProjectList.stream()
-                .mapToInt(ProjectInfo::getParticipant)
-                .sum();
+        int totalParticipant = calTotalParticipant(completedProjectList);
 
         // 포트폴리오 갱신 가능 여부
-        boolean isUpdate;
-        // 포트폴리오가 아직 생성 전이면 6명 이상인지 확인
-        if(portfolio == null && totalParticipant >= MIN_PEOPLE_COUNT){
-            isUpdate = true;
-        }
-        // 포트폴리오가 이미 생성되었다면 포트폴리오 테이블의 isUpdate도 확인
-        else if(portfolio != null && portfolio.getIsUpdate() && totalParticipant >= MIN_PEOPLE_COUNT){
-            isUpdate = true;
-        }
-        else {
-            isUpdate = false;
-        }
+        boolean isUpdate = canUpdatePortfolio(portfolio, totalParticipant);
 
         return GetPortfolioStatusResponseDTO.builder()
                 .isUpdate(isUpdate)
@@ -236,6 +221,44 @@ public class PortfolioService {
                 .participant(portfolio.getParticipant())
                 .project(portfolio.getProject())
                 .build();
+    }
+
+    // 프로젝트 완료 시 갱신 여부 업데이트
+    public void enablePortfolioUpdate(String userCode) {
+        // 포트폴리오 존재 여부
+        Portfolio portfolio = portfolioRepository.findById(userCode)
+                .orElseThrow(() -> new RuntimeException("아직 포트폴리오가 생성되지 않았습니다."));
+
+        // 해당 유저의 마감된 projectInfo 리스트
+        List<ProjectInfo> completedProjectList = projectInfoRepository.findByUser_CodeAndCompletedAtIsNotNull(userCode);
+        int totalParticipant = calTotalParticipant(completedProjectList);
+
+        // 포트폴리오 갱신 가능 여부
+        boolean isUpdate = canUpdatePortfolio(portfolio, totalParticipant);
+
+        if (isUpdate) {
+            portfolio.changeUpdateStatus();
+            portfolioRepository.save(portfolio);
+        }
+    }
+
+    private int calTotalParticipant(List<ProjectInfo> completedProjectList){
+        return completedProjectList.stream()
+                .mapToInt(ProjectInfo::getParticipant)
+                .sum();
+    }
+
+    private boolean canUpdatePortfolio(Portfolio portfolio, int participant) {
+        boolean isUpdate = false;
+        // 포트폴리오가 아직 생성 전이면 6명 이상인지 확인
+        if(portfolio == null && participant >= MIN_PEOPLE_COUNT){
+            isUpdate = true;
+        }
+        // 포트폴리오가 이미 생성되었다면 포트폴리오 테이블의 isUpdate도 확인
+        else if(portfolio != null && portfolio.getIsUpdate() && participant >= MIN_PEOPLE_COUNT){
+            isUpdate = true;
+        }
+        return isUpdate;
     }
 }
 
