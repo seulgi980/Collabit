@@ -2,6 +2,7 @@ package com.collabit.portfolio.controller;
 
 
 import com.collabit.global.security.SecurityUtil;
+import com.collabit.portfolio.domain.dto.GetPortfolioInfoResponseDTO;
 import com.collabit.portfolio.domain.dto.GetPortfolioStatusResponseDTO;
 import com.collabit.portfolio.domain.dto.GetTimelineResponseDTO;
 import com.collabit.portfolio.domain.dto.getMultipleHexagonProgressResponseDTO;
@@ -44,6 +45,14 @@ public class PortfolioController {
     public ResponseEntity<?> getPortfolioStatus() {
         String userCode = SecurityUtil.getCurrentUserCode();
         GetPortfolioStatusResponseDTO responseDTO = portfolioService.getPortfolioStatus(userCode);
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @Operation(summary = "포트폴리오 정보 조회", description = "포트폴리오 조회 시 기본 정보를 조회하는 API입니다.")
+    @GetMapping("/info")
+    public ResponseEntity<?> getPortfolioInfo() {
+        String userCode = SecurityUtil.getCurrentUserCode();
+        GetPortfolioInfoResponseDTO responseDTO = portfolioService.getPortfolioInfo(userCode);
         return ResponseEntity.ok(responseDTO);
     }
 

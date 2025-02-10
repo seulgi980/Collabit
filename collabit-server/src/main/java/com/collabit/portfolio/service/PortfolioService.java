@@ -225,6 +225,18 @@ public class PortfolioService {
                 .totalParticipant(totalParticipant)
                 .build();
     }
+
+    // 포트폴리오 기본 정보(포트폴리오 대상 닉네임, 참여자 수, 프로젝트 수) 조회
+    public GetPortfolioInfoResponseDTO getPortfolioInfo(String userCode) {
+        Portfolio portfolio = portfolioRepository.findById(userCode)
+                .orElseThrow(() -> new RuntimeException("아직 포트폴리오가 생성되지 않았습니다."));
+
+        return GetPortfolioInfoResponseDTO.builder()
+                .nickname(portfolio.getUser().getNickname())
+                .participant(portfolio.getParticipant())
+                .project(portfolio.getProject())
+                .build();
+    }
 }
 
 
