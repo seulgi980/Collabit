@@ -45,51 +45,56 @@ public class PortfolioService {
         log.debug("descriptionData: {}", descriptionData);
 
         // HexagonDataDTO 채우기
-        List<HexagonDataDTO> hexagonDataDTOs = userAverages.entrySet().stream()
-                .map(entry -> {
-                    String code = entry.getKey();
-                    double userScore = entry.getValue();
-                    double totalScore = totalUserAverages.getOrDefault(code, 0.0);
+        Map<String, HexagonDataDTO> hexagonDataMap = userAverages.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> {
+                            String code = entry.getKey();
+                            double userScore = entry.getValue();
+                            double totalScore = totalUserAverages.getOrDefault(code, 0.0);
 
-                    FeedbackProjection feedbackProjection = feedbackData.get(code);
-                    boolean isPositive = feedbackProjection.getIsPositive();
-                    String feedback = feedbackProjection.getFeedback();
-                    String name = feedbackProjection.getName();
+                            FeedbackProjection feedbackProjection = feedbackData.get(code);
+                            boolean isPositive = feedbackProjection.getIsPositive();
+                            String feedback = feedbackProjection.getFeedback();
+                            String name = feedbackProjection.getName();
 
-                    String description = descriptionData.get(code);
-                    return HexagonDataDTO.builder()
-                            .name(name)
-                            .score(userScore)
-                            .total(totalScore)
-                            .feedback(feedback)
-                            .description(description)
-                            .isPositive(isPositive)
-                            .build();
-                })
-                .collect(Collectors.toList());
+                            String description = descriptionData.get(code);
+                            return HexagonDataDTO.builder()
+                                    .name(name)
+                                    .score(userScore)
+                                    .total(totalScore)
+                                    .feedback(feedback)
+                                    .description(description)
+                                    .isPositive(isPositive)
+                                    .build();
+                        }
+                        ));
+        log.debug("hexagonDataMap: {}", hexagonDataMap);
 
-        log.debug("hexagonDataDTOs: {}", hexagonDataDTOs);
-        HexagonDTO hexagonDTO =  new HexagonDTO(hexagonDataDTOs, 1, 5);
+        HexagonDTO hexagonDTO =  new HexagonDTO(hexagonDataMap, 1, 5);
 
         // =========== ProgressBar ==========
-        List<ProgressDataDTO> ProgressDataDTOs = userAverages.entrySet().stream()
-                .map(entry -> {
-                    String code = entry.getKey();
-                    double userAverage = entry.getValue();
-                    double totalUserAverage = totalUserAverages.getOrDefault(code, 0.0);
+        Map<String, ProgressDataDTO> progressDataMap = userAverages.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> {
+                            String code = entry.getKey();
+                            double userAverage = entry.getValue();
+                            double totalUserAverage = totalUserAverages.getOrDefault(code, 0.0);
 
-                    // Progress Bar 값 계산
-                    int progressBarValue = calculateProgressBarValue(userAverage, totalUserAverage, 1.0, 5.0);
-                    String name = feedbackData.get(code).getName();
+                            // Progress Bar 값 계산
+                            int progressBarValue = calculateProgressBarValue(userAverage, totalUserAverage, 1.0, 5.0);
+                            String name = feedbackData.get(code).getName();
 
-                    return ProgressDataDTO.builder()
-                            .name(name)
-                            .score(progressBarValue)
-                            .build();
-                })
-                .collect(Collectors.toList());
+                            return ProgressDataDTO.builder()
+                                    .name(name)
+                                    .score(progressBarValue)
+                                    .build();
+                        }
+                ));
 
-        ProgressDTO progressDTO = new ProgressDTO(ProgressDataDTOs, 1, 5);
+
+        ProgressDTO progressDTO = new ProgressDTO(progressDataMap, 1, 5);
 
 
         return new MultipleResponseDTO(hexagonDTO, progressDTO);

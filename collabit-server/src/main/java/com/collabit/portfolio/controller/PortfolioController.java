@@ -22,7 +22,7 @@ public class PortfolioController {
     private final PortfolioService portfolioService;
 
     @Operation(summary = "객관식 6개 영역별 1.평균값+피드백문구,  2.각 영역별 description 3. 유저 전체 평균, 4. 상대적 위치백분율값 조회(육각형)", description = "육각형과 상대위치 progress bar를 채우기 위한 데이터를 조회하는 API입니다.")
-    @GetMapping("/multiple/hexagon")
+    @GetMapping("/multiple/hexagon-progressbar")
     public ResponseEntity<MultipleResponseDTO> getMultipleAverageByUser() {
         String userCode = SecurityUtil.getCurrentUserCode();
 

@@ -2,6 +2,7 @@ package com.collabit.portfolio.domain.dto;
 
 import lombok.*;
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @Builder
@@ -9,8 +10,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public class HexagonDTO {
-    private List<HexagonDataDTO> skills;
-    private int minBaseScore;
-    private int maxBaseScore;
+    private Map<String, HexagonDataDTO> hexagonData;
+    private int minScore;
+    private int maxScore;
 
 }
