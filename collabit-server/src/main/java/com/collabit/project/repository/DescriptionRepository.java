@@ -9,5 +9,4 @@
     @Repository
     public interface DescriptionRepository extends JpaRepository<Description, String> {
 
-        List<Description> findByIdIsPositiveTrue();
     }

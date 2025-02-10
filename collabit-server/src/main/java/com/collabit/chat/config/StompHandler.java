@@ -1,10 +1,13 @@
 package com.collabit.chat.config;
 
+import com.collabit.chat.websocket.WebSocketEvent;
 import com.collabit.global.security.CustomUserDetails;
 import com.collabit.user.repository.UserRepository;
 import com.collabit.user.domain.entity.User;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -25,6 +28,7 @@ import java.util.Collections;
 public class StompHandler implements ChannelInterceptor {
 
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -58,8 +62,11 @@ public class StompHandler implements ChannelInterceptor {
             SecurityContextHolder.setContext(context);
 
             log.debug("WebSocket authentication success: userCode={}", user.getCode());
-            return message;
 
+            // Publish user connection event
+            eventPublisher.publishEvent(new WebSocketEvent.UserConnectEvent(nickname));
+
+            return message;
         } catch (Exception e) {
             log.error("WebSocket authentication failed: {}", e.getMessage());
             throw new RuntimeException("WebSocket authentication failed", e);
@@ -110,6 +117,45 @@ public class StompHandler implements ChannelInterceptor {
         SecurityContextHolder.clearContext();
         if (ex != null) {
             log.error("Message sending failed: {}", ex.getMessage());
+        } else {
+            StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+            if (accessor != null && StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                handleSubscribe(accessor);
+            } else if (accessor != null && StompCommand.DISCONNECT.equals(accessor.getCommand())) {
+                handleDisconnect(accessor);
+            }
+        }
+    }
+
+    private void handleSubscribe(StompHeaderAccessor accessor) {
+        if (accessor.getUser() == null) {
+            throw new RuntimeException("Unauthorized subscription attempt");
+        }
+
+        String destination = accessor.getDestination();
+        if (destination != null && destination.startsWith("/topic/chat/")) {
+            try {
+                int roomCode = Integer.parseInt(destination.substring(destination.lastIndexOf('/') + 1));
+                String nickname = accessor.getUser().getName();
+
+                eventPublisher.publishEvent(new WebSocketEvent.UserSubscribeEvent(nickname, roomCode));
+
+                log.debug("User {} subscribed to room {}", nickname, roomCode);
+            } catch (Exception e) {
+                log.error("Failed to process subscription", e);
+                throw new RuntimeException("Invalid subscription request", e);
+            }
+        }
+    }
+
+    private void handleDisconnect(StompHeaderAccessor accessor) {
+        if (accessor.getUser() != null) {
+            String nickname = accessor.getUser().getName();
+
+            eventPublisher.publishEvent(new WebSocketEvent.UserDisconnectEvent(nickname));
+
+            SecurityContextHolder.clearContext();
+            log.debug("User {} disconnected", nickname);
         }
     }
 }
