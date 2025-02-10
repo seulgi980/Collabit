@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @Getter
-public class SkillDTO {
+public class HexagonDataDTO {
     private String name;
     private double score;
     private double total;
