@@ -1,12 +1,9 @@
 import { useAuth } from "@/features/auth/api/useAuth";
 import { getChatRoomListAPI } from "@/shared/api/chat";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { useChatStore } from "@/shared/lib/stores/chatStore";
 
 export const useChatRoomList = () => {
   const { userInfo } = useAuth();
-  const { chatMessages } = useChatStore();
 
   const {
     data,
@@ -30,14 +27,8 @@ export const useChatRoomList = () => {
       !lastPage.hasNext ? undefined : lastPage.pageNumber + 1,
     initialPageParam: 0,
     enabled: !!userInfo?.nickname,
+    refetchInterval: 10000, // 10초마다 자동 갱신
   });
-
-  // messages가 변경될 때마다 chatRoomList를 다시 가져옴
-  useEffect(() => {
-    if (chatMessages.length > 0) {
-      refetch();
-    }
-  }, [chatMessages, refetch]);
 
   const chatList = data?.pages.flatMap((page) => page.content);
 

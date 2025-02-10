@@ -7,7 +7,6 @@ import { useEffect, useRef } from "react";
 
 export default function ChatList() {
   const { chatList, hasNextPage, fetchNextPage } = useChatList();
-
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -47,7 +46,7 @@ export default function ChatList() {
               title={item.nickname}
               description={item.lastMessage}
               updatedAt={item.lastMessageTime}
-              unRead={item.unReadMessageCount}
+              unRead={item.unreadMessageCount}
             />
           ))
         ) : (

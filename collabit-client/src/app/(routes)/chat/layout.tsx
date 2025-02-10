@@ -5,7 +5,7 @@ import { ChatListProvider } from "@/features/chat/context/ChatListProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useChatRoomList } from "@/features/chat/api/useChatRoomList";
-import { useSocket } from "@/features/chat/api/useSocket";
+import useSocket from "@/features/chat/api/useSocket";
 import { useChatStore } from "@/shared/lib/stores/chatStore";
 import { WebSocketMessage } from "@/shared/types/model/Chat";
 
@@ -29,9 +29,9 @@ const ChatLayout = ({
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // ✅ WebSocket 연결
+  // WebSocket 연결
   const { clientRef, connectionStatus } = useSocket();
-  const { setSendMessage } = useChatStore();
+  const { setSendMessage, addMessage, chatId } = useChatStore();
 
   useEffect(() => {
     if (!clientRef.current) return;
@@ -42,11 +42,12 @@ const ChatLayout = ({
         console.error("❌ WebSocket이 연결되지 않음.");
         return;
       }
-      const { chatId } = useChatStore.getState();
       if (!chatId) {
         console.error("❌ chatId가 설정되지 않음.");
         return;
       }
+      addMessage(message);
+
       try {
         await connectionStatus;
         clientRef.current.publish({
@@ -60,12 +61,12 @@ const ChatLayout = ({
     };
 
     setSendMessage(handleSendMessage);
-  }, [clientRef, setSendMessage, connectionStatus]);
+  }, [clientRef, setSendMessage, connectionStatus, chatId]);
 
-  // ✅ 리스트 렌더링
+  // 리스트 렌더링
   const { chatList, hasNextPage, fetchNextPage } = useChatRoomList();
 
-  // ✅ 디테일 렌더링
+  // 디테일 렌더링
   const { setChatId } = useChatStore();
 
   useEffect(() => {
