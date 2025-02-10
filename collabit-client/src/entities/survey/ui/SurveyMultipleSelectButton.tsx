@@ -12,11 +12,12 @@ const SurveyMultipleSelectButton = ({
   onClick,
 }: SurveyMultipleSelectButtonProps) => {
   const [selectedValue, setSelectedValue] = useState<number | null>(null);
-  const setScores = useSurveyStore((state) => state.setScores);
+  const setMultipleAnswers = useSurveyStore(
+    (state) => state.setMultipleAnswers,
+  );
 
   const handleClick = (value: number) => {
-    console.log(value);
-    setScores(value, index);
+    setMultipleAnswers(value, index);
     setSelectedValue(value);
     onClick();
   };

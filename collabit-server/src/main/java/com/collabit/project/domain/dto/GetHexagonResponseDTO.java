@@ -12,9 +12,12 @@ import java.util.List;
 @Builder
 @ToString
 public class GetHexagonResponseDTO {
-    int minBaseScore;
-    int maxBaseScore;
-    List<SkillFeedback> belowAverage;
-    List<SkillFeedback> aboveAverage;
-    List<SkillData> personalData;
+    int minScore;
+    int maxScore;
+    SkillData sympathy;
+    SkillData listening;
+    SkillData expression;
+    SkillData problemSolving;
+    SkillData conflictResolution;
+    SkillData leadership;
 }
