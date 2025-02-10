@@ -1,13 +1,8 @@
-import WordCloud, { WordCloudData } from "@/entities/chart/ui/WordCloud";
+import WordCloud from "@/entities/chart/ui/WordCloud";
 import ReportTitle from "@/entities/report/ui/ReportTitle";
+import { WordCloudResponse } from "@/shared/types/response/report";
 
-const CloudSection = ({
-  positive,
-  negative,
-}: {
-  positive: WordCloudData;
-  negative: WordCloudData;
-}) => {
+const CloudSection = ({ positive, negative }: WordCloudResponse) => {
   return (
     <div className="flex flex-col gap-4">
       <ReportTitle title="단어분석" />

@@ -1,4 +1,5 @@
 "use client";
+import { WordWeight } from "@/shared/types/response/report";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
@@ -13,10 +14,9 @@ interface ZingChartProps {
 const ZingChart = dynamic(() => import("zingchart-react"), {
   ssr: false,
 }) as React.ComponentType<ZingChartProps>;
-export type WordCloudData = { text: string; weight: number }[];
 
 interface WordCloudProps {
-  words: WordCloudData;
+  words: WordWeight[];
   type: "positive" | "negative";
 }
 
