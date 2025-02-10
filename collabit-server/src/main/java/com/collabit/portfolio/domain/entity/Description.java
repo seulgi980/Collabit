@@ -1,6 +1,5 @@
 package com.collabit.portfolio.domain.entity;
 
-import com.collabit.portfolio.domain.DescriptionId;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,10 +12,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Description {
-    // 복합키
-    @EmbeddedId
-    private DescriptionId id;
+    // 영어이름
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String code;
 
+    // 한글이름
     @Column(nullable = false, length = 255)
     private String name;
 
