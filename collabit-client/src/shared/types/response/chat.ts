@@ -13,7 +13,7 @@ export interface ChatRoomListResponse extends ChatUser {
   roomCode: number;
   lastMessage: string;
   lastMessageTime: string;
-  unReadMessageCount: number;
+  unreadMessageCount: number;
 }
 
 export type ChatRoomDetailResponse = ChatUser;
