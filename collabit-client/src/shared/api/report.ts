@@ -1,4 +1,7 @@
+import { AISummaryResponse, ChartResponse, TimelineResponse, WordCloudResponse } from "../types/response/report";
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const flaskUrl = process.env.NEXT_PUBLIC_FLASK_URL;
 
 const fetchOptions = {
   credentials: "include" as RequestCredentials,
@@ -7,14 +10,14 @@ const fetchOptions = {
   },
 };
 
-export const getPortfolioStatus = async () => {
+export const createPortfolioSpringAPI = async () => {
   try {
     const res = await fetch(`${apiUrl}/portfolio`, {
-      method: "GET",
+      method: "POST",
       ...fetchOptions,
     });
     if (!res.ok) {
-      throw new Error("포트폴리오 상태 조회회에 실패했습니다.");
+      throw new Error("포트폴리오 생성에 실패했습니다.");
     }
     return;
   } catch (error) {
@@ -23,7 +26,39 @@ export const getPortfolioStatus = async () => {
   }
 };
 
-export const getPortfolioInfo = async () => {
+export const createPortfolioFlaskAPI = async () => {
+  try {
+    const res = await fetch(`${flaskUrl}/portfolio`, {
+      method: "POST",
+      ...fetchOptions,
+    });
+    if (!res.ok) {
+      throw new Error("포트폴리오 생성에 실패했습니다.");
+    }
+    return;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getPortfolioStatusAPI = async () => {
+  try {
+    const res = await fetch(`${apiUrl}/portfolio`, {
+      method: "GET",
+      ...fetchOptions,
+    });
+    if (!res.ok) {
+      throw new Error("포트폴리오 상태 조회에 실패했습니다.");
+    }
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getPortfolioInfoAPI = async () => {
   try {
     const res = await fetch(`${apiUrl}/portfolio/info`, {
       method: "GET",
@@ -33,24 +68,87 @@ export const getPortfolioInfo = async () => {
     if (!res.ok) {
       throw new Error("포트폴리오 정보 조회에 실패했습니다.");
     }
-    return;
+    return res.json();
   } catch (error) {
     console.error(error);
     throw error;
   }
 };
 
-export const checkReportRefresh = async () => {
-
+export const getPortfolioChartAPI = async (): Promise<ChartResponse> => {
   try {
-    const res = await fetch(`${apiUrl}/portfolio`, {
+    const res = await fetch(`${apiUrl}/portfolio/multiple/chart`, {
       method: "GET",
       ...fetchOptions,
     });
     if (!res.ok) {
-      throw new Error("포트폴리오 갱신 가능 여부 조회에 실패했습니다.");
+      throw new Error("차트 조회에 실패했습니다.");
     }
-    return;
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getPortfolioTimelineChartAPI = async (): Promise<TimelineResponse> => {
+  try {
+    const res = await fetch(`${apiUrl}/portfolio/multiple/timeline`, {
+      method: "GET",
+      ...fetchOptions,
+    });
+    if (!res.ok) {
+      throw new Error("타임라인 차트 조회에 실패했습니다.");
+    }
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getPortfolioWordCloudAPI = async (): Promise<WordCloudResponse> => {
+  try {
+    const res = await fetch(`${flaskUrl}/portfolio/essay/wordcloud`, {
+      method: "GET",
+      ...fetchOptions,
+    });
+    if (!res.ok) {
+      throw new Error("워드클라우드 조회에 실패했습니다.");
+    }
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getPortfolioAISummaryAPI = async (): Promise<AISummaryResponse> => {
+  try {
+    const res = await fetch(`${flaskUrl}/portfolio/essay/ai-summary`, {
+      method: "GET",
+      ...fetchOptions,
+    });
+    if (!res.ok) {
+      throw new Error("AI 요약 조회에 실패했습니다.");
+    }
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const getRecommendPostsAPI = async () => {
+  try {
+    const res = await fetch(`${apiUrl}/portfolio/recommend`, {
+      method: "GET",
+      ...fetchOptions,
+    });
+    if (!res.ok) {
+      throw new Error("추천 게시글 조회에 실패했습니다.");
+    }
+    return res.json();
   } catch (error) {
     console.error(error);
     throw error;
