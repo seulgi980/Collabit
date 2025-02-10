@@ -1,3 +1,5 @@
+"use client";
+
 import CompareScoreSection from "@/features/main/CompareScoreSection";
 import HotIssueSection from "@/features/main/HotIssueSection";
 import MyProjectSection from "@/features/main/MyProjectSection";
@@ -5,6 +7,7 @@ import { getProjectListAPI } from "@/shared/api/project";
 import { ProjectListResponse } from "@/shared/types/response/project";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+
 import { useEffect } from "react";
 
 export default function Home() {
