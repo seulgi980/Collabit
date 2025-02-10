@@ -1,13 +1,10 @@
 import HexagonChart from "@/entities/chart/ui/HexagonChart";
-
-import { ChartResponse } from "@/shared/types/response/report";
+import ReportTitle from "@/entities/report/ui/ReportTitle";
+import { useAuth } from "@/features/auth/api/useAuth";
+import { ChartRangeData, SkillData } from "@/shared/types/response/report";
 import { Badge } from "@/shared/ui/badge";
 
-interface HexagonSectionProps {
-  hexagon: ChartResponse;
-}
-
-const HexagonSection = ({ hexagon }: HexagonSectionProps) => {
+const HexagonSection = ({ data }: { data: ChartRangeData & SkillData }) => {
   const {
     listening,
     sympathy,
@@ -15,7 +12,7 @@ const HexagonSection = ({ hexagon }: HexagonSectionProps) => {
     conflictResolution,
     problemSolving,
     leadership,
-  } = hexagon;
+  } = data;
 
   const hexagonItems = [
     { key: "sympathy", ...sympathy, position: "col-start-2 row-start-1" },
@@ -45,8 +42,14 @@ const HexagonSection = ({ hexagon }: HexagonSectionProps) => {
     },
   ];
 
+  const { userInfo } = useAuth();
+
   return (
     <div>
+      <ReportTitle
+        title="전체 역량 분석"
+        description={`동료들이 평가한 점수를 기반으로 ${userInfo?.nickname}님의 협업 역량을 분석하였습니다.`}
+      />
       <div className="grid grid-cols-2 justify-center gap-2 md:grid-cols-6 md:grid-rows-1">
         {hexagonItems.map(({ key, name, description }) => (
           <div
@@ -66,7 +69,7 @@ const HexagonSection = ({ hexagon }: HexagonSectionProps) => {
         {/* 중앙 Chart */}
         <div className="col-start-2 row-span-2 row-start-2 flex h-[350px] w-[350px] items-center justify-center">
           <div className="h-[350px] w-[350px]">
-            <HexagonChart hexagon={hexagon} />
+            <HexagonChart hexagon={data} />
           </div>
         </div>
 

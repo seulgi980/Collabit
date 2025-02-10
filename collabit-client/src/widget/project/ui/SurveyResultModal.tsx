@@ -22,7 +22,7 @@ const SurveyResultModal = ({
   project,
   organization,
 }: SurveyResultModalProps) => {
-  const { data, isLoading } = useQuery({
+  const { data: hexagon, isLoading } = useQuery({
     queryKey: ["project", project.code],
     queryFn: () => getHexagonGraphAPI(project.code),
   });
@@ -46,7 +46,7 @@ const SurveyResultModal = ({
           </DialogDescription>
 
           <div className="flex flex-col gap-4">
-            <HexagonSection hexagon={data} />
+            <HexagonSection data={hexagon} />
           </div>
         </DialogContent>
       </DialogPortal>
