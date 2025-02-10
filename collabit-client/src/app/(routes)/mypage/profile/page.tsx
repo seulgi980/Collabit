@@ -87,7 +87,7 @@ const ProfilePage = () => {
       <div className="mt-4 flex flex-col gap-2 md:gap-4">
         <Link
           className="block px-1 py-3 font-semibold hover:bg-accent"
-          href="/mypage/change-password"
+          href="/change-password"
         >
           비밀번호 변경
         </Link>

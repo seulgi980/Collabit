@@ -1,12 +1,11 @@
 import { FormattedGithubRepo } from "@/shared/types/response/github";
-import { Avatar, AvatarImage, AvatarFallback } from "@/shared/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
 
-import Image from "next/image";
-import { BookA, Bug, Clock3, GitFork, Github, Star } from "lucide-react";
-import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-import useGetGithubContributors from "../api/useGetGithubContributors";
 import { ScrollArea } from "@/shared/ui/scroll-area";
+import { BookA, Bug, Clock3, GitFork, Star } from "lucide-react";
+import Image from "next/image";
+import useGetGithubContributors from "../api/useGetGithubContributors";
 
 interface ProjectInfoCardProps {
   repo: FormattedGithubRepo;
@@ -20,13 +19,15 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
 
   return (
     <ScrollArea className="flex h-full max-h-[calc(100vh-260px)] flex-col gap-4 overflow-y-auto rounded-lg border p-4">
-      <div className="mb-5 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      <div className="mb-5 flex w-full items-center justify-between gap-4">
+        <div className="flex w-full items-center gap-2">
           <Avatar>
             <AvatarImage src={repo.organizationImage} />
             <AvatarFallback>{repo.organization.slice(0, 2)}</AvatarFallback>
           </Avatar>
-          <h2 className="text-xl font-bold">{repo.title}</h2>
+          <h2 className="w-full overflow-hidden text-ellipsis whitespace-nowrap font-bold">
+            {repo.title}
+          </h2>
         </div>
         <button
           className="p-2"
@@ -44,11 +45,13 @@ export function ProjectInfoCard({ repo }: ProjectInfoCardProps) {
       <div className="my-2 flex flex-col gap-2">
         <div className="text-md mb-2 flex items-center gap-1.5">
           <BookA className="h-5 w-5" />
-          <span>Language: {repo.language || "없음"}</span>
+          <span>언어 : {repo.language || "없음"}</span>
         </div>
         <div className="text-md mb-2 flex items-center gap-1.5">
           <Clock3 className="h-5 w-5" />
-          <span>Updated: {new Date(repo.updated_at).toLocaleDateString()}</span>
+          <span>
+            업데이트: {new Date(repo.updated_at).toLocaleDateString()}
+          </span>
         </div>
       </div>
       <div className="grid w-full grid-cols-3 gap-2">

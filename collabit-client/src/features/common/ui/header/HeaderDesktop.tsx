@@ -1,6 +1,6 @@
 "use client";
 
-import UserAvatar from "@/entities/common/ui/UserAvatar";
+import HeaderDropDown from "@/entities/common/ui/HeaderDropDown";
 import { cn } from "@/shared/lib/shadcn/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
   NavigationMenuList,
 } from "@/shared/ui/navigation-menu";
 import { HeaderProps } from "@/widget/types/Header";
-import { Dot } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -52,7 +52,7 @@ const HeaderDesktop = ({
                 className={cn(
                   "rounded-md px-4 py-2 hover:bg-slate-100",
                   (pathname.startsWith(i.href) ||
-                    (i.href === "/chat" && pathname.startsWith("/feedback"))) &&
+                    (i.href === "/chat" && pathname.startsWith("/survey"))) &&
                     "bg-slate-100",
                 )}
               >
@@ -60,14 +60,18 @@ const HeaderDesktop = ({
                   {i.name}
                 </NavigationMenuLink>
                 {hasNewChat && i.name === "채팅" && (
-                  <Dot className="absolute -right-1 -top-1 text-violet-700" />
+                  <div className="absolute -right-1 -top-2 h-3 w-3">
+                    <span className="absolute right-0.5 top-1.5 inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-50"></span>
+                    <span className="relative inline-flex size-2 rounded-full bg-violet-500"></span>
+                  </div>
                 )}
               </NavigationMenuItem>
             ))}
           </NavigationMenuList>
         </NavigationMenu>
         {isLogin && userInfo ? (
-          <UserAvatar
+          <HeaderDropDown
+            Icon={ChevronDown}
             user={userInfo}
             handleToMyPage={handleToMyPage}
             handleLogout={handleLogout}

@@ -1,30 +1,26 @@
 import { UserInfoResponse } from "../types/response/user";
 
-// api 명세 수정중
-interface UpdateUserNicknameRequest {
+interface UserNicknameRequest {
   nickname: string;
 }
 
-// api 명세 수정중
-interface CheckUserPasswordRequest {
+interface UserPasswordRequest {
   password: string;
 }
 
-// api 명세 수정중
-interface UpdateUserPasswordRequest {
-  password: string;
-}
-
-// api 명세 수정중
-interface ChangeUserImageRequest {
+interface UserImageRequest {
   image: string;
 }
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
+const fetchOptions = {
+  credentials: "include" as RequestCredentials,
+};
+
 export const getUserInfoAPI = async (): Promise<UserInfoResponse> => {
   try {
     const res = await fetch(`${apiUrl}/user`, {
-      credentials: "include",
+      ...fetchOptions,
     });
 
     if (!res.ok) {
@@ -32,48 +28,58 @@ export const getUserInfoAPI = async (): Promise<UserInfoResponse> => {
     }
     const data = await res.json();
     return { userInfo: data, isAuthenticated: true };
-  } catch (error) {
-    console.error(error);
+  } catch {
     return { userInfo: undefined, isAuthenticated: false };
   }
 };
 
-export const updateUserNicknameAPI = async (
-  body: UpdateUserNicknameRequest,
-) => {
+export const updateUserNicknameAPI = async (body: UserNicknameRequest) => {
   const res = await fetch(`${apiUrl}/user/nickname`, {
     method: "PATCH",
     body: JSON.stringify(body),
+    ...fetchOptions,
   });
   const data = await res.json();
   return data;
 };
 
-// ???? 뭐하는 api인지 모르겠음
-export const checkUserPasswordAPI = async (body: CheckUserPasswordRequest) => {
+export const checkUserPasswordAPI = async (body: UserPasswordRequest) => {
   const res = await fetch(`${apiUrl}/user/password`, {
     method: "POST",
     body: JSON.stringify(body),
+    ...fetchOptions,
   });
   const data = await res.json();
   return data;
 };
 
-export const updateUserPasswordAPI = async (
-  body: UpdateUserPasswordRequest,
-) => {
+export const updateUserPasswordAPI = async (body: UserPasswordRequest) => {
   const res = await fetch(`${apiUrl}/user/password`, {
     method: "PATCH",
     body: JSON.stringify(body),
+    ...fetchOptions,
   });
   const data = await res.json();
   return data;
 };
 
-export const changeUserImageAPI = async (body: ChangeUserImageRequest) => {
+export const changeUserImageAPI = async (body: UserImageRequest) => {
+  const formData = new FormData();
+  formData.append("image", body.image);
+
   const res = await fetch(`${apiUrl}/user/image`, {
     method: "PATCH",
-    body: JSON.stringify(body),
+    body: formData,
+    ...fetchOptions,
+  });
+
+  const data = await res.json();
+  return data;
+};
+
+export const linkGithubAccountAPI = async () => {
+  const res = await fetch(`${apiUrl}/auth/oauth/link`, {
+    ...fetchOptions,
   });
   const data = await res.json();
   return data;
@@ -82,25 +88,26 @@ export const changeUserImageAPI = async (body: ChangeUserImageRequest) => {
 export const deleteUserAPI = async () => {
   const res = await fetch(`${apiUrl}/user`, {
     method: "DELETE",
+    ...fetchOptions,
   });
   const data = await res.json();
   return data;
 };
 
 export const getUserLikePostsAPI = async () => {
-  const res = await fetch(`${apiUrl}/user/like`);
+  const res = await fetch(`${apiUrl}/user/like`, { ...fetchOptions });
   const data = await res.json();
   return data;
 };
 
 export const getUserPostsAPI = async () => {
-  const res = await fetch(`${apiUrl}/user/post`);
+  const res = await fetch(`${apiUrl}/user/post`, { ...fetchOptions });
   const data = await res.json();
   return data;
 };
 
 export const getUserCommentsAPI = async () => {
-  const res = await fetch(`${apiUrl}/user/comment`);
+  const res = await fetch(`${apiUrl}/user/comment`, { ...fetchOptions });
   const data = await res.json();
   return data;
 };

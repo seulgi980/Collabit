@@ -5,6 +5,8 @@ import com.collabit.auth.domain.dto.TokenDTO;
 import com.collabit.auth.domain.dto.UserLoginRequestDTO;
 import com.collabit.auth.domain.dto.UserResponseDTO;
 import com.collabit.auth.domain.dto.UserSignupRequestDTO;
+import com.collabit.global.common.ErrorCode;
+import com.collabit.global.error.exception.BusinessException;
 import com.collabit.global.security.CustomUserDetails;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.user.domain.entity.Role;
@@ -71,25 +73,25 @@ public class AuthService {
 
     // HttpOnly Cookie 에 토큰 저장
     public void addCookie(HttpServletResponse response, String name, String value, long maxAge) {
-        Cookie cookie = new Cookie(name, value);
-        cookie.setHttpOnly(true); // HttpOnly 설정
-        cookie.setSecure(true); // HTTPS 에서만 동작
-        cookie.setPath("/"); // 쿠키가 유효한 경로
-        cookie.setMaxAge((int) maxAge); // 만료 시간 (초 단위)
-        response.addCookie(cookie); // 클라이언트로 쿠키 전송 필수
-    }
+      Cookie cookie = new Cookie(name, value);
+      cookie.setHttpOnly(true); // HttpOnly 설정
+      cookie.setSecure(false); // HTTPS 에서만 동작
+      cookie.setPath("/"); // 쿠키가 유효한 경로
+      cookie.setMaxAge((int) maxAge); // 만료 시간 (초 단위)
+      response.addCookie(cookie); // 클라이언트로 쿠키 전송 필수
+  }
 
     // 회원가입 메서드
     public UserResponseDTO signup(UserSignupRequestDTO userSignupRequestDto) {
-        // 이메일 중복 체크
-        if (isEmailAlreadyExists(userSignupRequestDto.getEmail())) {
-            throw new IllegalStateException("이미 등록된 이메일입니다.");
-        }
+        String email = userSignupRequestDto.getEmail();
+        String nickname = userSignupRequestDto.getNickname();
 
-        // 닉네임 중복 체크
-        if (isNicknameAlreadyExists(userSignupRequestDto.getNickname())) {
-            throw new IllegalStateException("이미 사용중인 닉네임입니다.");
-        }
+        // 이메일 중복체크
+        isEmailAlreadyExists(email);
+
+        // 닉네임 중복체크
+        isNicknameAlreadyExists(nickname);
+
         // 비밀번호 암호화
         String encodedPassword = encodePassword(userSignupRequestDto.getPassword());
 
@@ -191,13 +193,21 @@ public class AuthService {
     }
 
     // 이메일 중복 체크
-    public boolean isEmailAlreadyExists(String email) {
-        return userRepository.existsByEmail(email);
+    public void isEmailAlreadyExists(String email) {
+        if (userRepository.existsByEmail(email)) {
+            log.warn("이메일 중복 발생: {}", email);
+
+            throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
     }
 
     // 닉네임 중복 체크
-    public boolean isNicknameAlreadyExists(String nickname) {
-        return userRepository.existsByNickname(nickname);
+    public void isNicknameAlreadyExists(String nickname) {
+        if (userRepository.existsByNickname(nickname)) {
+            log.warn("닉네임 중복 발생: {}", nickname);
+
+            throw new BusinessException(ErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
     }
 
     // 비밀번호 암호화

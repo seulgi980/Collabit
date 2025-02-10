@@ -1,9 +1,7 @@
 package com.collabit.project.controller;
 
 import com.collabit.global.security.SecurityUtil;
-import com.collabit.project.domain.dto.CreateProjectRequestDTO;
-import com.collabit.project.domain.dto.GetAddedProjectListResponseDTO;
-import com.collabit.project.domain.dto.GetProjectListResponseDTO;
+import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.SortOrder;
 import com.collabit.project.service.ProjectService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 
@@ -47,12 +44,6 @@ public class ProjectController {
         return ResponseEntity.ok(projectList);
     }
 
-    // 쿼리 파라미터로 들어온 정렬 조건이 올바르지 않을 때 커스텀 예외 처리
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<String> handleInvalidEnumValue(Exception e) {
-        return ResponseEntity.badRequest().body("정렬 조건이 올바르지 않습니다. 가능한 조건: LATEST, PARTICIPATION");
-    }
-
     @Operation(summary = "저장된 프로젝트 목록 조회", description = "현재 DB에 있는 프로젝트(organization, title) 목록을 조회하는 API 입니다.")
     @GetMapping("/added")
     public ResponseEntity<?> getAddedProjectList() {
@@ -64,7 +55,18 @@ public class ProjectController {
         return ResponseEntity.ok(addedProjectList);
     }
 
-    @Operation(summary = "프로젝트 설문 마감", description = "로그인된 사용자의 특정 프로젝트를 마감하는 API 입니다.")
+    @Operation(summary = "메인 페이지 프로젝트 목록 조회", description = "메인페이지에 보여줄 프로젝트 목록을 조회하는 API 입니다.")
+    @GetMapping("/list/main")
+    public ResponseEntity<?> getMainProjectList() {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        List<GetMainProjectListResponseDTO> projectList = projectService.findMainProjectList(userCode);
+        log.info("메인 페이지 프로젝트 목록 데이터 반환 - 반환할 프로젝트 수: {}", projectList.size());
+
+        return ResponseEntity.ok(projectList);
+    }
+
+    @Operation(summary = "프로젝트 설문 마감", description = "로그인 사용자의 특정 프로젝트를 마감하는 API 입니다.")
     @PatchMapping("/done/{code}")
     public ResponseEntity<?> closeProjectSurvey(@PathVariable int code) {
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -84,5 +86,32 @@ public class ProjectController {
         log.debug("프로젝트 삭제 완료 - 삭제된 프로젝트 code: {}", code);
 
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "프로젝트 알림 조회", description = "설문응답 알림을 확인할 경우 Redis의 알림 정보를 삭제하는 API 입니다. " +
+            "ProjectInfoCode가 param으로 들어올 경우 해당 프로젝트의 알림만 삭제됩니다.")
+    @DeleteMapping("/notification")
+    public ResponseEntity<?> deleteProjectNotification(@RequestParam(required = false) Integer code) {
+        String userCode = SecurityUtil.getCurrentUserCode();
+
+        if(code == null){
+            projectService.removeAllNotification(userCode);
+        }
+        else{
+            projectService.removeNotification(userCode, code);
+        }
+        log.debug("프로젝트 알림 삭제 완료");
+
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "프로젝트별 결과의 육각형 그래프 조회", description = "프로젝트별 결과 모달창의 육각형 그래프를 조회하는 API 입니다.")
+    @GetMapping("/graph/hexagon/{code}")
+    public ResponseEntity<?> getHexagonGraph(@PathVariable int code) {
+        GetHexagonResponseDTO responseDTO = projectService.getHexagonGraph(code);
+        log.debug("육각형 그래프 데이터 조회 완료");
+        log.debug("조회한 개인 역량 점수 수: {}", responseDTO.getPersonalData().size());
+        log.debug("전체 평균보다 낮은 역량의 수: {}, 전체 평균보다 높은 역량의 수: {}", responseDTO.getBelowAverage().size(), responseDTO.getAboveAverage().size());
+        return ResponseEntity.ok(responseDTO);
     }
 }

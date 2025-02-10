@@ -2,13 +2,9 @@ package com.collabit.project.domain.entity;
 
 import com.collabit.user.domain.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.sql.Timestamp;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -16,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class ProjectInfo {
 
     @Id
@@ -42,7 +39,7 @@ public class ProjectInfo {
     private boolean isDone = false;
 
     @Column(name = "created_at", nullable = false, insertable = false)
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Builder.Default
     @Column(nullable = false)
@@ -73,5 +70,9 @@ public class ProjectInfo {
 
     public void completeSurvey() {
         this.isDone = true;
+    }
+
+    public void increaseParticipant(int amount) {
+        this.participant += amount;
     }
 }

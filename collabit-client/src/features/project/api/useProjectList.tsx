@@ -14,6 +14,7 @@ export const useProjectList = () => {
     mutationFn: removeProjectAPI,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projectList"] });
+      closeModal();
       openModal(
         <OneButtonModal
           title="프로젝트 삭제"

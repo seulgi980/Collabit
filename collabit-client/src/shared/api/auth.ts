@@ -85,6 +85,7 @@ export const loginCredentialAPI = async (body: LoginRequest) => {
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(body),
   });
 
@@ -94,12 +95,6 @@ export const loginCredentialAPI = async (body: LoginRequest) => {
     throw new Error(data.message || "로그인에 실패했습니다.");
   }
 
-  return data;
-};
-
-export const linkGithubAccountAPI = async () => {
-  const res = await fetch(`${apiUrl}/auth/oauth/link`);
-  const data = await res.json();
   return data;
 };
 

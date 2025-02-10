@@ -1,13 +1,22 @@
-FROM node:22.12.0-alpine AS build
+# 빌드 스테이지
+FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm cache clean --force && \
-   rm -rf node_modules && \
-   rm -f package-lock.json && \
-   npm install
+RUN npm install
 COPY . .
-RUN npm run build
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+RUN NEXT_DISABLE_ESLINT=1 npm run build
+
+# 실행 스테이지
+FROM node:18-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+COPY --from=builder /app/next.config.ts ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
