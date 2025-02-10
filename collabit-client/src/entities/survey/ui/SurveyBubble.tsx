@@ -62,7 +62,7 @@ const SurveyBubble = ({
           콜라빗AI
           {step && (
             <span className="ml-1 inline-flex items-center rounded-full bg-violet-100 px-2 py-0.5 text-[8px] font-medium text-violet-700 md:text-xs">
-              {`${Math.round((step / 24) * 100)}%`}
+              {`${step} / 24`}
             </span>
           )}
         </div>
