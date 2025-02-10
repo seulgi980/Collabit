@@ -6,10 +6,9 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @Getter
-public class HexagonData {
+public class SkillData {
     private String name;
     private double score;
-    private double total;
     private String feedback;
     private String description;
     private boolean isPositive;
