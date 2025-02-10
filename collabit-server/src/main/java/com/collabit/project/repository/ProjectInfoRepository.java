@@ -44,4 +44,7 @@ public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Intege
 
     @Query("SELECT p FROM ProjectInfo p WHERE p.completedAt IS NOT NULL")
     List<ProjectInfo> findAllCompleted();
+
+    List<ProjectInfo> findTop8ByUserCodeAndCompletedAtIsNotNullOrderByCompletedAtDesc(String userCode);
+
 }
