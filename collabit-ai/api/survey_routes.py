@@ -19,6 +19,10 @@ def start_survey(survey_code):
         if not nickname:
             return jsonify({"error": "Nickname is required"}), 400
 
+        if not mongodb.check_survey_multiple_exists(survey_code, user_code):
+            return jsonify({"error": "Survey_Multiple is not found"}), 404
+        if mongodb.check_survey_essay_exists(survey_code, user_code):
+            return jsonify({"error": "Survey_Essay already exists"}), 404
         session_id = f"{survey_code}_{user_code}"
 
         # Store survey info in Redis
