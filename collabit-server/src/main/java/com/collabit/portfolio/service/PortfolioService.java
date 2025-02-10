@@ -10,7 +10,9 @@ import com.collabit.portfolio.repository.projection.DescriptionProjection;
 import com.collabit.portfolio.repository.projection.FeedbackProjection;
 import com.collabit.project.domain.entity.Project;
 import com.collabit.project.domain.entity.ProjectInfo;
+import com.collabit.project.domain.entity.TotalScore;
 import com.collabit.project.repository.ProjectInfoRepository;
+import com.collabit.project.repository.TotalScoreRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,118 +27,49 @@ public class PortfolioService {
     private final ProjectInfoRepository projectInfoRepository;
     private final DescriptionRepository descriptionRepository;
     private final FeedbackRepository feedbackRepository;
+    private final TotalScoreRepository totalScoreRepository;
 
-    // hexagon + progress bar 그래프 데이터 채우기
-    public MultipleHexagonProgressResponseDTO getPortfolioHexagonAndProgressbarGraph(String userCode) {
-
-        // =========== HEXAGON ==========
-        // 전체 "마감된" 프로젝트 평균 계산 <code : 평균값>
+    public getMultipleHexagonProgressResponseDTO getHexagonAndProgressbarGraph(String userCode) {
         Map<String, Double> userAverages = getUserAverage(userCode);
-        log.debug("userAverages: {}", userAverages);
-
-        // 사이트 전체 유저 "마감된" 프로젝트 평균 점수 조회 <code : 평균값>
         Map<String, Double> totalUserAverages = getTotalUserAverage();
-        log.debug("totalUserAverages: {}", totalUserAverages);
 
-        // 해당되는 Feedback 데이터 조회 <code : FeedbackProjection>
-        Map<String, FeedbackProjection> feedbackData = getFeedback(userAverages, totalUserAverages);
-        log.debug("feedbackData: {}", feedbackData);
+        getProgressResponseDTO.builder()
+            .sympathy(buildScoreData("sympathy", userAverages.get("sympathy"), totalUserAverages.get("sympathy")))
+            .listening(buildScoreData("listening", userAverages.get("listening"), totalUserAverages.get("listening")))
+            .expression(buildScoreData("expression", userAverages.get("expression"), totalUserAverages.get("expression")))
+            .problemSolving(buildScoreData("problemSolving", userAverages.get("problem_solving"), totalUserAverages.get("problem_solving")))
+            .conflictResolution(buildScoreData("conflictResolution", userAverages.get("conflict_resolution"), totalUserAverages.get("conflict_resolution")))
+            .leadership(buildScoreData("leadership", userAverages.get("leadership"), totalUserAverages.get("leadership")))
+            .minScore(1)
+            .maxScore(5)
+            .build();
+        
+    }
 
-        // Description 데이터 조회 <code : description>
-        Map<String, String> descriptionData = getDescriptions();
-        log.debug("descriptionData: {}", descriptionData);
+    private ScoreData buildScoreData(String name, Double userScore, Double totalScore) {
+        return ScoreData.builder()
+            .name(name)
+            .score(calculateProgressBarValue(userScore, totalScore))
+            .build();
+    }
 
-        // HexagonDataDTO 채우기
-        Map<String, HexagonDataDTO> hexagonDataMap = userAverages.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> {
-                            String code = entry.getKey();
-                            double userScore = entry.getValue();
-                            double totalScore = totalUserAverages.getOrDefault(code, 0.0);
-
-                            FeedbackProjection feedbackProjection = feedbackData.get(code);
-                            boolean isPositive = feedbackProjection.getIsPositive();
-                            String feedback = feedbackProjection.getFeedback();
-                            String name = feedbackProjection.getName();
-
-                            String description = descriptionData.get(code);
-                            return HexagonDataDTO.builder()
-                                    .name(name)
-                                    .score(userScore)
-                                    .total(totalScore)
-                                    .feedback(feedback)
-                                    .description(description)
-                                    .isPositive(isPositive)
-                                    .build();
-                        }
-                        ));
-        log.debug("hexagonDataMap: {}", hexagonDataMap);
-
-        HexagonDTO hexagonDTO = HexagonDTO.builder()
-                .sympathy(hexagonDataMap.get("sympathy"))
-                .listening(hexagonDataMap.get("listening"))
-                .expression(hexagonDataMap.get("expression"))
-                .problemSolving(hexagonDataMap.get("problemSolving"))
-                .conflictResolution(hexagonDataMap.get("conflictResolution"))
-                .leadership(hexagonDataMap.get("leadership"))
-                .minScore(1)
-                .maxScore(5)
-                .build();
-
-
-        // =========== ProgressBar ==========
-        Map<String, ProgressDataDTO> progressDataMap = userAverages.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> {
-                            String code = entry.getKey();
-                            double userAverage = entry.getValue();
-                            double totalUserAverage = totalUserAverages.getOrDefault(code, 0.0);
-
-                            // Progress Bar 값 계산
-                            int progressBarValue = calculateProgressBarValue(userAverage, totalUserAverage, 1.0, 5.0);
-                            String name = feedbackData.get(code).getName();
-
-                            return ProgressDataDTO.builder()
-                                    .name(name)
-                                    .score(progressBarValue)
-                                    .build();
-                        }
-                ));
-
-
-        ProgressDTO progressDTO = ProgressDTO.builder()
-                .sympathy(progressDataMap.get("sympathy"))
-                .listening(progressDataMap.get("listening"))
-                .expression(progressDataMap.get("expression"))
-                .problemSolving(progressDataMap.get("problemSolving"))
-                .conflictResolution(progressDataMap.get("conflictResolution"))
-                .leadership(progressDataMap.get("leadership"))
-                .minScore(1)
-                .maxScore(5)
-                .build();
-
-
-        return new MultipleHexagonProgressResponseDTO(hexagonDTO, progressDTO);
+    // 유저별 평균점수 상대위치 계산
+    private int calculateProgressBarValue(double userAverage, double totalAverageScore) {
+        if (userAverage >= totalAverageScore) {
+            // 평균 이상인 경우 (50~100)
+            double fraction = (userAverage - totalAverageScore) / (5.0 - totalAverageScore);
+            return (int) Math.round(fraction * 50) + 50;
+        } else {
+            // 평균 이하인 경우 (0~50)
+            double fraction = (userAverage - 1.0) / (totalAverageScore - 1.0);
+            return (int) Math.round(fraction * 50);
+        }
     }
 
     // 유저별 평균 계산
     private Map<String, Double>  getUserAverage(String userCode) {
         // 유저가 참여한 모든 프로젝트 조회(단 설문이 종료된 것만)
         List<ProjectInfo> projectInfos = projectInfoRepository.findAllCompletedByUserCode(userCode);
-        log.debug("projectInfos: {}", projectInfos);
-
-        if (projectInfos.isEmpty()) {
-            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
-        }
-
-        return calculateProjectInfosAverageScores(projectInfos);
-    }
-
-    // 전체 사용자 평균 계산
-    private Map<String, Double> getTotalUserAverage() {
-        List<ProjectInfo> projectInfos = projectInfoRepository.findAllCompleted();
         log.debug("projectInfos: {}", projectInfos);
 
         if (projectInfos.isEmpty()) {
@@ -179,7 +112,7 @@ public class PortfolioService {
         } else {
             // 참여자가 0명인 경우 0.0으로 설정
             totalScores.keySet()
-                    .forEach(key -> averageScores.put(key, 0.0));
+                .forEach(key -> averageScores.put(key, 0.0));
         }
 
         log.debug("averageScores: {}", averageScores);
@@ -187,112 +120,35 @@ public class PortfolioService {
         return averageScores;
     }
 
+    // 전체 사용자 평균 계산
+    private Map<String, Double> getTotalUserAverage() {
+        TotalScore totalScore = totalScoreRepository.findAll().stream()
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("전체 사용자의 점수 데이터가 존재하지 않습니다."));
 
-    // feedback 정보 가져오기
-    private Map<String, FeedbackProjection> getFeedback(Map<String, Double> userAverage, Map<String, Double> totalUserAverage) {
+        int participant = totalScore.getTotalParticipant();
 
-        return userAverage.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> {
-                            String code = entry.getKey();
-                            double totalAverageScore = totalUserAverage.getOrDefault(code, 0.0);
-                            boolean isPositive = entry.getValue() >= totalAverageScore;
+        Map<String, Integer> totalScores = Map.of(
+            "sympathy", totalScore.getSympathy().intValue(),
+            "listening", totalScore.getListening().intValue(),
+            "expression", totalScore.getExpression().intValue(),
+            "problem_solving", totalScore.getProblemSolving().intValue(),
+            "conflict_resolution", totalScore.getConflictResolution().intValue(),
+            "leadership", totalScore.getLeadership().intValue()
+        );
 
-                            FeedbackProjection feedback = feedbackRepository.findByCodeAndIsPositive(code, isPositive);
-
-                            if (feedback == null) {
-                                throw new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND);
-                            }
-
-                            return feedback;
-                        }
-                ));
+        return calculateAverageScores(totalScores, participant);
     }
 
-    private Map<String, String> getDescriptions() {
-        return descriptionRepository.findAllProjectedBy().stream()
-                .collect(Collectors.toMap(DescriptionProjection::getCode, DescriptionProjection::getDescription));
+    private Map<String, Double> calculateAverageScores(Map<String, Integer> totalScores, int participant) {
+        Map<String, Double> averageScores = new HashMap<>();
+        totalScores.forEach((key, totalScore) -> {
+            double average = participant > 0 ? (double) totalScore / participant : 0;
+            average = Math.round(average * 10.0) / 10.0;
+            averageScores.put(key, average);
+        });
+        return averageScores;
     }
-
-    // 유저별 평균점수 상대위치 계산
-    private int calculateProgressBarValue(double userAverage, double totalAverageScore, double minBaseScore, double maxBaseScore) {
-        if (userAverage >= totalAverageScore) {
-            // 평균 이상인 경우 (50~100)
-            double fraction = (userAverage - totalAverageScore) / (maxBaseScore - totalAverageScore);
-            return (int) Math.round(fraction * 50) + 50;
-        } else {
-            // 평균 이하인 경우 (0~50)
-            double fraction = (userAverage - minBaseScore) / (totalAverageScore - minBaseScore);
-            return (int) Math.round(fraction * 50);
-        }
-    }
-
-    // timeline 그래프 데이터 채우기
-    public MultipleTimelineResponseDTO getPortfolioTimelineGraph(String userCode) {
-        // 완료된 프로젝트중 최근 8개까지 조회
-        List<ProjectInfo> projectInfos = projectInfoRepository.findTop8ByUserCodeAndCompletedAtIsNotNullOrderByCompletedAtDesc(userCode);
-
-        if(projectInfos.isEmpty()) {
-            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
-        }
-
-        Map<String, String> names = getDistinctFeedbackNames();
-
-        List<TimelineDataDTO> timelinedDataDTOs = projectInfos.stream()
-                .map(projectInfo -> {
-                    int participant = projectInfo.getParticipant();
-
-                    Map<String, Integer> totalScores = Map.of(
-                            "sympathy", projectInfo.getSympathy(),
-                            "listening", projectInfo.getListening(),
-                            "expression", projectInfo.getExpression(),
-                            "problemSolving", projectInfo.getProblemSolving(),
-                            "conflictResolution", projectInfo.getConflictResolution(),
-                            "leadership", projectInfo.getLeadership()
-                    );
-
-                    Map<String, ScoreDTO> scores = totalScores.entrySet().stream()
-                            .collect(Collectors.toMap(
-                                    Map.Entry::getKey,
-                                    entry -> ScoreDTO.builder()
-                                            .name(names.get(entry.getKey())) // code로 name찾기
-                                            .score(participant > 0 ? Math.round((double) entry.getValue() / participant * 10.0) / 10.0 : 0.0)
-                                            .build()
-                            ));
-
-                    Project project = projectInfo.getProject();
-
-                    return TimelineDataDTO.builder()
-                            .projectName(project.getTitle())
-                            .organization(project.getOrganization())
-                            .completedAt(projectInfo.getCompletedAt())
-                            .sympathy(scores.get("sympathy"))
-                            .listening(scores.get("listening"))
-                            .expression(scores.get("expression"))
-                            .problemSolving(scores.get("problemSolving"))
-                            .conflictResolution(scores.get("conflictResolution"))
-                            .leadership(scores.get("leadership"))
-                            .build();
-
-                })
-                .collect(Collectors.toList());
-
-
-        return MultipleTimelineResponseDTO.builder()
-                .timeline(timelinedDataDTOs)
-                .minScore(1)
-                .maxScore(5)
-                .build();
-    }
-
-    // name 가져오기
-    public Map<String, String> getDistinctFeedbackNames() {
-        return feedbackRepository.findDistinctCodeAndNameBy()
-                .stream()
-                .collect(Collectors.toMap(CodeNameProjection::getCode, CodeNameProjection::getName));
-    }
-
 }
 
 

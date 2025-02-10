@@ -7,7 +7,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @Getter
-public class ScoreDTO {
+public class ScoreData {
     private String name;
     private double score;
 }
