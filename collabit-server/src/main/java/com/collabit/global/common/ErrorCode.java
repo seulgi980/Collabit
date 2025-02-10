@@ -35,7 +35,9 @@ public enum ErrorCode {
     NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 닉네임입니다."),
 
     // =========== portfolio ===========
-    INVALID_PARTICIPANT_COUNT(HttpStatus.BAD_REQUEST, "참여자 수가 0명이라 평균 계산이 불가능합니다.");
+    SURVEY_NOT_CLOSED(HttpStatus.BAD_REQUEST, "설문이 마감되지 않아 프로젝트 결과를 조회할 수 없습니다."),
+    PROJECT_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 프로젝트 정보를 찾을 수 없습니다."),
+    FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "해당되는 피드백 정보를 찾을 수 없습니다.");
 
     // =========== Business ===========
 
