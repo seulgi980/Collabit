@@ -6,11 +6,11 @@ import NoReport from "@/entities/report/ui/NoReport";
 import ReportHeader from "@/entities/report/ui/ReportHeader";
 import AISummarySection from "@/features/report/ui/AISummarySection";
 import CloudSection from "@/features/report/ui/CloudSection";
-import CompareSection from "@/features/report/ui/CompareSection";
-import ScoreAnalysisSection from "@/widget/report/ui/ScoreAnalysisSection";
 import useModalStore from "@/shared/lib/stores/modalStore";
 import Image from "next/image";
 import HistoryRateSection from "@/features/report/ui/HistoryRateSection";
+import ProgressSection from "@/features/report/ui/ProgressSection";
+import HexagonSection from "@/features/report/ui/HexagonSection";
 
 export default function Page() {
   const { toast } = useToast();
@@ -53,7 +53,8 @@ export default function Page() {
     <div className="mx-auto mb-20 mt-5 w-full p-4 md:max-w-5xl">
       <ReportHeader />
       <div className="flex flex-col gap-10 py-4">
-        <ScoreAnalysisSection hexagon={reportData.hexagon} />
+        <HexagonSection data={reportData.hexagon} />
+        <ProgressSection data={reportData.progress} />
 
         <CloudSection
           positive={reportData.wordCloud.positive}
@@ -65,9 +66,6 @@ export default function Page() {
           negative={reportData.AISummary.negative}
         />
         <div className="flex w-full flex-col gap-4 md:flex-row">
-          <div className="flex h-[300px] w-full items-center justify-center rounded-md bg-gray-50 p-4">
-            <CompareSection />
-          </div>
           <div className="flex h-[300px] w-full items-center justify-center rounded-md bg-gray-50 p-4">
             <HistoryRateSection />
           </div>
@@ -82,70 +80,66 @@ const mockData = {
   hexagon: {
     minScore: 1,
     maxScore: 5,
-    hexagonData: {
-      sympathy: {
-        score: 5,
-        name: "공감(S)",
-        description: "상대의 감정과 입장을 이해하고 존중하는 능력입니다.",
-        feedback:
-          "타인의 감정을 잘 이해하고 공감하는 능력이 뛰어납니다. 상대방의 입장에서 생각하며 소통하여 팀원들에게 신뢰를 주고, 원활한 협업을 이끌어내는 강점이 있습니다.",
-        isPositive: true,
-      },
-      listening: {
-        score: 4.3,
-        name: "경청(A)",
-        description:
-          "상대의 말을 주의 깊게 듣고 의미를 정확히 이해하는 능력입니다.",
-        feedback:
-          "상대방의 의견을 주의 깊게 듣고 존중하는 태도를 보입니다. 적극적인 경청을 통해 원활한 소통을 가능하게 하며, 팀원들의 신뢰를 얻고 있습니다.",
-        isPositive: true,
-      },
-      expression: {
-        score: 3.3,
-        name: "표현(E)",
-        description: "명확하고 효과적으로 자신의 의견을 전달하는 능력입니다.",
-        feedback:
-          "자신의 의견을 명확하고 설득력 있게 전달하는 능력이 뛰어납니다. 논리적인 커뮤니케이션을 통해 팀원들과 효과적으로 협력하며, 아이디어를 잘 공유하는 강점이 있습니다.",
-        isPositive: true,
-      },
-      problemSolving: {
-        score: 2.7,
-        name: "문제해결(PS)",
-        description: "최적의 해결책을 찾고 실행하는 능력입니다.",
-        feedback:
-          "문제를 빠르게 파악하고 체계적으로 해결하는 능력이 뛰어납니다. 창의적인 해결책을 도출하며, 논리적인 사고를 바탕으로 문제를 해결하는 강점이 돋보입니다.",
-        isPositive: true,
-      },
-      conflictResolution: {
-        score: 2.0,
-        name: "갈등해결(CS)",
-        description: "갈등을 조정하고 합의점을 찾아내는 능력입니다.",
-        feedback:
-          "팀 내 갈등 상황에서 중립적인 태도를 유지하며 원만하게 해결하는 능력이 부족합니다. 감정적인 대응을 줄이고 논리적인 해결책을 고려할 필요가 있습니다.",
-        isPositive: false,
-      },
-      leadership: {
-        score: 2.3,
-        name: "리더십(L)",
-        description: "팀을 이끌고 조율하여 목표를 달성하는 능력입니다.",
-        feedback:
-          "팀원들을 효과적으로 이끌고 조율하는 리더십이 부족한 편입니다. 보다 명확한 방향을 제시하고 책임감을 갖춘 리더십을 발휘할 필요가 있습니다.",
-        isPositive: false,
-      },
+    sympathy: {
+      score: 5,
+      name: "공감(S)",
+      description: "상대의 감정과 입장을 이해하고 존중하는 능력입니다.",
+      feedback:
+        "타인의 감정을 잘 이해하고 공감하는 능력이 뛰어납니다. 상대방의 입장에서 생각하며 소통하여 팀원들에게 신뢰를 주고, 원활한 협업을 이끌어내는 강점이 있습니다.",
+      isPositive: true,
+    },
+    listening: {
+      score: 4.3,
+      name: "경청(A)",
+      description:
+        "상대의 말을 주의 깊게 듣고 의미를 정확히 이해하는 능력입니다.",
+      feedback:
+        "상대방의 의견을 주의 깊게 듣고 존중하는 태도를 보입니다. 적극적인 경청을 통해 원활한 소통을 가능하게 하며, 팀원들의 신뢰를 얻고 있습니다.",
+      isPositive: true,
+    },
+    expression: {
+      score: 3.3,
+      name: "표현(E)",
+      description: "명확하고 효과적으로 자신의 의견을 전달하는 능력입니다.",
+      feedback:
+        "자신의 의견을 명확하고 설득력 있게 전달하는 능력이 뛰어납니다. 논리적인 커뮤니케이션을 통해 팀원들과 효과적으로 협력하며, 아이디어를 잘 공유하는 강점이 있습니다.",
+      isPositive: true,
+    },
+    problemSolving: {
+      score: 2.7,
+      name: "문제해결(PS)",
+      description: "최적의 해결책을 찾고 실행하는 능력입니다.",
+      feedback:
+        "문제를 빠르게 파악하고 체계적으로 해결하는 능력이 뛰어납니다. 창의적인 해결책을 도출하며, 논리적인 사고를 바탕으로 문제를 해결하는 강점이 돋보입니다.",
+      isPositive: true,
+    },
+    conflictResolution: {
+      score: 2.0,
+      name: "갈등해결(CS)",
+      description: "갈등을 조정하고 합의점을 찾아내는 능력입니다.",
+      feedback:
+        "팀 내 갈등 상황에서 중립적인 태도를 유지하며 원만하게 해결하는 능력이 부족합니다. 감정적인 대응을 줄이고 논리적인 해결책을 고려할 필요가 있습니다.",
+      isPositive: false,
+    },
+    leadership: {
+      score: 2.3,
+      name: "리더십(L)",
+      description: "팀을 이끌고 조율하여 목표를 달성하는 능력입니다.",
+      feedback:
+        "팀원들을 효과적으로 이끌고 조율하는 리더십이 부족한 편입니다. 보다 명확한 방향을 제시하고 책임감을 갖춘 리더십을 발휘할 필요가 있습니다.",
+      isPositive: false,
     },
   },
 
   progress: {
     minScore: 0,
     maxScore: 100,
-    progressData: {
-      sympathy: { name: "공감(S)", score: 11 },
-      listening: { name: "경청(A)", score: 21 },
-      expression: { name: "표현(E)", score: 31 },
-      problemSolving: { name: "문제해결(PS)", score: 51 },
-      conflictResolution: { name: "갈등해결(CS)", score: 81 },
-      leadership: { name: "리더십(L)", score: 91 },
-    },
+    sympathy: { name: "공감(S)", score: 11 },
+    listening: { name: "경청(A)", score: 21 },
+    expression: { name: "표현(E)", score: 31 },
+    problemSolving: { name: "문제해결(PS)", score: 51 },
+    conflictResolution: { name: "갈등해결(CS)", score: 81 },
+    leadership: { name: "리더십(L)", score: 91 },
   },
 
   wordCloud: {
