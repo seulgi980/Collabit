@@ -14,7 +14,6 @@ import lombok.NoArgsConstructor;
 public class Description {
     // 영어이름
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String code;
 
     // 한글이름

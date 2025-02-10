@@ -39,7 +39,7 @@ public interface ProjectInfoRepository extends JpaRepository<ProjectInfo, Intege
                             int problemSolving, int conflictResolution, int leadership);
 
 
-    @Query("SELECT p FROM ProjectInfo p WHERE p.user = :userCode AND p.completedAt IS NOT NULL")
+    @Query("SELECT p FROM ProjectInfo p WHERE p.user.code = :userCode AND p.completedAt IS NOT NULL")
     List<ProjectInfo> findAllCompletedByUserCode(@Param("userCode") String userCode);
 
     @Query("SELECT p FROM ProjectInfo p WHERE p.completedAt IS NOT NULL")
