@@ -5,8 +5,10 @@ import com.collabit.global.error.exception.BusinessException;
 import com.collabit.portfolio.domain.dto.*;
 import com.collabit.portfolio.repository.DescriptionRepository;
 import com.collabit.portfolio.repository.FeedbackRepository;
+import com.collabit.portfolio.repository.projection.CodeNameProjection;
 import com.collabit.portfolio.repository.projection.DescriptionProjection;
 import com.collabit.portfolio.repository.projection.FeedbackProjection;
+import com.collabit.project.domain.entity.Project;
 import com.collabit.project.domain.entity.ProjectInfo;
 import com.collabit.project.repository.ProjectInfoRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ public class PortfolioService {
     private final FeedbackRepository feedbackRepository;
 
     // hexagon + progress bar 그래프 데이터 채우기
-    public MultipleResponseDTO getPortfolioHexagonAndProgressbarGraph(String userCode) {
+    public MultipleHexagonProgressResponseDTO getPortfolioHexagonAndProgressbarGraph(String userCode) {
 
         // =========== HEXAGON ==========
         // 전체 "마감된" 프로젝트 평균 계산 <code : 평균값>
@@ -97,7 +99,7 @@ public class PortfolioService {
         ProgressDTO progressDTO = new ProgressDTO(progressDataMap, 1, 5);
 
 
-        return new MultipleResponseDTO(hexagonDTO, progressDTO);
+        return new MultipleHexagonProgressResponseDTO(hexagonDTO, progressDTO);
     }
 
     // 유저별 평균 계산
@@ -114,7 +116,7 @@ public class PortfolioService {
     }
 
     // 전체 사용자 평균 계산
-    public Map<String, Double> getTotalUserAverage() {
+    private Map<String, Double> getTotalUserAverage() {
         List<ProjectInfo> projectInfos = projectInfoRepository.findAllCompleted();
         log.debug("projectInfos: {}", projectInfos);
 
@@ -125,7 +127,7 @@ public class PortfolioService {
         return calculateProjectInfosAverageScores(projectInfos);
     }
 
-    // 평균 계산 로직 메서드
+    // 여러개의 projectinfo 들의 평균 계산 메서드
     private Map<String, Double> calculateProjectInfosAverageScores(List<ProjectInfo> projectInfos) {
         // 점수합, 참여자합 누적할 변수
         Map<String, Integer> totalScores = new HashMap<>();
@@ -205,6 +207,62 @@ public class PortfolioService {
             double fraction = (userAverage - minBaseScore) / (totalAverageScore - minBaseScore);
             return (int) Math.round(fraction * 50);
         }
+    }
+
+    // timeline 그래프 데이터 채우기
+    public MultipleTimelineResponseDTO getPortfolioTimelineGraph(String userCode) {
+        // 완료된 프로젝트중 최근 8개까지 조회
+        List<ProjectInfo> projectInfos = projectInfoRepository.findTop8ByUserCodeAndCompletedAtIsNotNullOrderByCompletedAtDesc(userCode);
+
+        if(projectInfos.isEmpty()) {
+            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
+        }
+
+        Map<String, String> names = getDistinctFeedbackNames();
+
+        List<TimelineDataDTO> timelinedDataDTOs = projectInfos.stream()
+                .map(projectInfo -> {
+                    int participant = projectInfo.getParticipant();
+
+                    Map<String, Integer> totalScores = Map.of(
+                            "sympathy", projectInfo.getSympathy(),
+                            "listening", projectInfo.getListening(),
+                            "expression", projectInfo.getExpression(),
+                            "problem_solving", projectInfo.getProblemSolving(),
+                            "conflict_resolution", projectInfo.getConflictResolution(),
+                            "leadership", projectInfo.getLeadership()
+                    );
+
+                    Map<String, ScoreDTO> scores = totalScores.entrySet().stream()
+                            .collect(Collectors.toMap(
+                                    Map.Entry::getKey,
+                                    entry -> ScoreDTO.builder()
+                                            .name(names.get(entry.getKey())) // code로 name찾기
+                                            .score(participant > 0 ? Math.round((double) entry.getValue() / participant * 10.0) / 10.0 : 0.0)
+                                            .build()
+                            ));
+
+                    Project project = projectInfo.getProject();
+
+                    return TimelineDataDTO.builder()
+                            .projectName(project.getTitle())
+                            .organization(project.getOrganization())
+                            .completedAt(projectInfo.getCompletedAt())
+                            .scores(scores)
+                            .build();
+
+                })
+                .collect(Collectors.toList());
+
+
+        return new MultipleTimelineResponseDTO(timelinedDataDTOs, 1, 5);
+    }
+
+    // name 가져오기
+    public Map<String, String> getDistinctFeedbackNames() {
+        return feedbackRepository.findDistinctCodeAndNameBy()
+                .stream()
+                .collect(Collectors.toMap(CodeNameProjection::getCode, CodeNameProjection::getName));
     }
 
 
