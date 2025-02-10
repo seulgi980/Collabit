@@ -2,10 +2,11 @@ package com.collabit.portfolio.service;
 
 import com.collabit.global.common.ErrorCode;
 import com.collabit.global.error.exception.BusinessException;
-import com.collabit.portfolio.domain.dto.HighestLowestSkillDTO;
-import com.collabit.portfolio.domain.dto.MultipleAverageByUserResponseDTO;
-import com.collabit.portfolio.domain.dto.MultipleAverageDTO;
+import com.collabit.portfolio.domain.dto.*;
 import com.collabit.portfolio.repository.DescriptionRepository;
+import com.collabit.portfolio.repository.FeedbackRepository;
+import com.collabit.portfolio.repository.projection.DescriptionProjection;
+import com.collabit.portfolio.repository.projection.FeedbackProjection;
 import com.collabit.project.domain.entity.ProjectInfo;
 import com.collabit.project.repository.ProjectInfoRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -20,89 +22,189 @@ import java.util.*;
 public class PortfolioService {
     private final ProjectInfoRepository projectInfoRepository;
     private final DescriptionRepository descriptionRepository;
+    private final FeedbackRepository feedbackRepository;
 
-//
-    // 특정 유저가 받은 전체 프로젝트 객관식 6개 영역 평균 조회
-    public MultipleAverageByUserResponseDTO averageMultipleByUser(String userCode) {
-        // 특정 유저의 전체 프로젝트 조회
-        List<ProjectInfo> projectInfos = projectInfoRepository.findByUserCode(userCode);
+    // hexagon + progress bar 그래프 데이터 채우기
+    public MultipleResponseDTO getPortfolioHexagonAndProgressbarGraph(String userCode) {
+
+        // =========== HEXAGON ==========
+        // 전체 "마감된" 프로젝트 평균 계산 <code : 평균값>
+        Map<String, Double> userAverages = getUserAverage(userCode);
+        log.debug("userAverages: {}", userAverages);
+
+        // 사이트 전체 유저 "마감된" 프로젝트 평균 점수 조회 <code : 평균값>
+        Map<String, Double> totalUserAverages = getTotalUserAverage();
+        log.debug("totalUserAverages: {}", totalUserAverages);
+
+        // 해당되는 Feedback 데이터 조회 <code : FeedbackProjection>
+        Map<String, FeedbackProjection> feedbackData = getFeedback(userAverages, totalUserAverages);
+        log.debug("feedbackData: {}", feedbackData);
+
+        // Description 데이터 조회 <code : description>
+        Map<String, String> descriptionData = getDescriptions();
+        log.debug("descriptionData: {}", descriptionData);
+
+        // HexagonDataDTO 채우기
+        List<HexagonDataDTO> hexagonDataDTOs = userAverages.entrySet().stream()
+                .map(entry -> {
+                    String code = entry.getKey();
+                    double userScore = entry.getValue();
+                    double totalScore = totalUserAverages.getOrDefault(code, 0.0);
+
+                    FeedbackProjection feedbackProjection = feedbackData.get(code);
+                    boolean isPositive = feedbackProjection.getIsPositive();
+                    String feedback = feedbackProjection.getFeedback();
+                    String name = feedbackProjection.getName();
+
+                    String description = descriptionData.get(code);
+                    return HexagonDataDTO.builder()
+                            .name(name)
+                            .score(userScore)
+                            .total(totalScore)
+                            .feedback(feedback)
+                            .description(description)
+                            .isPositive(isPositive)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        log.debug("hexagonDataDTOs: {}", hexagonDataDTOs);
+        HexagonDTO hexagonDTO =  new HexagonDTO(hexagonDataDTOs, 1, 5);
+
+        // =========== ProgressBar ==========
+        List<ProgressDataDTO> ProgressDataDTOs = userAverages.entrySet().stream()
+                .map(entry -> {
+                    String code = entry.getKey();
+                    double userAverage = entry.getValue();
+                    double totalUserAverage = totalUserAverages.getOrDefault(code, 0.0);
+
+                    // Progress Bar 값 계산
+                    int progressBarValue = calculateProgressBarValue(userAverage, totalUserAverage, 1.0, 5.0);
+                    String name = feedbackData.get(code).getName();
+
+                    return ProgressDataDTO.builder()
+                            .name(name)
+                            .score(progressBarValue)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        ProgressDTO progressDTO = new ProgressDTO(ProgressDataDTOs, 1, 5);
+
+
+        return new MultipleResponseDTO(hexagonDTO, progressDTO);
+    }
+
+    // 유저별 평균 계산
+    private Map<String, Double>  getUserAverage(String userCode) {
+        // 유저가 참여한 모든 프로젝트 조회(단 설문이 종료된 것만)
+        List<ProjectInfo> projectInfos = projectInfoRepository.findAllCompletedByUserCode(userCode);
         log.debug("projectInfos: {}", projectInfos);
 
-        if(projectInfos.isEmpty()){
-            throw new BusinessException(ErrorCode.DATA_NOT_FOUND);
+        if (projectInfos.isEmpty()) {
+            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
         }
 
-        List<String> names = descriptionRepository.findDistinctNames();
-        log.debug("names: {}", names);
-
-        // 누적할 곳 초기화
-        List<Integer> scores = new ArrayList<>();
-        for(int i=0; i<names.size(); i++){
-            scores.add(0);
-        }
-        int participant = 0;
-
-        // 총계 누적합 구하기
-        for(ProjectInfo projectInfo : projectInfos){
-            // 설문지 1개마다 6개 영역 점수, participant 꺼내서 합 모으기
-            participant += projectInfo.getParticipant();
-
-            scores.set(0, (scores.get(0) + projectInfo.getSympathy()));
-            scores.set(1, (scores.get(1) + projectInfo.getListening()));
-            scores.set(2, (scores.get(2) + projectInfo.getExpression()));
-            scores.set(3, (scores.get(3) + projectInfo.getProblemSolving()));
-            scores.set(4, (scores.get(4) + projectInfo.getConflictResolution()));
-            scores.set(5, (scores.get(5) + projectInfo.getLeadership()));
-        }
-        log.debug("scores: {}", Arrays.toString(scores.toArray()));
-
-        // 계산한 값들 응답형식에 맞추어 저장
-        List<MultipleAverageDTO> multipleAverageDtos = new ArrayList<>();
-
-        for(int i=0; i<names.size(); i++){
-            double roundedScore = Math.round(((double) scores.get(i)  / participant) * 10.0) / 10.0;
-            MultipleAverageDTO dto = MultipleAverageDTO.builder()
-                    .name(names.get(i))
-                    .score(roundedScore)
-                    .build();
-            multipleAverageDtos.add(dto);
-        }
-        log.debug("multipleAverageDtos: {}", multipleAverageDtos);
-
-
-        int maxIdx = 0;
-        int minIdx = 0;
-
-        for(int i=0; i<scores.size(); i++){
-            if(scores.get(i) > scores.get(maxIdx)){
-                maxIdx = i;
-            }
-            if(scores.get(i) < scores.get(minIdx)){
-                minIdx = i;
-            }
-        }
-        // 최고,최저역량 이름
-        String highestSkillName = names.get(maxIdx);
-        String lowestSkillName = names.get(minIdx);
-
-        // 최고,최저역량 설명
-        String highestSkillDesc = descriptionRepository.findByNameAndId_IsPositive(highestSkillName, true).getDescription();
-        String lowestSkillDesc = descriptionRepository.findByNameAndId_IsPositive(lowestSkillName, false).getDescription();
-
-        HighestLowestSkillDTO.Skill highestSkill  = new HighestLowestSkillDTO.Skill(highestSkillName, highestSkillDesc);
-        HighestLowestSkillDTO.Skill lowestSkill  = new HighestLowestSkillDTO.Skill(lowestSkillName, lowestSkillDesc);
-        log.debug("highestSkill: {}", highestSkill.toString());
-        log.debug("lowestSkill: {}", lowestSkill.toString());
-
-        HighestLowestSkillDTO highestLowestSkillDTO = HighestLowestSkillDTO.builder()
-                .highestSkill(highestSkill)
-                .lowestSkill(lowestSkill)
-                .build();
-
-        return MultipleAverageByUserResponseDTO
-                .builder()
-                .scores(multipleAverageDtos)
-                .highestLowestSkills(highestLowestSkillDTO)
-                .build();
+        return calculateProjectInfosAverageScores(projectInfos);
     }
+
+    // 전체 사용자 평균 계산
+    public Map<String, Double> getTotalUserAverage() {
+        List<ProjectInfo> projectInfos = projectInfoRepository.findAllCompleted();
+        log.debug("projectInfos: {}", projectInfos);
+
+        if (projectInfos.isEmpty()) {
+            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
+        }
+
+        return calculateProjectInfosAverageScores(projectInfos);
+    }
+
+    // 평균 계산 로직 메서드
+    private Map<String, Double> calculateProjectInfosAverageScores(List<ProjectInfo> projectInfos) {
+        // 점수합, 참여자합 누적할 변수
+        Map<String, Integer> totalScores = new HashMap<>();
+        int totalParticipant = 0;
+
+        // 각 프로젝트마다의 점수 합산
+        for (ProjectInfo projectInfo : projectInfos) {
+
+            totalScores.merge("sympathy", projectInfo.getSympathy(), Integer::sum);
+            totalScores.merge("listening", projectInfo.getListening(), Integer::sum);
+            totalScores.merge("expression", projectInfo.getExpression(), Integer::sum);
+            totalScores.merge("problem_solving", projectInfo.getProblemSolving(), Integer::sum);
+            totalScores.merge("conflict_resolution", projectInfo.getConflictResolution(), Integer::sum);
+            totalScores.merge("leadership", projectInfo.getLeadership(), Integer::sum);
+
+            totalParticipant += projectInfo.getParticipant();
+        }
+
+        // 총점 데이터와 참여자 수로 5점 만점의 평균 계산
+        Map<String, Double> averageScores = new HashMap<>();
+
+        if (totalParticipant > 0) {
+            for (Map.Entry<String, Integer> entry : totalScores.entrySet()) {
+                String code = entry.getKey();
+                int totalScore = entry.getValue();
+                double average = (double) totalScore / totalParticipant;
+                average = Math.round(average * 10.0) / 10.0; // 소수점 1자리 반올림
+                averageScores.put(code, average);
+            }
+        } else {
+            // 참여자가 0명인 경우 0.0으로 설정
+            totalScores.keySet()
+                    .forEach(key -> averageScores.put(key, 0.0));
+        }
+
+        log.debug("averageScores: {}", averageScores);
+
+        return averageScores;
+    }
+
+
+    // feedback 정보 가져오기
+    private Map<String, FeedbackProjection> getFeedback(Map<String, Double> userAverage, Map<String, Double> totalUserAverage) {
+
+        return userAverage.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> {
+                            String code = entry.getKey();
+                            double totalAverageScore = totalUserAverage.getOrDefault(code, 0.0);
+                            boolean isPositive = entry.getValue() >= totalAverageScore;
+
+                            FeedbackProjection feedback = feedbackRepository.findByCodeAndIsPositive(code, isPositive);
+
+                            if (feedback == null) {
+                                throw new BusinessException(ErrorCode.FEEDBACK_NOT_FOUND);
+                            }
+
+                            return feedback;
+                        }
+                ));
+    }
+
+    private Map<String, String> getDescriptions() {
+        return descriptionRepository.findAllProjectedBy().stream()
+                .collect(Collectors.toMap(DescriptionProjection::getCode, DescriptionProjection::getDescription));
+    }
+
+    // 유저별 평균점수 상대위치 계산
+    private int calculateProgressBarValue(double userAverage, double totalAverageScore, double minBaseScore, double maxBaseScore) {
+        if (userAverage >= totalAverageScore) {
+            // 평균 이상인 경우 (50~100)
+            double fraction = (userAverage - totalAverageScore) / (maxBaseScore - totalAverageScore);
+            return (int) Math.round(fraction * 50) + 50;
+        } else {
+            // 평균 이하인 경우 (0~50)
+            double fraction = (userAverage - minBaseScore) / (totalAverageScore - minBaseScore);
+            return (int) Math.round(fraction * 50);
+        }
+    }
+
+
+
+
 }
+
+
