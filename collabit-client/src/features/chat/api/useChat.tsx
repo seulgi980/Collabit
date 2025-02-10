@@ -38,6 +38,7 @@ export const useChat = () => {
     fetchNextPage,
     hasNextPage,
     isLoading,
+    isFetchingNextPage,
     error,
   } = useInfiniteQuery({
     queryKey: ["chatMessages", chatId],
@@ -49,7 +50,7 @@ export const useChat = () => {
       return response;
     },
     getNextPageParam: (lastPage) =>
-      lastPage.hasNext ? lastPage.pageNumber + 1 : undefined,
+      lastPage.hasNext ? lastPage.pageNumber + 1 : null,
     initialPageParam: 0,
     enabled: !!userInfo?.nickname && !!chatId,
   });
@@ -67,6 +68,7 @@ export const useChat = () => {
     ...(chatMessages ?? []),
     ...(messages?.pages?.flatMap((page) => page.content) ?? []),
   ];
+
 
   // addMessage를 래핑하여 store에만 추가
   const addMessage = (message: WebSocketMessage) => {
@@ -94,7 +96,9 @@ export const useChat = () => {
     isLoading,
     error,
     fetchNextPage,
+    isFetchingNextPage,
     hasNextPage,
     addMessage,
+
   };
 };

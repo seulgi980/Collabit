@@ -30,12 +30,12 @@ const formatTime = (date: Date) => {
 const ChatRoom = () => {
   const [message, setMessage] = useState("");
   const { userInfo } = useAuth();
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const { sendMessage } = useChatStore();
   const { chatId, chatRoomDetail, resetUnreadMessages } = useChatStore();
   const { messages } = useChat();
-  const { chatRoomLoading, chatRoomError, fetchNextPage, hasNextPage } =
+  const { chatRoomLoading, chatRoomError, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useChat();
 
   useEffect(() => {
@@ -43,6 +43,7 @@ const ChatRoom = () => {
       resetUnreadMessages(chatId);
     }
   }, [chatId, resetUnreadMessages]);
+  
 
   // 메시지를 날짜별로 그룹화하는 함수
   const groupMessagesByDate = (messages: ChatMessageResponse[]) => {
@@ -111,9 +112,10 @@ const ChatRoom = () => {
         profileImage={chatRoomDetail.profileImage}
       />
       <div
+        ref={scrollRef}
         className="flex w-full flex-1 flex-col-reverse gap-2 overflow-y-auto rounded-lg bg-white px-2 py-3 md:px-4"
         onScroll={(e) => {
-          if (e.currentTarget.scrollTop === 0 && hasNextPage) {
+          if (e.currentTarget.scrollTop <= 50 && hasNextPage && !isFetchingNextPage) {
             fetchNextPage();
           }
         }}
@@ -141,7 +143,6 @@ const ChatRoom = () => {
               ))}
             </div>
           ))}
-        <div ref={messagesEndRef} />
       </div>
       <ChatInput
         message={message}

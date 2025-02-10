@@ -20,7 +20,7 @@ const useSocket = () => {
   useEffect(() => {
     if (!userInfo?.nickname || clientRef.current) return;
 
-    const socket = new SockJS("http://localhost:8080/ws/chat");
+    const socket = new SockJS(`${process.env.NEXT_PUBLIC_API_URI}/ws/chat`);
     clientRef.current = new Client({
       webSocketFactory: () => socket as unknown as WebSocket,
       reconnectDelay: 5000,
