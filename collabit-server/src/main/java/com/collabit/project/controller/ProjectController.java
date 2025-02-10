@@ -110,8 +110,6 @@ public class ProjectController {
     public ResponseEntity<?> getHexagonGraph(@PathVariable int code) {
         GetHexagonResponseDTO responseDTO = projectService.getHexagonGraph(code);
         log.debug("육각형 그래프 데이터 조회 완료");
-        log.debug("조회한 개인 역량 점수 수: {}", responseDTO.getPersonalData().size());
-        log.debug("전체 평균보다 낮은 역량의 수: {}, 전체 평균보다 높은 역량의 수: {}", responseDTO.getBelowAverage().size(), responseDTO.getAboveAverage().size());
         return ResponseEntity.ok(responseDTO);
     }
 }

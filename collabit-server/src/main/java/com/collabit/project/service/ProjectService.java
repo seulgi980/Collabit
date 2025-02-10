@@ -527,60 +527,64 @@ public class ProjectService {
 
     // 육각형 데이터 조회
     public GetHexagonResponseDTO getHexagonGraph(int projectInfoCode) {
-
         // 개인 역량별 평균 계산
         Map<String, Double> personalData = getProjectInfoAverage(projectInfoCode);
-        List<SkillData> personalSkillData = createSkillDataList(personalData);
 
         // 전체 사용자의 역량별 평균 계산
         Map<String, Double> totalData = getTotalUserAverage();
 
-        // Feedback 데이터를 미리 조회하여 Map으로 변환
+        // 각 항목에 대해 개인 평균, 전체 평균 비교하여 isPositive만 세팅
+        Map<String, Boolean> isAboveAverageBySkill = getSkillAboveAverageMap(personalData, totalData);
+
+        // Description 데이터 Map 변환
+        Map<String, Description> descriptionMap = descriptionRepository.findAll().stream()
+                .collect(Collectors.toMap(Description::getCode, desc -> desc));
+
+        // Feedback 데이터 Map 변환
         Map<String, List<Feedback>> feedbackMap = feedbackRepository.findAll().stream()
                 .collect(Collectors.groupingBy(Feedback::getCode));
 
-        List<SkillFeedback> belowAverage = new ArrayList<>();
-        List<SkillFeedback> aboveAverage = new ArrayList<>();
+        // List<SkillData>를 Map으로 변환하여 필드명에 맞게 매핑
+        Map<String, SkillData> skillDataMap = personalData.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> {
+                            // 각 code와 isPositive에 맞는 설명, 피드백을 매핑
+                            String code = entry.getKey();
+                            Description description = descriptionMap.get(code);
+                            boolean isPositive = isAboveAverageBySkill.get(code);
 
-        // 개인 점수와 전체 평균 비교하여 피드백 생성
-        personalData.forEach((code, personalScore) -> {
-            Double totalScore = totalData.get(code);
-            List<Feedback> feedbacks = feedbackMap.get(code); // code 역량의 피드백만 리스트에 넣음
+                            String feedback = feedbackMap.get(code).stream()
+                                    .filter(f -> f.isPositive() == isPositive)
+                                    .findFirst()
+                                    .map(Feedback::getFeedback)
+                                    .orElse("");
 
-            if (personalScore >= totalScore) {
-                feedbacks.stream()
-                        .filter(Feedback::isPositive)
-                        .findFirst()
-                        .ifPresent(feedback -> aboveAverage.add(
-                                SkillFeedback.builder()
-                                        .name(feedback.getName())
-                                        .feedback(feedback.getFeedback())
-                                        .build()
-                        ));
-            } else {
-                feedbacks.stream()
-                        .filter(f -> !f.isPositive())
-                        .findFirst()
-                        .ifPresent(feedback -> belowAverage.add(
-                                SkillFeedback.builder()
-                                        .name(feedback.getName())
-                                        .feedback(feedback.getFeedback())
-                                        .build()
-                        ));
-            }
-        });
+                            return SkillData.builder()
+                                    .score(entry.getValue())
+                                    .name(description.getName())
+                                    .description(description.getDescription())
+                                    .feedback(feedback)
+                                    .isPositive(isPositive)
+                                    .build();
+                        }
+                ));
+
 
         return GetHexagonResponseDTO.builder()
-                .minBaseScore(1)
-                .maxBaseScore(5)
-                .belowAverage(belowAverage)
-                .aboveAverage(aboveAverage)
-                .personalData(personalSkillData)
+                .minScore(1)
+                .maxScore(5)
+                .sympathy(skillDataMap.get("sympathy"))
+                .listening(skillDataMap.get("listening"))
+                .expression(skillDataMap.get("expression"))
+                .problemSolving(skillDataMap.get("problem_solving"))
+                .conflictResolution(skillDataMap.get("conflict_resolution"))
+                .leadership(skillDataMap.get("leadership"))
                 .build();
     }
 
-    // projectInfoCode를 받아 해당 projectInfo의 역량별 (5점 만점) 평균 계산
-    public Map<String, Double> getProjectInfoAverage(int projectInfoCode) {
+    // projectInfoCode를 받아 해당 projectInfo의 역량별 점수 매핑
+    private Map<String, Double> getProjectInfoAverage(int projectInfoCode) {
         ProjectInfo projectInfo = projectInfoRepository.findById(projectInfoCode)
                 .orElseThrow(ProjectInfoNotFoundException::new);
 
@@ -613,29 +617,26 @@ public class ProjectService {
         return averageScores;
     }
 
-    // score, name, description을 함께 매핑 (= SkillData)
-    private List<SkillData> createSkillDataList(Map<String, Double> scores) {
-        Map<String, Description> descriptionMap = descriptionRepository.findAll().stream()
-                .collect(Collectors.toMap(Description::getCode, desc -> desc));
-
-        return scores.entrySet().stream()
-                .map(entry -> {
-                    String code = entry.getKey();
-                    Description desc = Optional.ofNullable(descriptionMap.get(code))
-                            .orElseThrow(() -> new IllegalArgumentException("해당 역량 code가 존재하지 않습니다."));
-
-                    return SkillData.builder()
-                            .score(entry.getValue())
-                            .name(desc.getName())
-                            .description(desc.getDescription())
-                            .build();
-                })
-                .collect(Collectors.toList());
+    // 개인의 각 역량이 전체 평균보다 높은지 낮은지 조회
+    private Map<String, Boolean> getSkillAboveAverageMap(Map<String, Double> personalData, Map<String, Double> totalData){
+        Map<String, Boolean> isAboveAverageMap = new HashMap<>();
+        personalData.forEach((key, personalScore) -> {
+            if (personalScore >= totalData.get(key)) {
+                isAboveAverageMap.put(key, true);
+            }
+            else{
+                isAboveAverageMap.put(key, false);
+            }
+        });
+        return isAboveAverageMap;
     }
 
     // 임시로 사용할 전체 사용자의 역량별 평균 계산
     public Map<String, Double> getTotalUserAverage() {
-        TotalScore totalScore = totalScoreRepository.findAll().get(0);
+        TotalScore totalScore = totalScoreRepository.findAll().stream()
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("전체 사용자의 점수 데이터가 존재하지 않습니다."));
+
         int participant = totalScore.getTotalParticipant();
 
         Map<String, Integer> totalScores = Map.of(
@@ -650,13 +651,13 @@ public class ProjectService {
         return calculateAverageScores(totalScores, participant);
     }
 
-    // 각 projectInfo 5점 평균 계산 후 이름만 매핑해서 반환
+    // 각 projectInfo 5점 평균 계산 후 이름만 매핑해서 반환 (포트폴리오에서 사용)
     public Map<String, Double> getProjectInfoAverageWithName(int projectInfoCode) {
         Map<String, Double> scores = getProjectInfoAverage(projectInfoCode);
         return mapCodeToName(scores);
     }
 
-    // name과 5점 평균 매핑
+    // name과 5점 평균 매핑 (포트폴리오에서 사용)
     private Map<String, Double> mapCodeToName(Map<String, Double> scores) {
         Map<String, Description> descriptionMap = descriptionRepository.findAll().stream()
                 .collect(Collectors.toMap(Description::getCode, desc -> desc));
