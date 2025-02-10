@@ -9,6 +9,7 @@ class MongoDB:
             self.db = self.client['mydatabase']
             self.survey_essay = self.db['survey_essay']
             self.summary_collection = self.db['summaries']
+            self.sentiment_analysis = self.db['sentiment_analysis']
         except Exception as e:
             print(f"MongoDB connection failed: {e}")
             raise
@@ -25,6 +26,19 @@ class MongoDB:
             return self.survey_essay.insert_one(survey_data)
         except Exception as e:
             print(f"Failed to save survey: {e}")
+            raise
+
+    def save_sentiment_analysis(self, user_code, analysis_results):
+        """Save sentiment analysis results to MongoDB"""
+        try:
+            analysis_data = {
+                "user_code": user_code,
+                "analysis_results": analysis_results,
+                "created_at": datetime.now()
+            }
+            return self.sentiment_analysis.insert_one(analysis_data)
+        except Exception as e:
+            print(f"Failed to save sentiment analysis: {e}")
             raise
 
 # Create a singleton instance

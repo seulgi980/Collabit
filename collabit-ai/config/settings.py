@@ -26,15 +26,13 @@ SESSION_TIMEOUT = 3600  # 1 hour
 HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY')
 
 # AI Model settings
-MODEL_NAME = "meta-llama/Llama-3.3-70B-Instruct"
+MODEL_NAME = os.getenv('HUGGINGFACE_MODEL_NAME')
 MODEL_TEMPERATURE = 0.5
 MODEL_MAX_TOKENS = 2048
 MODEL_TOP_P = 0.7
 
 
 def get_decoded_jwt_secret():
-  """Get decoded JWT secret key with proper padding"""
-
   def fix_base64_padding(s):
     missing_padding = len(s) % 4
     if missing_padding:
