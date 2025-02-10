@@ -2,7 +2,7 @@ package com.collabit.portfolio.controller;
 
 
 import com.collabit.global.security.SecurityUtil;
-import com.collabit.portfolio.domain.dto.MultipleAverageByUserResponseDTO;
+import com.collabit.portfolio.domain.dto.MultipleResponseDTO;
 import com.collabit.portfolio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -22,12 +21,13 @@ import java.util.Map;
 public class PortfolioController {
     private final PortfolioService portfolioService;
 
-    @Operation(summary = "객관식 6개 영역별 통계치 조회(유저별)", description = "특정 1개 프로젝트 설문이 끝나면 그 프로젝트 설문결과의 6개 영역 평균치 조회하는 API입니다.")
-    @GetMapping("/multiple/average")
-    public ResponseEntity<MultipleAverageByUserResponseDTO> getMultipleAverageByUser() {
+    @Operation(summary = "객관식 6개 영역별 1.평균값+피드백문구,  2.각 영역별 description 3. 유저 전체 평균, 4. 상대적 위치백분율값 조회(육각형)", description = "육각형과 상대위치 progress bar를 채우기 위한 데이터를 조회하는 API입니다.")
+    @GetMapping("/multiple/hexagon")
+    public ResponseEntity<MultipleResponseDTO> getMultipleAverageByUser() {
         String userCode = SecurityUtil.getCurrentUserCode();
 
         return ResponseEntity.ok()
-                .body(portfolioService.averageMultipleByUser(userCode));
+                .body(portfolioService.getPortfolioHexagonAndProgressbarGraph(userCode));
     }
 }
+
