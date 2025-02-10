@@ -7,11 +7,9 @@ import com.collabit.portfolio.domain.dto.GetMultipleHexagonProgressResponseDTO;
 import com.collabit.portfolio.domain.dto.GetPortfolioInfoResponseDTO;
 import com.collabit.portfolio.domain.dto.GetPortfolioStatusResponseDTO;
 import com.collabit.portfolio.domain.dto.GetTimelineResponseDTO;
-import com.collabit.portfolio.domain.dto.getMultipleHexagonProgressResponseDTO;
 import com.collabit.portfolio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -46,7 +44,6 @@ public class PortfolioController {
     public ResponseEntity<?> getAverage() {
         GetAverageResponseDTO responseDTO = portfolioService.getAverage();
         return ResponseEntity.ok().body(responseDTO);
-                .body(portfolioService.getHexagonAndProgressbarGraph(userCode));
     }
 
     @Operation(summary = "timeline 그래프 데이터 조회", description = "최근 8개 프로젝트에 대한 역량별 점수를 조회하는 API입니다.")
