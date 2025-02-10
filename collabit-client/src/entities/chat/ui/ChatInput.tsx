@@ -3,18 +3,24 @@ import { Textarea } from "@/shared/ui/textarea";
 import { SendIcon } from "lucide-react";
 
 interface ChatInputProps {
+  disabled: boolean;
   message: string;
   setMessage: (message: string) => void;
   handleSendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
 }
 
 const ChatInput = ({
+  disabled,
   message,
   setMessage,
   handleSendMessage,
 }: ChatInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
+    if (
+      e.key === "Enter" &&
+      !e.shiftKey &&
+      e.nativeEvent.isComposing === false
+    ) {
       e.preventDefault();
       if (message.trim() !== "") {
         handleSendMessage(e as unknown as React.FormEvent<HTMLFormElement>);
@@ -31,8 +37,13 @@ const ChatInput = ({
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={handleKeyDown}
         rows={1}
+        disabled={disabled}
       />
-      <Button type="submit" className="flex items-center justify-center">
+      <Button
+        type="submit"
+        className="flex items-center justify-center"
+        disabled={disabled}
+      >
         <SendIcon className="h-full w-full" />
       </Button>
     </form>

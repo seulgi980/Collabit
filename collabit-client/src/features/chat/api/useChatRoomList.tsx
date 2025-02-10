@@ -13,6 +13,7 @@ export const useChatRoomList = () => {
     isFetching,
     isFetchingNextPage,
     status,
+    refetch,
   } = useInfiniteQuery({
     queryKey: ["chatList", userInfo?.nickname],
     queryFn: async ({ pageParam = 0 }) => {
@@ -26,6 +27,7 @@ export const useChatRoomList = () => {
       !lastPage.hasNext ? undefined : lastPage.pageNumber + 1,
     initialPageParam: 0,
     enabled: !!userInfo?.nickname,
+    refetchInterval: 10000, // 10초마다 자동 갱신
   });
 
   const chatList = data?.pages.flatMap((page) => page.content);
@@ -38,5 +40,6 @@ export const useChatRoomList = () => {
     isFetching,
     isFetchingNextPage,
     fetchNextPage,
+    refetch,
   };
 };

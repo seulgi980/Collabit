@@ -1,19 +1,19 @@
-import { ChatListResponse } from "@/shared/types/response/chat";
+import { ChatRoomListResponse } from "@/shared/types/response/chat";
+import { createContext, useContext } from "react";
 import {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+  FetchNextPageOptions,
+  InfiniteQueryObserverResult,
+} from "@tanstack/react-query";
 
-export const ChatListContext = createContext<{
-  chatList: ChatListResponse[] | undefined;
-  hasNextPage: boolean;
-  fetchNextPage: () => void;
-  setChatList: Dispatch<SetStateAction<ChatListResponse[] | undefined>>;
-} | null>(null);
+interface ChatListContextType {
+  chatList: ChatRoomListResponse[] | undefined;
+  hasNextPage: boolean | undefined;
+  fetchNextPage: (
+    options?: FetchNextPageOptions | undefined,
+  ) => Promise<InfiniteQueryObserverResult>;
+}
+
+export const ChatListContext = createContext<ChatListContextType | null>(null);
 
 export const ChatListProvider = ({
   children,
@@ -22,19 +22,15 @@ export const ChatListProvider = ({
   fetchNextPage,
 }: {
   children: React.ReactNode;
-  initialData: ChatListResponse[] | undefined;
-  hasNextPage: boolean;
-  fetchNextPage: () => void;
+  initialData: ChatRoomListResponse[] | undefined;
+  hasNextPage: boolean | undefined;
+  fetchNextPage: (
+    options?: FetchNextPageOptions | undefined,
+  ) => Promise<InfiniteQueryObserverResult>;
 }) => {
-  const [chatList, setChatList] = useState(initialData);
-
-  useEffect(() => {
-    setChatList(initialData);
-  }, [initialData]);
-
   return (
     <ChatListContext.Provider
-      value={{ chatList, setChatList, hasNextPage, fetchNextPage }}
+      value={{ chatList: initialData, hasNextPage, fetchNextPage }}
     >
       {children}
     </ChatListContext.Provider>

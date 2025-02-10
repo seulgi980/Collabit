@@ -1,5 +1,5 @@
 import { ChatroomRequest } from "../types/request/chat";
-import { ChatListResponse } from "../types/response/chat";
+import { ChatRoomListResponse } from "../types/response/chat";
 import { PageResponse } from "../types/response/page";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -25,7 +25,7 @@ export const getOrCreateChatRoomAPI = async (body: ChatroomRequest) => {
 
 export const getChatRoomListAPI = async (
   pageNumber: number,
-): Promise<PageResponse<ChatListResponse>> => {
+): Promise<PageResponse<ChatRoomListResponse>> => {
   const response = await fetch(
     `${apiUrl}/chat/rooms?pageNumber=${pageNumber}`,
     {
@@ -91,4 +91,17 @@ export const getChatRoomWithNicknameAPI = async (nickname: string) => {
     throw new Error("채팅방 닉네임 조회 실패");
   }
   return response.json();
+};
+
+export const markMessageAsReadAPI = async (roomCode: number) => {
+  const response = await fetch(
+    `${apiUrl}/chat/rooms/${roomCode}/messages/read`,
+    {
+      method: "GET",
+      ...fetchOptions,
+    },
+  );
+  if (!response.ok) {
+    throw new Error("메시지 읽음 처리 실패");
+  }
 };

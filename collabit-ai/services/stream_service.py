@@ -45,6 +45,7 @@ class StreamService:
     SSE 메시지 포맷 생성
     """
     data = {
+      "status": "incompleted",
       "timestamp": datetime.now().isoformat()
     }
 
@@ -61,9 +62,9 @@ class StreamService:
     설문 완료 메시지 생성
     """
     data = {
-      "response": "설문이 완료되었습니다.",
       "status": "completed",
-      "timestamp": datetime.now().isoformat()
+      "timestamp": datetime.now().isoformat(),
+      "response": "설문이 완료되었습니다."
     }
     return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
 
