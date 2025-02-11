@@ -46,7 +46,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
   const { data: surveyMultipleQuery } = useQuery({
     queryKey: ["surveyMultiple"],
     queryFn: () => getSurveyMultipleQueryAPI(),
-    enabled: !!userInfo && !!id && currentStep === 0,
+    enabled: !!userInfo && !!id,
     staleTime: 1000 * 60,
   });
   const { sendMultipleAnswer } = useSendMultipleAnswer();
@@ -160,25 +160,27 @@ const SurveyRoom = ({ id }: { id: number }) => {
           </div>
           {/*객관식 마지막 메시지 */}
 
-          {currentStep >= 24 && (
-            <SurveyBubble
-              isMe={false}
-              message={`감사합니다! ${userInfo.nickname}님의 이야기를 들으니까 ${surveyDetail?.nickname}님이 어떤 사람인지는 조금 알 것 같아요. \n\n 이제 더 구체적으로 알고 싶은데, 대화로 알려주시겠어요? (지금 나가시면 피드백이 완료되지 않아요!)`}
-              animation={currentStep === 24}
-              isLoading={false}
-              component={
-                <Button
-                  disabled={currentStep > 24}
-                  className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
-                  onClick={handleEndMultiple}
-                >
-                  대화 시작하기
-                </Button>
-              }
-            />
-          )}
+          {currentStep >= 24 ||
+            (surveyMultipleResponse && (
+              <SurveyBubble
+                isMe={false}
+                message={`감사합니다! ${userInfo.nickname}님의 이야기를 들으니까 ${surveyDetail?.nickname}님이 어떤 사람인지는 조금 알 것 같아요. \n\n 이제 더 구체적으로 알고 싶은데, 대화로 알려주시겠어요? (지금 나가시면 피드백이 완료되지 않아요!)`}
+                animation={currentStep === 24}
+                isLoading={false}
+                component={
+                  <Button
+                    disabled={currentStep > 24 || !!surveyEssayResponse}
+                    className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
+                    onClick={handleEndMultiple}
+                  >
+                    대화 시작하기
+                  </Button>
+                }
+              />
+            ))}
           {/* 우선 스텝에 따른 챗봇의 메세지 렌더링 */}
-          {!surveyMultipleResponse ? (
+
+          {!surveyMultipleResponse ? ( // 객관식 설문한 적이 없으면면
             <>
               {surveyMultipleQuery
                 ?.slice(0, currentStep + 1)
@@ -228,29 +230,32 @@ const SurveyRoom = ({ id }: { id: number }) => {
               />
             </>
           ) : (
+            // 객관식 설문한 적이 있으면
             <>
-              {surveyMultipleQuery?.map((item, index) => {
-                console.log(surveyMultipleQuery);
-
-                return (
-                  <SurveyBubble
-                    key={item.questionNumber}
-                    isMe={false}
-                    step={index + 1}
-                    message={`${surveyDetail?.nickname}${item.questionText}`}
-                    isLoading={false}
-                    component={
-                      <SurveyMultipleSelectButton
-                        index={index}
-                        selectedScore={surveyMultipleResponse?.scores[index]}
-                        readOnly
-                        onClick={() => {}}
-                      />
-                    }
-                    animation={false}
-                  />
-                );
-              })}
+              {surveyMultipleQuery
+                ?.slice()
+                .reverse()
+                .map((item, index) => {
+                  const originalIndex = surveyMultipleQuery.length - 1 - index;
+                  return (
+                    <SurveyBubble
+                      key={item.questionNumber}
+                      isMe={false}
+                      step={originalIndex + 1}
+                      message={`${item.questionText}`}
+                      isLoading={false}
+                      component={
+                        <SurveyMultipleSelectButton
+                          index={originalIndex}
+                          selectedScore={surveyMultipleResponse[originalIndex]}
+                          readOnly
+                          onClick={() => {}}
+                        />
+                      }
+                      animation={false}
+                    />
+                  );
+                })}
               {/* 완료된 설문의 시작 메시지 */}
               <SurveyBubble
                 isMe={false}
@@ -264,8 +269,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
                 component={
                   <Button
                     disabled={
-                      currentStep >= 0 ||
-                      surveyMultipleResponse?.scores.length > 0
+                      currentStep >= 0 || surveyMultipleResponse.length > 0
                     }
                     className="fade-in-duration-700 duration-700 animate-in fade-in-0 slide-in-from-bottom-4"
                     onClick={handleStartMultiple}

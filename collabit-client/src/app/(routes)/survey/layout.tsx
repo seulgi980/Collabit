@@ -65,8 +65,8 @@ const SurveyLayout = ({
         title: surveyDetail.title,
       };
       setSurveyDetail(detail);
-      setSurveyEssayResponse(surveyDetail.surveyEssayResponse.messages);
-      setSurveyMultipleResponse(surveyDetail.surveyMultipleResponse.scores);
+      setSurveyEssayResponse(surveyDetail.surveyEssayResponse?.messages);
+      setSurveyMultipleResponse(surveyDetail.surveyMultipleResponse?.scores);
     }
   }, [
     surveyDetail,
