@@ -10,8 +10,8 @@ import CloudSection from "@/features/report/ui/CloudSection";
 import CompareSection from "@/features/report/ui/CompareSection";
 import ScoreAnalysisSection from "@/features/report/ui/ScoreAnalysisSection";
 import useModalStore from "@/shared/lib/stores/modalStore";
-import Image from "next/image";
 import HistoryRateSection from "@/features/report/ui/HistoryRateSection";
+import LoadingModal from "@/widget/ui/modals/LoadingModal";
 
 export default function Page() {
   const { toast } = useToast();
@@ -147,27 +147,4 @@ const mockData = {
       '팀원들의 주관식 응답을 분석한 결과, 개선이 필요한 몇 가지 의견들이 수집되었습니다. 첫째, 의사소통 방식에 있어 회의 시간이 다소 길어지는 경향이 있으며, "의견 제시 후 피드백을 받기까지 시간이 오래 걸린다"는 의견이 있었습니다. 둘째, 업무 프로세스 측면에서는 업무 우선순위 설정이 때때로 불명확하여 일정 관리에 어려움을 겪는다는 의견이 있었습니다. 특히 급한 업무가 갑자기 추가될 때 기존 일정 조정이 원활하지 않다는 점이 지적되었습니다. 마지막으로, 기술 스택 학습을 위한 시간이 충분히 확보되지 않는다는 의견이 있었으며, 팀 내 기술 공유 세션의 횟수를 늘리면 좋겠다는 건설적인 제안이 있었습니다. 이러한 피드백들은 대체로 현재 잘 운영되고 있는 시스템을 더욱 개선하기 위한 제안사항들로 보입니다.',
     // ... existing code ...
   },
-};
-
-const LoadingModal = ({ context }: { context: string }) => {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* 어두운 오버레이 배경 */}
-      <div className="absolute inset-0 bg-black/50" />
-
-      {/* 로딩 컨텐츠 */}
-      <div className="relative z-10 flex flex-col items-center justify-center rounded-lg">
-        <Image
-          src={"/images/logo-lg.png"}
-          alt="loading"
-          width={100}
-          height={100}
-          className="animate-custom-pulse"
-        />
-        <span className="mt-4 flex text-2xl font-bold text-gray-300">
-          <p className="relative">{context}</p>
-        </span>
-      </div>
-    </div>
-  );
 };
