@@ -9,5 +9,8 @@ import lombok.Getter;
 @Getter
 public class SkillData {
     String name;
+    Double score;
     String description;
+    String feedback;
+    boolean isPositive;
 }

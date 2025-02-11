@@ -1,41 +1,62 @@
-import { SurveyDetailResponse } from "@/shared/api/survey";
+import { AIChatResponse } from "@/shared/types/response/survey";
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 
-interface SurveyState {
+interface SurveyDetail {
+  nickname: string;
+  profileImage: string;
+  title: string;
+}
+
+interface SurveyStore {
+  // 상태
   id: number | null;
-  surveyDetail: SurveyDetailResponse | null;
-  scores: number[];
-}
+  surveyDetail: SurveyDetail | null;
+  surveyEssayResponse: AIChatResponse[] | null;
+  surveyMultipleResponse: number[] | null;
 
-interface SurveyActions {
+  multipleAnswers: number[];
+
+  // 액션
   setId: (id: number) => void;
-  setSurveyDetail: (surveyDetail: SurveyDetailResponse) => void;
-  setScores: (score: number, index: number) => void;
+  setSurveyDetail: (detail: SurveyDetail) => void;
+  setSurveyEssayResponse: (response: AIChatResponse[]) => void;
+  setSurveyMultipleResponse: (response: number[]) => void;
+  setMultipleAnswers: (answer: number, index: number) => void;
+
+  resetAnswers: () => void;
 }
 
-export const useSurveyStore = create<SurveyState & SurveyActions>()(
-  devtools(
-    (set) => ({
+export const useSurveyStore = create<SurveyStore>((set) => ({
+  // 초기 상태
+  id: null,
+  surveyDetail: null,
+  surveyEssayResponse: null,
+  surveyMultipleResponse: null,
+  multipleAnswers: [],
+
+  // 액션 구현
+  setId: (id) => set({ id }),
+
+  setSurveyDetail: (detail) => set({ surveyDetail: detail }),
+
+  setSurveyEssayResponse: (response) => set({ surveyEssayResponse: response }),
+
+  setSurveyMultipleResponse: (response) =>
+    set({ surveyMultipleResponse: response }),
+
+  setMultipleAnswers: (answer, index) =>
+    set((state) => {
+      const newAnswers = [...state.multipleAnswers];
+      newAnswers[index] = answer;
+      return { multipleAnswers: newAnswers };
+    }),
+
+  resetAnswers: () =>
+    set({
       id: null,
       surveyDetail: null,
-      scores: [],
-      setId: (id) => set({ id }, false, "setId"),
-      setSurveyDetail: (surveyDetail) =>
-        set({ surveyDetail }, false, "setSurveyDetail"),
-      setScores: (score: number, index: number) =>
-        set(
-          (state) => {
-            const newScores = [...state.scores];
-            newScores[index] = score;
-            return { scores: newScores };
-          },
-          false,
-          "setScores",
-        ),
+      surveyEssayResponse: null,
+      surveyMultipleResponse: null,
+      multipleAnswers: [],
     }),
-    {
-      name: "Survey Store",
-    },
-  ),
-);
+}));

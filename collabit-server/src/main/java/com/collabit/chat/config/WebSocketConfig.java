@@ -1,6 +1,7 @@
 package com.collabit.chat.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -8,6 +9,9 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
+import org.springframework.scheduling.TaskScheduler;
+import java.util.concurrent.Executors;
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -16,23 +20,21 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompHandler stompHandler;
 
-    //웹소켓 엔드포인트 등록
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/chat")
-                .setAllowedOriginPatterns("http://localhost:3000")
-                .withSockJS()
-                .setHeartbeatTime(10_0000_0000);
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 
-    //메시지 송수신 주소 설정
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
-        registry.setApplicationDestinationPrefixes("/app");
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/topic")
+                .setHeartbeatValue(new long[]{10000, 10000})
+                .setTaskScheduler(heartBeatScheduler());
+        config.setApplicationDestinationPrefixes("/app");
     }
 
-    //token 확인 인터셉터
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(stompHandler);
@@ -40,9 +42,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
-        registration.setMessageSizeLimit(8192)
-                .setSendBufferSizeLimit(8192)
-                .setTimeToFirstMessage(0);
+        registration.setMessageSizeLimit(64 * 1024)     // 메시지 크기 제한: 64KB
+                   .setSendBufferSizeLimit(512 * 1024)  // 버퍼 크기: 512KB
+                   .setSendTimeLimit(20 * 1000);        // 전송 시간 제한: 20초
     }
 
+    @Bean
+    public TaskScheduler heartBeatScheduler() {
+        return new ConcurrentTaskScheduler(Executors.newSingleThreadScheduledExecutor());
+    }
 }

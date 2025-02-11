@@ -1,9 +1,6 @@
 package com.collabit.chat.domain.dto;
 
-import com.collabit.global.common.PageResponseDTO;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -12,7 +9,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatRoomDetailResponseDTO {
-    int roomCode;
     String nickname;
     String profileImage;
 }

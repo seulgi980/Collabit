@@ -21,6 +21,12 @@ const SurveyLayout = ({
   const pathname = usePathname();
   const id = useSurveyStore((state) => state.id);
   const setSurveyDetail = useSurveyStore((state) => state.setSurveyDetail);
+  const setSurveyEssayResponse = useSurveyStore(
+    (state) => state.setSurveyEssayResponse,
+  );
+  const setSurveyMultipleResponse = useSurveyStore(
+    (state) => state.setSurveyMultipleResponse,
+  );
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/survey/") && pathname !== "/survey");
@@ -53,9 +59,22 @@ const SurveyLayout = ({
   // 디테일 스토어 업데이트
   useEffect(() => {
     if (surveyDetail) {
-      setSurveyDetail(surveyDetail);
+      const detail = {
+        nickname: surveyDetail.nickname,
+        profileImage: surveyDetail.profileImage,
+        title: surveyDetail.title,
+      };
+      setSurveyDetail(detail);
+      setSurveyEssayResponse(surveyDetail.surveyEssayResponse?.messages);
+      setSurveyMultipleResponse(surveyDetail.surveyMultipleResponse?.scores);
     }
-  }, [surveyDetail, setSurveyDetail, id]); // 첫 렌더에서는 디테일이 없을 테니 useEffect로 업데이트
+  }, [
+    surveyDetail,
+    setSurveyDetail,
+    id,
+    setSurveyEssayResponse,
+    setSurveyMultipleResponse,
+  ]);
 
   // 리스트 렌더링 타입가드
   if (!data) return null;

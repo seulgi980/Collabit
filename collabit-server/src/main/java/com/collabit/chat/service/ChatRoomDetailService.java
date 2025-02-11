@@ -11,6 +11,8 @@ import com.collabit.chat.repository.ChatMessageRepository;
 import com.collabit.chat.repository.ChatRoomRepository;
 import com.collabit.global.common.PageResponseDTO;
 import com.collabit.user.domain.entity.User;
+import com.collabit.user.exception.UserNotFoundException;
+import com.collabit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,7 +20,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class ChatRoomDetailService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRedisService chatRedisService;
+    private final UserRepository userRepository;
 
     // 채팅방 디테일 조회
     public ChatRoomDetailResponseDTO getChatRoomDetail(String userCode, int roomCode) {
@@ -40,7 +42,6 @@ public class ChatRoomDetailService {
         ChatRoomDetailResponseDTO chatRoomDetail = ChatRoomDetailResponseDTO.builder()
                 .profileImage(otherUser.getProfileImage())
                 .nickname(otherUser.getNickname())
-                .roomCode(roomCode)
                 .build();
         log.debug("ChatRoomDetail {}", chatRoomDetail);
         return chatRoomDetail;
@@ -48,6 +49,7 @@ public class ChatRoomDetailService {
 
     //채팅방 메시지 조회
     public PageResponseDTO<ChatMessageResponseDTO> getChatRoomMessages(String userCode, int roomCode, int pageNumber) {
+        // 채팅방 참여 여부 확인
         if (!isUserInChatRoom(userCode, roomCode)) {
             log.debug("User {} is not in chat room", userCode);
             throw new UserNotInChatRoomException();
@@ -88,6 +90,17 @@ public class ChatRoomDetailService {
 
         log.debug("ChatMessage saving... {}", chatMessage);
         chatMessageRepository.save(chatMessage);
+
+        ChatRoom chatRoom = chatRoomRepository.findById(roomCode).orElseThrow(ChatRoomNotFoundException::new);
+        String receiverCode;
+        if (chatRoom.getUser1().getCode().equals(userCode)) {receiverCode = chatRoom.getUser2().getCode();}
+        else {receiverCode = chatRoom.getUser1().getCode();}
+
+        chatRedisService.updateRoomMessageStatus(roomCode, receiverCode, false);
+
+        chatRoom.setUpdatedAt(LocalDateTime.now());
+        chatRoomRepository.save(chatRoom);
+
         log.info("메시지 저장 완료: Room {}, Message {}", roomCode, chatMessageRequestDTO.getMessage());
     }
 
@@ -99,16 +112,14 @@ public class ChatRoomDetailService {
 
     private ChatMessageResponseDTO convertToResponseDTO(ChatMessage chatMessage) {
         return ChatMessageResponseDTO.builder()
-                .nickname(getUserByUserCode(chatMessage.getUserCode(), chatMessage.getRoomCode()).getNickname())
+                .nickname(getUserByUserCode(chatMessage.getUserCode()).getNickname())
                 .message(chatMessage.getMessage())
                 .timestamp(chatMessage.getTimestamp())
                 .build();
     }
 
-    private User getUserByUserCode(String userCode, int roomCode) {
-        ChatRoom chatRoom = chatRoomRepository.findById(roomCode)
-                .orElseThrow(ChatRoomNotFoundException::new);
-        return chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
+    private User getUserByUserCode(String userCode) {
+        return userRepository.findByCode(userCode).orElseThrow(UserNotFoundException::new);
     }
 
     private User getOtherUser(ChatRoom chatRoom, String userCode) {

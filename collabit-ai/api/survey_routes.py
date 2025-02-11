@@ -17,8 +17,12 @@ def start_survey(survey_code):
         nickname = data.get("nickname")
 
         if not nickname:
-            return jsonify({"error": "Nickname is required"}), 400
+            return jsonify({"error": "Nickname is required"}), 401
 
+        if not mongodb.check_survey_multiple_exists(survey_code, user_code):
+            return jsonify({"error": "Survey_Multiple is not found"}), 403
+        if mongodb.check_survey_essay_exists(survey_code, user_code):
+            return jsonify({"error": "Survey_Essay already exists"}), 403
         session_id = f"{survey_code}_{user_code}"
 
         # Store survey info in Redis
@@ -103,21 +107,7 @@ def chat_survey(survey_code):
 
                             summary_messages = messages.copy()
                             summary_messages.append(
-                                chat_service.create_message("user", """다음 대화를 질문과 답변형태로 만들건데
-답변은 원본 그대로 유지해주면서 만들어줘
-형식:
-Q. {target_name}님이 팀원들과 협업할 때 보여준 가장 인상적인 행동은 무엇이었나요?
-A. {response_1}
-Q. {target_name}님이 팀에서 발생한 어려움을 해결하기 위해 기여한 사례가 있다면 공유해 주세요.
-A. {response_2}
-Q. {target_name}님이 갈등이나 의견 차이가 있었던 순간, 어떤 태도를 보였나요?
-A. {response_3}
-Q. {target_name}님이 새로운 도전을 받아들이는 태도는 어땠나요?
-A. {response_4}
-Q. {target_name}님은 피드백을 받을 때 어떤 태도를 보였나요?
-A. {response_5}
-Q. {target_name}님이 개선해야 할 점이 있다면 구체적으로 적어 주세요.
-A. {response_6}"""))
+                                chat_service.create_message("user", chat_service.get_sentiment_analysis_prompt()))
 
                             summary_stream = chat_service.generate_response(
                                 summary_messages)
@@ -127,13 +117,14 @@ A. {response_6}"""))
                                 if chunk.choices[0].delta.content:
                                     summary_response.append(
                                         chunk.choices[0].delta.content)
-
+                            analysis_results = json.loads(
+                                ''.join(summary_response))
+                            summary_data = {
+                                "user_code": project_user_code,
+                                "sentiment_analysis": analysis_results
+                            }
 
                             # Save to MongoDB summaries collection
-                            summary_data = {
-                                "messages": ''.join(summary_response),
-                                "user_code": project_user_code
-                            }
                             mongodb.summary_collection.insert_one(summary_data)
                         # Clean up Redis
                         redis_client.cleanup_session(session_id)

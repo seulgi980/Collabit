@@ -105,7 +105,7 @@ public class ProjectController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "프로젝트별 결과의 육각형 그래프 데이터 조회", description = "프로젝트별 결과 조회 시 육각형 그래프에 들어갈 데이터를 조회하는 API 입니다.")
+    @Operation(summary = "프로젝트별 결과의 육각형 그래프 조회", description = "프로젝트별 결과 모달창의 육각형 그래프를 조회하는 API 입니다.")
     @GetMapping("/graph/hexagon/{code}")
     public ResponseEntity<?> getHexagonGraph(@PathVariable int code) {
         GetHexagonResponseDTO responseDTO = projectService.getHexagonGraph(code);
