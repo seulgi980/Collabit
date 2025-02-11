@@ -1,5 +1,6 @@
 package com.collabit.portfolio.domain.dto;
 
+import com.collabit.project.domain.dto.SkillData;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -10,10 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetAverageResponseDTO {
-    private double sympathy;
-    private double listening;
-    private double expression;
-    private double problemSolving;
-    private double conflictResolution;
-    private double leadership;
+    private ScoreData sympathy;
+    private ScoreData listening;
+    private ScoreData expression;
+    private ScoreData problemSolving;
+    private ScoreData conflictResolution;
+    private ScoreData leadership;
+    private int minScore;
+    private int maxScore;
 }

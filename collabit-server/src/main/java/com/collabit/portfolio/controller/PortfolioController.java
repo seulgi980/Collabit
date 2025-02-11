@@ -7,7 +7,6 @@ import com.collabit.portfolio.domain.dto.GetAverageResponseDTO;
 import com.collabit.portfolio.domain.dto.GetMultipleHexagonProgressResponseDTO;
 import com.collabit.portfolio.domain.dto.GetPortfolioInfoResponseDTO;
 import com.collabit.portfolio.domain.dto.GetPortfolioStatusResponseDTO;
-import com.collabit.portfolio.domain.dto.GetRecommendedPostResponseDTO;
 import com.collabit.portfolio.domain.dto.GetTimelineResponseDTO;
 import com.collabit.portfolio.service.PortfolioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,13 +68,6 @@ public class PortfolioController {
         String userCode = SecurityUtil.getCurrentUserCode();
         GetPortfolioInfoResponseDTO responseDTO = portfolioService.getPortfolioInfo(userCode);
         return ResponseEntity.ok(responseDTO);
-    }
-
-    @Operation(summary = "추천 게시글 조회", description = "포트폴리오 조회 시 추천 게시글을 조회하는 API입니다.")
-    @GetMapping("/recommend")
-    public ResponseEntity<?> getRecommendedPost() {
-        List<GetRecommendedPostResponseDTO> list = postService.recommendedPost();
-        return ResponseEntity.ok().body(list);
     }
 
     @Operation(summary = "전체평균 조회"

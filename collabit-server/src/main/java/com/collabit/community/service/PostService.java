@@ -1,10 +1,8 @@
 package com.collabit.community.service;
 
-import com.collabit.community.domain.entity.Comment;
 import com.collabit.community.exception.ImageCountExceededException;
 import com.collabit.community.exception.PostNotFoundException;
 import com.collabit.community.repository.CommentRepository;
-import com.collabit.global.error.exception.BusinessException;
 import com.collabit.global.service.S3Service;
 import com.collabit.community.domain.dto.CreatePostRequestDTO;
 import com.collabit.community.domain.dto.CreatePostResponseDTO;
@@ -14,20 +12,13 @@ import com.collabit.community.domain.entity.Image;
 import com.collabit.community.domain.entity.Post;
 import com.collabit.community.repository.ImageRepository;
 import com.collabit.community.repository.PostRepository;
-import com.collabit.portfolio.domain.dto.GetRecommendedPostResponseDTO;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.exception.UserDifferentException;
 import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
-import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -200,26 +191,5 @@ public class PostService {
             .likeCount(likeCount)
             .isLiked(isLiked)
             .build();
-    }
-
-    public List<GetRecommendedPostResponseDTO> recommendedPost() {
-
-        Pageable pageable = PageRequest.of(0, 3);
-        List<Post> popularPosts = postRepository.findTop3ByOrderByLikeCountAndCreatedAt(pageable).getContent();
-
-        List<GetRecommendedPostResponseDTO> list = new ArrayList<>();
-
-        for (Post post : popularPosts) {
-            List<Comment> comments = commentRepository.findByPostCode(post.getCode());
-            GetRecommendedPostResponseDTO.builder()
-                .userNickname(post.getUser().getNickname())
-                .userImageUrl(post.getUser().getProfileImage())
-                .content(post.getContent())
-                .commentCount(comments.size())
-                .likesCount(likeCacheService.getLikeCount(post.getCode()))
-                .build();
-        }
-
-        return list;
     }
 }

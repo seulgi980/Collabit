@@ -155,6 +155,7 @@ public class PortfolioService {
 
     private Map<String, Double> calculateUserAverageScores(Portfolio portfolio) {
         int participant = portfolio.getParticipant();
+
         Map<String, Long> scores = Map.of(
             "sympathy", portfolio.getSympathy(),
             "listening", portfolio.getListening(),
@@ -361,15 +362,20 @@ public class PortfolioService {
     }
 
     public GetAverageResponseDTO getAverage() {
+        Map<String, Description> descriptionMap = descriptionRepository.findAll().stream()
+                .collect(Collectors.toMap(Description::getCode, desc -> desc));
+
         Map<String, Double> averages = getTotalUserAverage();
 
         return GetAverageResponseDTO.builder()
-            .sympathy(averages.get("sympathy"))
-            .listening(averages.get("listening"))
-            .expression(averages.get("expression"))
-            .problemSolving(averages.get("problem_solving"))
-            .conflictResolution(averages.get("conflict_resolution"))
-            .leadership(averages.get("leadership"))
+            .sympathy(new ScoreData(descriptionMap.get("sympathy").getName(), averages.get("sympathy")))
+            .listening(new ScoreData(descriptionMap.get("listening").getName(), averages.get("listening")))
+            .expression(new ScoreData(descriptionMap.get("expression").getName(), averages.get("expression")))
+            .problemSolving(new ScoreData(descriptionMap.get("problem_solving").getName(), averages.get("problem_solving")))
+            .conflictResolution(new ScoreData(descriptionMap.get("conflict_resolution").getName(), averages.get("conflict_resolution")))
+            .leadership(new ScoreData(descriptionMap.get("leadership").getName(), averages.get("leadership")))
+            .minScore(1)
+            .maxScore(5)
             .build();
     }
 }
