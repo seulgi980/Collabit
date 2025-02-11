@@ -4,7 +4,13 @@ import { useAuth } from "@/features/auth/api/useAuth";
 import { ChartRangeData, SkillData } from "@/shared/types/response/report";
 import { Badge } from "@/shared/ui/badge";
 
-const HexagonSection = ({ data }: { data: ChartRangeData & SkillData }) => {
+const HexagonSection = ({
+  data,
+  type,
+}: {
+  data: ChartRangeData & SkillData;
+  type: "project" | "report";
+}) => {
   const {
     listening,
     sympathy,
@@ -46,10 +52,12 @@ const HexagonSection = ({ data }: { data: ChartRangeData & SkillData }) => {
 
   return (
     <div>
-      <ReportTitle
-        title="전체 역량 분석"
-        description={`동료들이 평가한 점수를 기반으로 ${userInfo?.nickname}님의 협업 역량을 분석하였습니다.`}
-      />
+      {type === "report" && (
+        <ReportTitle
+          title="전체 역량 분석"
+          description={`동료들이 평가한 점수를 기반으로 ${userInfo?.nickname}님의 협업 역량을 분석하였습니다.`}
+        />
+      )}
       <div className="grid grid-cols-2 justify-center gap-2 md:grid-cols-6 md:grid-rows-1">
         {hexagonItems.map(({ key, name, description }) => (
           <div

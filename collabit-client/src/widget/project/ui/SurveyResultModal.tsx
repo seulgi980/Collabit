@@ -46,7 +46,7 @@ const SurveyResultModal = ({
           </DialogDescription>
 
           <div className="flex flex-col gap-4">
-            <HexagonSection data={hexagon} />
+            <HexagonSection data={hexagon} type="project" />
           </div>
         </DialogContent>
       </DialogPortal>

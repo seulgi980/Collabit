@@ -1,6 +1,7 @@
 import {
   getPortfolioAISummaryAPI,
   getPortfolioChartAPI,
+  getPortfolioStatusAPI,
   getPortfolioTimelineChartAPI,
   getPortfolioWordCloudAPI,
 } from "@/shared/api/report";
@@ -13,6 +14,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 const useReport = () => {
+  const { data: reportStatus } = useQuery<ReportStatusResponse, Error>({
+    queryKey: ["reportStatus"],
+    queryFn: () => getPortfolioStatusAPI(),
+  });
+
   const { data: report } = useQuery<ChartResponse, Error>({
     queryKey: ["report"],
     queryFn: () => getPortfolioChartAPI(),
