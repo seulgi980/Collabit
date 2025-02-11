@@ -3,6 +3,7 @@ from database.mongodb import mongodb
 from services.chat_service import chat_service
 import json
 from collections import Counter
+from auth.jwt_handler import decode_jwt_from_cookie
 
 
 summary_bp = Blueprint('summary', __name__)
@@ -11,11 +12,9 @@ summary_bp = Blueprint('summary', __name__)
 @summary_bp.route("/ai/portfolio/essay/wordcloud", methods=["GET"])
 def get_wordcloud():
   try:
-    # Get user_code from JWT
-    user_code = "57b6a621-9e43-4389-83b7-249b7b5ab929"
-    # decode_jwt_from_cookie()
+    user_code = decode_jwt_from_cookie()
+    print(user_code)
 
-    # 데이터 가져오기
     summaries = list(mongodb.summary_collection.find({"user_code": user_code}))
 
     strength_keywords = []
@@ -24,10 +23,8 @@ def get_wordcloud():
     # 각 문서에서 키워드 추출
     for summary in summaries:
       for analysis in summary.get('sentiment_analysis', []):
-        # 키워드 문자열을 리스트로 변환
         keywords = [k.strip() for k in analysis['keyword'].split(',')]
 
-        # sensitive 값에 따라 키워드 분류
         if analysis['sensitive'] == 'positive':
           strength_keywords.extend(keywords)
         elif analysis['sensitive'] == 'negative':
@@ -37,11 +34,38 @@ def get_wordcloud():
     strength_counter = Counter(strength_keywords)
     weakness_counter = Counter(weakness_keywords)
 
-    # 워드클라우드 형식으로 변환
-    strength_cloud = [{"text": word, "value": count}
-                      for word, count in strength_counter.items()]
-    weakness_cloud = [{"text": word, "value": count}
-                      for word, count in weakness_counter.items()]
+    def normalize_word_cloud(counter, top_n=20, min_value=8, max_value=25):
+      # 상위 20개 선택
+      most_common = counter.most_common(top_n)
+
+      if not most_common:  # 결과가 없는 경우 빈 리스트 반환
+        return []
+
+      # 최소/최대 빈도수 찾기
+      min_count = min(count for _, count in most_common)
+      max_count = max(count for _, count in most_common)
+
+      # 정규화된 워드클라우드 데이터 생성
+      normalized = []
+      for word, count in most_common:
+        # min_count와 max_count가 같은 경우 (모든 단어의 빈도수가 동일할 때)
+        if min_count == max_count:
+          normalized_value = (min_value + max_value) / 2
+        else:
+          # min-max 정규화 공식을 사용하여 8-25 사이의 값으로 변환
+          normalized_value = (count - min_count) / (max_count - min_count) * (
+                max_value - min_value) + min_value
+
+        normalized.append({
+          "text": word,
+          "value": round(normalized_value, 1)  # 소수점 첫째자리까지 표현
+        })
+
+      return normalized
+
+    # 정규화된 워드클라우드 데이터 생성
+    strength_cloud = normalize_word_cloud(strength_counter)
+    weakness_cloud = normalize_word_cloud(weakness_counter)
 
     return jsonify({
       "strength": strength_cloud,
@@ -54,8 +78,7 @@ def get_wordcloud():
 @summary_bp.route("/ai/portfolio", methods=["POST"])
 def get_ai_summary():
     try:
-      user_code = "57b6a621-9e43-4389-83b7-249b7b5ab929"
-      # decode_jwt_from_cookie()
+      user_code = decode_jwt_from_cookie()
 
       summaries = list(
         mongodb.summary_collection.find({"user_code": user_code}))
@@ -104,8 +127,7 @@ def get_ai_summary():
 @summary_bp.route("/ai/portfolio/essay/ai-summary", methods=["GET"])
 def get_summary():
   try:
-    user_code = "57b6a621-9e43-4389-83b7-249b7b5ab929"
-    # decode_jwt_from_cookie()
+    user_code = decode_jwt_from_cookie()
 
     summary = mongodb.ai_analysis.find_one(
         {"user_code": user_code},
