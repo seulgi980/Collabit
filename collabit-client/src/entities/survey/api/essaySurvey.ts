@@ -1,17 +1,17 @@
+import { EssayStatus } from "@/features/survey/ui/SurveyRoom";
+
 interface StreamResponse {
-  status: "completed" | "incompleted";
+  status: "completed" | "incompleted" | "pending";
   timestamp: string;
   response: string;
 }
-
-type StreamStatus = "PENDING" | "STREAMING" | "COMPLETED" | "ERROR";
 
 interface EssaySurveyAPIProps {
   surveyCode: number;
   body: string;
   api: (surveyCode: number, body: string) => Promise<Response>;
   setState: (state: string | ((prevState: string) => string)) => void;
-  setStatus: (status: StreamStatus) => void;
+  setStatus: (status: EssayStatus) => void;
 }
 
 const essaySurveyAPI = async ({
@@ -22,8 +22,7 @@ const essaySurveyAPI = async ({
   setStatus,
 }: EssaySurveyAPIProps) => {
   try {
-    console.log(body);
-
+    // 처음엔 READY, 통신중에는 STREAMING, 저장중엔 SAVING, 완료하면 COMPLETED
     setStatus("PENDING");
     const response = await api(surveyCode, body);
 
@@ -32,13 +31,12 @@ const essaySurveyAPI = async ({
       throw new Error("스트림 리더를 생성할 수 없습니다");
     }
 
-    setStatus("STREAMING");
     const decoder = new TextDecoder();
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) {
-        setStatus("COMPLETED");
+        setStatus("PROGRESSING");
         break;
       }
 
@@ -53,7 +51,9 @@ const essaySurveyAPI = async ({
             console.log(data);
 
             setState((prevState) => prevState + data.response);
-
+            if (data.status === "pending") {
+              setStatus("SAVING");
+            }
             // status가 completed이면 스트림 종료
             if (data.status === "completed") {
               setStatus("COMPLETED");

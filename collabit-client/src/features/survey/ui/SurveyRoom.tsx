@@ -16,9 +16,19 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import useSendMultipleAnswer from "../api/useSendMultipleAnswer";
 import essaySurveyAPI from "@/entities/survey/api/essaySurvey";
-
+import useModalStore from "@/shared/lib/stores/modalStore";
+import LoadingModal from "@/widget/ui/modals/LoadingModal";
+import { AIChatResponse } from "@/shared/types/response/survey";
+export type EssayStatus =
+  | "PENDING"
+  | "COMPLETED"
+  | "ERROR"
+  | "SAVING"
+  | "PROGRESSING"
+  | "READY";
 const SurveyRoom = ({ id }: { id: number }) => {
   const { userInfo } = useAuth();
+  const { openModal, closeModal } = useModalStore();
 
   /* 초기 디테일 데이터 불러오기 */
   const setId = useSurveyStore((state) => state.setId);
@@ -30,8 +40,6 @@ const SurveyRoom = ({ id }: { id: number }) => {
     (state) => state.surveyMultipleResponse,
   );
   const multipleAnswers = useSurveyStore((state) => state.multipleAnswers);
-  console.log(surveyMultipleResponse);
-  console.log(surveyEssayResponse);
 
   // 디테일 스토어 업데이트
   useEffect(() => {
@@ -65,22 +73,21 @@ const SurveyRoom = ({ id }: { id: number }) => {
     }
   };
 
-  type EssayMessage = {
-    role: "assistant" | "user";
-    content: string;
-    timestamp?: string;
-  };
   // 주관식 설문 시작
   const [inputMessage, setInputMessage] = useState("");
-  const [essayMessageList, setEssayMessageList] = useState<EssayMessage[]>([]);
-
+  const [essayMessageList, setEssayMessageList] = useState<AIChatResponse[]>(
+    [],
+  );
+  const [activeInput, setActiveInput] = useState(false);
   const [currentMessage, setCurrentMessage] = useState("");
-  const [essayStatus, setEssayStatus] = useState<
-    "READY" | "PENDING" | "STREAMING" | "COMPLETED" | "ERROR"
-  >("READY");
+  const [essayStatus, setEssayStatus] = useState<EssayStatus>("READY");
   const handleSendButton = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (essayStatus === "STREAMING" || essayStatus === "PENDING") {
+    if (
+      essayStatus === "PENDING" ||
+      essayStatus === "SAVING" ||
+      essayStatus === "COMPLETED"
+    ) {
       return;
     }
 
@@ -102,14 +109,30 @@ const SurveyRoom = ({ id }: { id: number }) => {
       setStatus: setEssayStatus,
     });
   };
+  useEffect(() => {
+    if (essayStatus === "SAVING") {
+      openModal(<LoadingModal context="AI가 설문을 분석하고 있어요." />);
+    } else {
+      closeModal();
+    }
+  }, [essayStatus, openModal, closeModal]);
+  useEffect(() => {
+    if (surveyEssayResponse) {
+      setEssayStatus("COMPLETED");
+      setEssayMessageList(surveyEssayResponse);
+      console.log(surveyEssayResponse);
+    }
+  }, [surveyEssayResponse, essayStatus]);
 
   const handleEndMultiple = async () => {
     setCurrentStep((prev) => prev + 1);
-    sendMultipleAnswer({
-      surveyCode: id,
-      answer: multipleAnswers,
-    });
-
+    if (!surveyMultipleResponse && multipleAnswers.length === 24) {
+      sendMultipleAnswer({
+        surveyCode: id,
+        answer: multipleAnswers,
+      });
+    }
+    setActiveInput(true);
     await essaySurveyAPI({
       surveyCode: id,
       body: surveyDetail?.nickname as string,
@@ -133,9 +156,7 @@ const SurveyRoom = ({ id }: { id: number }) => {
       <div className="flex h-full w-full flex-col-reverse overflow-y-auto bg-white px-2 md:h-[calc(100vh-256px)] md:px-4 md:py-3">
         <div className="flex flex-col-reverse gap-6">
           {/* 주관식 설문 실시간 메시지 */}
-          {(essayStatus === "STREAMING" ||
-            essayStatus === "COMPLETED" ||
-            essayStatus === "PENDING") && (
+          {(essayStatus === "PROGRESSING" || essayStatus === "PENDING") && (
             <SurveyBubble
               isMe={false}
               message={currentMessage}
@@ -169,7 +190,11 @@ const SurveyRoom = ({ id }: { id: number }) => {
                 isLoading={false}
                 component={
                   <Button
-                    disabled={currentStep > 24 || !!surveyEssayResponse}
+                    disabled={
+                      currentStep > 24 ||
+                      !!surveyEssayResponse ||
+                      essayStatus != "READY"
+                    }
                     className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
                     onClick={handleEndMultiple}
                   >
@@ -283,7 +308,9 @@ const SurveyRoom = ({ id }: { id: number }) => {
         </div>
       </div>
       <ChatInput
-        disabled={currentStep < 25}
+        disabled={
+          !activeInput || essayStatus === "READY" || essayStatus === "COMPLETED"
+        }
         message={inputMessage}
         setInputMessage={setInputMessage}
         handleSendMessage={handleSendButton}

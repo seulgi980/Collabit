@@ -28,7 +28,7 @@ export interface SurveyMultipleResponse {
   submittedAt: string;
 }
 export interface AIChatResponse {
-  role: string;
+  role: "assistant" | "user";
   content: string;
-  timestamp: string;
+  timestamp?: string;
 }

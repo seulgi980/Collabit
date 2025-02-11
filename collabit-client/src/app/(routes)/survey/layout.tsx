@@ -64,6 +64,8 @@ const SurveyLayout = ({
         profileImage: surveyDetail.profileImage,
         title: surveyDetail.title,
       };
+      console.log(surveyDetail);
+
       setSurveyDetail(detail);
       setSurveyEssayResponse(surveyDetail.surveyEssayResponse?.messages);
       setSurveyMultipleResponse(surveyDetail.surveyMultipleResponse?.scores);
