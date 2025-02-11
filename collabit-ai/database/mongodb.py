@@ -4,6 +4,18 @@ from datetime import datetime
 
 class MongoDB:
     def __init__(self):
+        dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
+        dns.resolver.default_resolver.nameservers = ['8.8.8.8', '8.8.4.4']
+
+        # 연결 옵션 설정
+        connection_options = {
+            'serverSelectionTimeoutMS': 5000,
+            'connectTimeoutMS': 10000,
+            'tlsCAFile': certifi.where(),
+            'retryWrites': True,
+            'w': 'majority'
+        }
+
         try:
             self.client = MongoClient(MONGODB_URI)
             self.db = self.client['mydatabase']
