@@ -3,9 +3,6 @@
 import CompareScoreSection from "@/features/main/CompareScoreSection";
 import HotIssueSection from "@/features/main/HotIssueSection";
 import MyProjectSection from "@/features/main/MyProjectSection";
-import { getProjectListAPI } from "@/shared/api/project";
-import { ProjectListResponse } from "@/shared/types/response/project";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { useEffect } from "react";
@@ -13,21 +10,9 @@ import { useEffect } from "react";
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
 
-  const keyword = "";
-  const sort = "";
-
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  const { data: projects } = useQuery<ProjectListResponse>({
-    queryKey: ["projectList", keyword, sort],
-    queryFn: () => getProjectListAPI({ keyword, sort }),
-  });
-
-  const projectList: ProjectListResponse = Array.isArray(projects)
-    ? projects
-    : [];
 
   if (!isMounted) return null;
 
@@ -38,9 +23,7 @@ export default function Home() {
         확인하세요.
       </h2>
       <CompareScoreSection />
-
       <MyProjectSection />
-
       <HotIssueSection />
     </div>
   );
