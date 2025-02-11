@@ -1,5 +1,10 @@
 package com.collabit.project.service;
 
+import com.collabit.portfolio.domain.dto.ScoreData;
+import com.collabit.portfolio.domain.entity.Description;
+import com.collabit.portfolio.domain.entity.Feedback;
+import com.collabit.portfolio.repository.DescriptionRepository;
+import com.collabit.portfolio.repository.FeedbackRepository;
 import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
 import com.collabit.project.exception.ProjectInfoNotFoundException;
@@ -91,6 +96,13 @@ public class ProjectService {
         else {
             log.debug("기존 프로젝트 발견 - projectCode: {}, title: {}, organization: {}",
                     project.getCode(), project.getTitle(), project.getOrganization());
+
+            // 기존에 있던 organization 이미지 변경이 발생한 경우 이미지 업데이트
+            if(!project.getOrganizationImage().equals(createProjectRequestDTO.getOrganizationImage())) {
+                project.updateOrganizationImage(createProjectRequestDTO.getOrganizationImage());
+                project = projectRepository.save(project);
+                log.debug("기존 프로젝트의 organization 이미지 업데이트");
+            }
         }
 
         // 3. ProjectInfo 저장
@@ -119,6 +131,12 @@ public class ProjectService {
 
             // 로그인 user는 해당 projectInfo의 contributor로 저장하지 않음
             if(contributorDetailDTO.getGithubId().equals(user.getGithubId())){
+                // 기존에 있던 contributor의 프로필 이미지 변경이 발생한 경우 이미지 업데이트
+                if(!contributorDetailDTO.getProfileImage().equals(user.getProfileImage())) {
+                    user.updateProfileImage(contributorDetailDTO.getProfileImage());
+                    userRepository.save(user);
+                    log.debug("기존 contributor의 프로필 이미지 업데이트");
+                }
                 continue;
             }
 
@@ -253,8 +271,11 @@ public class ProjectService {
                             .build();
                 })
                 .collect(Collectors.toList());
+        log.info("로그인 유저의 전체 프로젝트 목록 조회 완료 - 조회된 organization 수: {}", result.size());
 
-        log.info("프로젝트 목록 조회 완료 - 조회된 organization 수: {}", result.size());
+        removeAllNotification(userCode);
+        log.debug("전체 목록 조회 시 Redis의 모든 알림 정보를 삭제 완료");
+
         return result;
     }
 
@@ -301,7 +322,7 @@ public class ProjectService {
         }
 
         // Redis에 남아있는 알림 정보, 업데이트 되지 않은 참여자 업데이트
-        removeNotification(userCode, projectInfoCode);
+        removeAllNotification(userCode);
 
         // 설문조사 마감 시간 업데이트
         log.debug("해당 프로젝트 설문조사 마감 시작 - 현재 completedAt: {}", (Object) null);
@@ -506,25 +527,6 @@ public class ProjectService {
         log.debug("Redis에 알림이 있던 전체 projectInfo {}개에 대해 participant 수 업데이트 완료", notificationList.size());
     }
 
-    // 해당 프로젝트의 알림만 삭제
-    public void removeNotification(String userCode, int projectInfoCode){
-        log.debug("특정 프로젝트 알림 삭제 시작");
-
-        // Redis에서 특정 프로젝트 알림 삭제하며 값 가져오기
-        Object value = projectRedisService.removeNotificationByUserCodeAndProjectCode(userCode, projectInfoCode);
-
-        if (value != null) {
-            projectInfoRepository.findById(projectInfoCode) // projectInfo 조회
-                    .ifPresent(info -> {
-                        // Redis에서 가져온 값으로 participant 수 업데이트
-                        info.increaseParticipant(((Number) value).intValue());
-                        projectInfoRepository.save(info);
-                        log.debug("ProjectInfo(code: {}) participant 수 업데이트 완료: {}",
-                                projectInfoCode, value);
-                    });
-        }
-    }
-
     // 육각형 데이터 조회
     public GetHexagonResponseDTO getHexagonGraph(int projectInfoCode) {
         // 개인 역량별 평균 계산
@@ -651,21 +653,22 @@ public class ProjectService {
         return calculateAverageScores(totalScores, participant);
     }
 
-    // 각 projectInfo 5점 평균 계산 후 이름만 매핑해서 반환 (포트폴리오에서 사용)
-    public Map<String, Double> getProjectInfoAverageWithName(int projectInfoCode) {
+    // 각 projectInfo 5점 평균 계산 후 코드에 이름, 점수 매핑해서 반환 (포트폴리오에서 사용)
+    public Map<String, ScoreData> getProjectInfoAverageWithName(int projectInfoCode) {
         Map<String, Double> scores = getProjectInfoAverage(projectInfoCode);
-        return mapCodeToName(scores);
+        return mapToNameAndValue(scores);
     }
 
-    // name과 5점 평균 매핑 (포트폴리오에서 사용)
-    private Map<String, Double> mapCodeToName(Map<String, Double> scores) {
+    // code에 name과 5점 평균 매핑 (포트폴리오에서 사용)
+    private Map<String, ScoreData> mapToNameAndValue(Map<String, Double> scores) {
         Map<String, Description> descriptionMap = descriptionRepository.findAll().stream()
                 .collect(Collectors.toMap(Description::getCode, desc -> desc));
 
-        return scores.entrySet().stream()
-                .collect(Collectors.toMap(
-                        entry -> descriptionMap.get(entry.getKey()).getName(),
-                        Map.Entry::getValue
-                ));
+        Map<String, ScoreData> result = new HashMap<>();
+        scores.forEach((key, value) -> {
+            result.put(key, new ScoreData(descriptionMap.get(key).getName(), value));
+        });
+
+        return result;
     }
 }

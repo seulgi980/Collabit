@@ -1,6 +1,7 @@
-package com.collabit.project.repository;
+package com.collabit.portfolio.repository;
 
-import com.collabit.project.domain.entity.Feedback;
+import com.collabit.portfolio.domain.entity.Feedback;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
