@@ -8,6 +8,7 @@ import {
 import {
   AISummaryResponse,
   ChartResponse,
+  ReportStatusResponse,
   TimelineResponse,
   WordCloudResponse,
 } from "@/shared/types/response/report";
@@ -39,7 +40,7 @@ const useReport = () => {
     queryFn: () => getPortfolioTimelineChartAPI(),
   });
 
-  return { report, wordCloud, summary, timeline };
+  return { reportStatus, report, wordCloud, summary, timeline };
 };
 
 export default useReport;

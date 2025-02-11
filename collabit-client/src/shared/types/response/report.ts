@@ -49,3 +49,15 @@ export type Timeline = SkillData & {
 export type TimelineResponse = ChartRangeData & {
   timeline: Timeline[];
 };
+
+export type ReportStatusResponse = {
+  totalParticipant: number;
+  exist: boolean;
+  update: boolean;
+};
+
+export type ReportInfoResponse = {
+  nickname: string;
+  participant: number;
+  project: number;
+};

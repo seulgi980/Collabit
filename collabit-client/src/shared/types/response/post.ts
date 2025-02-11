@@ -19,3 +19,7 @@ export type PostDetailResponse = Pick<
   likes: number;
   isLiked: boolean;
 };
+
+export type RecommendPostsResponse = {
+  posts: Post[];
+};

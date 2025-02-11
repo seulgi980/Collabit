@@ -12,6 +12,10 @@ import HistoryRateSection from "@/features/report/ui/HistoryRateSection";
 import ProgressSection from "@/features/report/ui/ProgressSection";
 import HexagonSection from "@/features/report/ui/HexagonSection";
 import useReport from "@/features/report/api/useReport";
+import {
+  createPortfolioFlaskAPI,
+  createPortfolioSpringAPI,
+} from "@/shared/api/report";
 
 export default function Page() {
   const { toast } = useToast();
@@ -20,8 +24,9 @@ export default function Page() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [reportData, setReportData] = useState<any>(null);
 
-  const { report, wordCloud, summary, timeline } = useReport();
+  const { reportStatus, report, wordCloud, summary, timeline } = useReport();
 
+  const [isExist, setIsExist] = useState(reportStatus?.exist);
   const [loading, setLoading] = useState(false);
   console.log(loading);
 
@@ -29,13 +34,18 @@ export default function Page() {
     setLoading(true);
     openModal(<LoadingModal context="AI가 리포트를 생성하고 있어요." />);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      setReportData(mockData);
-      toast({
-        title: "리포트가 생성되었습니다!",
-        description: "최신 결과를 확인하세요.",
-      });
-      closeModal();
+      const springResponse = await createPortfolioSpringAPI();
+      const flaskResponse = await createPortfolioFlaskAPI();
+
+      if (springResponse.ok && flaskResponse.ok) {
+        toast({
+          title: "리포트가 생성되었습니다!",
+          description: "최신 결과를 확인하세요.",
+        });
+        closeModal();
+      } else {
+        throw new Error("리포트 생성에 실패했습니다.");
+      }
     } catch {
       toast({ title: "오류 발생", description: "리포트 생성에 실패했습니다." });
     } finally {
@@ -43,12 +53,12 @@ export default function Page() {
     }
   };
 
-  if (!reportData) {
+  if (!isExist) {
     return (
       <NoReport
         handleGenerateReport={handleGenerateReport}
-        currentCount={6} // 실제 데이터로 교체 필요
-        requiredCount={5} // 실제 데이터로 교체 필요
+        currentCount={reportStatus?.totalParticipant}
+        requiredCount={5}
       />
     );
   }
