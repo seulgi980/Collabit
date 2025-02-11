@@ -88,23 +88,6 @@ public class ProjectController {
         return ResponseEntity.ok().build();
     }
 
-    @Operation(summary = "프로젝트 알림 조회", description = "설문응답 알림을 확인할 경우 Redis의 알림 정보를 삭제하는 API 입니다. " +
-            "ProjectInfoCode가 param으로 들어올 경우 해당 프로젝트의 알림만 삭제됩니다.")
-    @DeleteMapping("/notification")
-    public ResponseEntity<?> deleteProjectNotification(@RequestParam(required = false) Integer code) {
-        String userCode = SecurityUtil.getCurrentUserCode();
-
-        if(code == null){
-            projectService.removeAllNotification(userCode);
-        }
-        else{
-            projectService.removeNotification(userCode, code);
-        }
-        log.debug("프로젝트 알림 삭제 완료");
-
-        return ResponseEntity.ok().build();
-    }
-
     @Operation(summary = "프로젝트별 결과의 육각형 그래프 조회", description = "프로젝트별 결과 모달창의 육각형 그래프를 조회하는 API 입니다.")
     @GetMapping("/graph/hexagon/{code}")
     public ResponseEntity<?> getHexagonGraph(@PathVariable int code) {
