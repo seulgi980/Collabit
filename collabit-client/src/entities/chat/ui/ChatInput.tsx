@@ -3,7 +3,7 @@ import { Textarea } from "@/shared/ui/textarea";
 import { SendIcon } from "lucide-react";
 
 interface ChatInputProps {
-  disabled: boolean;
+  disabled?: boolean;
   message: string;
   setInputMessage: (message: string) => void;
   handleSendMessage: (e: React.FormEvent<HTMLFormElement>) => void;
