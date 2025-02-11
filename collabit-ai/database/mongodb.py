@@ -1,6 +1,9 @@
 from pymongo import MongoClient
 from config.settings import MONGODB_URI
 from datetime import datetime
+import certifi
+import dns.resolver
+
 
 class MongoDB:
     def __init__(self):
