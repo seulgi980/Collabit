@@ -181,7 +181,7 @@ public class PostService {
 
         return GetPostResponseDTO.builder()
             .code(post.getCode())
-            .userNickname(user.getNickname())
+            .userNickname(post.getUser().getNickname())
             .content(post.getContent())
             .createdAt(post.getCreatedAt())
             .updatedAt(post.getUpdatedAt())
