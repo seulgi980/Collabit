@@ -27,17 +27,17 @@ export type ChartResponse = {
 
 export type WordWeight = {
   text: string;
-  weight: number;
+  value: number;
 };
 
 export type WordCloudResponse = {
-  positive: WordWeight[];
-  negative: WordWeight[];
+  strength: WordWeight[];
+  weakness: WordWeight[];
 };
 
 export type AISummaryResponse = {
-  positive: string;
-  negative: string;
+  strength: string;
+  weakness: string;
 };
 
 export type Timeline = SkillData & {

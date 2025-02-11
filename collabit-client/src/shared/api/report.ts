@@ -9,7 +9,7 @@ import {
 } from "../types/response/report";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-const flaskUrl = process.env.NEXT_PUBLIC_FLASK_URL;
+const flaskUrl = process.env.NEXT_PUBLIC_AI_URL;
 
 const fetchOptions = {
   credentials: "include" as RequestCredentials,
@@ -86,7 +86,7 @@ export const getPortfolioInfoAPI = async (): Promise<ReportInfoResponse> => {
 
 export const getPortfolioChartAPI = async (): Promise<ChartResponse> => {
   try {
-    const res = await fetch(`${apiUrl}/portfolio/multiple/chart`, {
+    const res = await fetch(`${apiUrl}/portfolio/multiple/graph`, {
       method: "GET",
       ...fetchOptions,
     });
@@ -127,6 +127,7 @@ export const getPortfolioWordCloudAPI =
       if (!res.ok) {
         throw new Error("워드클라우드 조회에 실패했습니다.");
       }
+      console.log(res.json());
       return res.json();
     } catch (error) {
       console.error(error);
