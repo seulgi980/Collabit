@@ -1,4 +1,3 @@
-import { RecommendPostsResponse } from "../types/response/post";
 import {
   AISummaryResponse,
   ChartResponse,
@@ -7,7 +6,6 @@ import {
   TimelineResponse,
   WordCloudResponse,
 } from "../types/response/report";
-
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const flaskUrl = process.env.NEXT_PUBLIC_AI_URL;
 
@@ -144,23 +142,6 @@ export const getPortfolioAISummaryAPI =
       });
       if (!res.ok) {
         throw new Error("AI 요약 조회에 실패했습니다.");
-      }
-      return res.json();
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
-export const getReportRecommendPostsAPI =
-  async (): Promise<RecommendPostsResponse> => {
-    try {
-      const res = await fetch(`${apiUrl}/portfolio/recommend`, {
-        method: "GET",
-        ...fetchOptions,
-      });
-      if (!res.ok) {
-        throw new Error("추천 게시글 조회에 실패했습니다.");
       }
       return res.json();
     } catch (error) {

@@ -13,7 +13,6 @@ import MainCommunityCard from "./MainComminityCard";
 import { useQuery } from "@tanstack/react-query";
 import {
   getMainPostAPI,
-  getPostListAPI,
   getRecommendPostAPI,
 } from "@/shared/api/community";
 
