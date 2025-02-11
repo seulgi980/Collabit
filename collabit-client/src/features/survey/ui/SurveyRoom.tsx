@@ -25,6 +25,7 @@ export type EssayStatus =
   | "ERROR"
   | "SAVING"
   | "PROGRESSING"
+  | "STREAMING"
   | "READY";
 const SurveyRoom = ({ id }: { id: number }) => {
   const { userInfo } = useAuth();
@@ -40,11 +41,13 @@ const SurveyRoom = ({ id }: { id: number }) => {
     (state) => state.surveyMultipleResponse,
   );
   const multipleAnswers = useSurveyStore((state) => state.multipleAnswers);
+  const resetAnswers = useSurveyStore((state) => state.resetAnswers);
 
   // 디테일 스토어 업데이트
   useEffect(() => {
+    resetAnswers();
     setId(id);
-  }, [id, setId]);
+  }, [id, setId, resetAnswers]);
 
   /* 설문 스텝 관리 */
   const [currentStep, setCurrentStep] = useState(-1);
@@ -115,31 +118,49 @@ const SurveyRoom = ({ id }: { id: number }) => {
     } else {
       closeModal();
     }
-  }, [essayStatus, openModal, closeModal]);
+  }, [essayStatus, openModal, closeModal, id]);
   useEffect(() => {
+    console.log("surveyEssayResponse : ", surveyEssayResponse);
+
     if (surveyEssayResponse) {
       setEssayStatus("COMPLETED");
       setEssayMessageList(surveyEssayResponse);
-      console.log(surveyEssayResponse);
+    } else {
+      setEssayStatus("READY");
+      setEssayMessageList([]);
     }
-  }, [surveyEssayResponse, essayStatus]);
+  }, [surveyEssayResponse, id]);
 
   const handleEndMultiple = async () => {
     setCurrentStep((prev) => prev + 1);
-    if (!surveyMultipleResponse && multipleAnswers.length === 24) {
-      sendMultipleAnswer({
+
+    try {
+      // 객관식 답변 제출이 필요한 경우
+      if (!surveyMultipleResponse && multipleAnswers.length === 24) {
+        await sendMultipleAnswer({
+          surveyCode: id,
+          answer: multipleAnswers,
+        });
+      }
+
+      // 객관식 답변 제출이 완료된 후에 주관식 설문 시작
+      setActiveInput(true);
+
+      // essaySurveyAPI를 Promise를 반환하도록 수정하고 await 추가
+      await essaySurveyAPI({
         surveyCode: id,
-        answer: multipleAnswers,
+        body: surveyDetail?.nickname as string,
+        api: startEssaySurveyAPI,
+        setState: setCurrentMessage,
+        setStatus: setEssayStatus,
       });
+
+      // 상태 업데이트 완료 후에 로그 출력
+      console.log("essayStatus : ", essayStatus);
+      console.log("currentMessage : ", currentMessage);
+    } catch (error) {
+      console.error("Error in handleEndMultiple:", error);
     }
-    setActiveInput(true);
-    await essaySurveyAPI({
-      surveyCode: id,
-      body: surveyDetail?.nickname as string,
-      api: startEssaySurveyAPI,
-      setState: setCurrentMessage,
-      setStatus: setEssayStatus,
-    });
   };
 
   // 유저 정보가 없거나 디테일이 없으면 렌더링 안함
@@ -156,7 +177,10 @@ const SurveyRoom = ({ id }: { id: number }) => {
       <div className="flex h-full w-full flex-col-reverse overflow-y-auto bg-white px-2 md:h-[calc(100vh-256px)] md:px-4 md:py-3">
         <div className="flex flex-col-reverse gap-6">
           {/* 주관식 설문 실시간 메시지 */}
-          {(essayStatus === "PROGRESSING" || essayStatus === "PENDING") && (
+          {(essayStatus === "PROGRESSING" ||
+            essayStatus === "PENDING" ||
+            essayStatus === "STREAMING" ||
+            essayStatus === "SAVING") && (
             <SurveyBubble
               isMe={false}
               message={currentMessage}
@@ -181,28 +205,27 @@ const SurveyRoom = ({ id }: { id: number }) => {
           </div>
           {/*객관식 마지막 메시지 */}
 
-          {currentStep >= 24 ||
-            (surveyMultipleResponse && (
-              <SurveyBubble
-                isMe={false}
-                message={`감사합니다! ${userInfo.nickname}님의 이야기를 들으니까 ${surveyDetail?.nickname}님이 어떤 사람인지는 조금 알 것 같아요. \n\n 이제 더 구체적으로 알고 싶은데, 대화로 알려주시겠어요? (지금 나가시면 피드백이 완료되지 않아요!)`}
-                animation={currentStep === 24}
-                isLoading={false}
-                component={
-                  <Button
-                    disabled={
-                      currentStep > 24 ||
-                      !!surveyEssayResponse ||
-                      essayStatus != "READY"
-                    }
-                    className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
-                    onClick={handleEndMultiple}
-                  >
-                    대화 시작하기
-                  </Button>
-                }
-              />
-            ))}
+          {(currentStep >= 24 || surveyMultipleResponse) && (
+            <SurveyBubble
+              isMe={false}
+              message={`감사합니다! ${userInfo.nickname}님의 이야기를 들으니까 ${surveyDetail?.nickname}님이 어떤 사람인지는 조금 알 것 같아요. \n\n 이제 더 구체적으로 알고 싶은데, 대화로 알려주시겠어요? (지금 나가시면 피드백이 완료되지 않아요!)`}
+              animation={currentStep === 24}
+              isLoading={false}
+              component={
+                <Button
+                  disabled={
+                    currentStep > 24 ||
+                    !!surveyEssayResponse ||
+                    essayStatus != "READY"
+                  }
+                  className="duration-900 animate-in fade-in-0 slide-in-from-bottom-4"
+                  onClick={handleEndMultiple}
+                >
+                  대화 시작하기
+                </Button>
+              }
+            />
+          )}
           {/* 우선 스텝에 따른 챗봇의 메세지 렌더링 */}
 
           {!surveyMultipleResponse ? ( // 객관식 설문한 적이 없으면면

@@ -49,8 +49,9 @@ const essaySurveyAPI = async ({
             const jsonStr = line.replace("data: ", "");
             const data: StreamResponse = JSON.parse(jsonStr);
             console.log(data);
-
+            setStatus("STREAMING");
             setState((prevState) => prevState + data.response);
+
             if (data.status === "pending") {
               setStatus("SAVING");
             }

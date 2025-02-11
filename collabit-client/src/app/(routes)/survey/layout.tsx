@@ -40,7 +40,7 @@ const SurveyLayout = ({
     if (!isLoading && !isAuthenticated) {
       router.push("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, router, id]);
 
   // 리스트 렌더링 쿼리
   const { data } = useQuery({
@@ -64,16 +64,17 @@ const SurveyLayout = ({
         profileImage: surveyDetail.profileImage,
         title: surveyDetail.title,
       };
-      console.log(surveyDetail);
+      console.log("surveyDetail:", surveyDetail);
+      console.log("messages:", surveyDetail.surveyEssayResponse?.messages);
 
       setSurveyDetail(detail);
       setSurveyEssayResponse(surveyDetail.surveyEssayResponse?.messages);
       setSurveyMultipleResponse(surveyDetail.surveyMultipleResponse?.scores);
     }
   }, [
+    id,
     surveyDetail,
     setSurveyDetail,
-    id,
     setSurveyEssayResponse,
     setSurveyMultipleResponse,
   ]);
