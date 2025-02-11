@@ -44,24 +44,13 @@ public class JwtFilter extends OncePerRequestFilter {
     // JWT 토큰 인증 정보 검증후, SecurityContext 에 검증된 인증 정보 저장
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String requestURI = request.getRequestURI();
-        log.debug("Request URI: {}", requestURI);
 
         // request header 에서 토큰 추출
         String accessToken = resolveToken(request);
         log.debug("JWT token: {}", accessToken);
 
         try {
-            if(accessToken == null) {
-                // auth 관련 API는 토큰이 없으므로 검증 x
-                if (requestURI.startsWith("/api/auth/login") || requestURI.startsWith("/api/auth/sign-up")) {
-                    log.debug("JWT 필터 적용 제외: {}", requestURI);
-                    filterChain.doFilter(request, response);
-                } else {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Token이 없습니다.");
-                    return;
-                }
-            } else {
+            if(accessToken != null) {
                 // 블랙리스트 조회 (토큰이 블랙리스트에 있으면 즉시 차단)
                 if (redisTemplate.hasKey("blacklist:" + accessToken)) {
                     log.debug("블랙리스트 토큰 감지! Access denied.");
@@ -77,8 +66,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 Authentication authentication = tokenProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                filterChain.doFilter(request, response);
             }
+
+            filterChain.doFilter(request, response);
         } catch (ExpiredJwtException e) {
             log.debug("Access Token 만료됨. Refresh Token으로 재발급 시도");
 
