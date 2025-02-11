@@ -15,6 +15,9 @@ import com.collabit.project.repository.ProjectInfoRepository;
 import com.collabit.project.repository.TotalScoreRepository;
 import com.collabit.project.service.ProjectService;
 import java.time.LocalDateTime;
+
+import com.collabit.user.exception.UserNotFoundException;
+import com.collabit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,8 +34,9 @@ public class PortfolioService {
     private final DescriptionRepository descriptionRepository;
     private final FeedbackRepository feedbackRepository;
     private final TotalScoreRepository totalScoreRepository;
-    private final ProjectService projectService;
     private final PortfolioRepository portfolioRepository;
+    private final UserRepository userRepository;
+    private final ProjectService projectService;
 
     private final int MIN_PEOPLE_COUNT = 6;
 
@@ -311,7 +315,7 @@ public class PortfolioService {
     @Transactional
     public void generatePortfolio(String userCode) {
         Portfolio portfolio = portfolioRepository.findByUserCode(userCode)
-            .orElse(null);
+                .orElse(null);
 
         // 포트폴리오 참여자 수
         List<ProjectInfo> completedProjectList = projectInfoRepository.findByUser_CodeAndCompletedAtIsNotNull(userCode);
@@ -322,11 +326,15 @@ public class PortfolioService {
             throw new RuntimeException("포트폴리오를 생성할 수 없는 상태입니다.");
         }
 
-        if(portfolio==null) portfolio = new Portfolio();
+        if (portfolio == null) portfolio = new Portfolio();
+
+        LocalDateTime lastUpdatedAt = (portfolio.getUpdatedAt() != null)
+                ? portfolio.getUpdatedAt()
+                : LocalDateTime.of(2025,1,1,0,0,0);
 
         List<ProjectInfo> newProjectInfos = projectInfoRepository.findAllByUserCodeAndCompletedAtAfter(
-            userCode,
-            portfolio.getUpdatedAt() != null ? portfolio.getUpdatedAt() : LocalDateTime.MIN
+                userCode,
+                lastUpdatedAt
         );
 
         if (!newProjectInfos.isEmpty()) {
@@ -344,18 +352,21 @@ public class PortfolioService {
                 totalParticipants += info.getParticipant();
             }
 
-            portfolio.update(
-                userCode,
-                totalProjects,
-                totalParticipants,
-                totalScores.getOrDefault("sympathy", 0L),
-                totalScores.getOrDefault("listening", 0L),
-                totalScores.getOrDefault("expression", 0L),
-                totalScores.getOrDefault("problemSolving", 0L),
-                totalScores.getOrDefault("conflictResolution", 0L),
-                totalScores.getOrDefault("leadership", 0L),
-                LocalDateTime.now()
-            );
+            portfolio = Portfolio.builder()
+                    .user(userRepository.findById(userCode)
+                            .orElseThrow(UserNotFoundException::new))
+                    .userCode(userCode)
+                    .project(totalProjects)
+                    .participant(totalParticipants)
+                    .sympathy(totalScores.getOrDefault("sympathy", 0L))
+                    .listening(totalScores.getOrDefault("listening", 0L))
+                    .conflictResolution(totalScores.getOrDefault("conflictResolution", 0L))
+                    .expression(totalScores.getOrDefault("expression", 0L))
+                    .problemSolving(totalScores.getOrDefault("problemSolving", 0L))
+                    .leadership(totalScores.getOrDefault("leadership", 0L))
+                    .isUpdate(true)
+                    .updatedAt(LocalDateTime.now())
+                    .build();
 
             portfolioRepository.save(portfolio);
         }
