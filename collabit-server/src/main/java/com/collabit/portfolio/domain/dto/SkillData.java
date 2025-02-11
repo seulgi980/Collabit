@@ -4,10 +4,12 @@ import lombok.*;
 
 @AllArgsConstructor
 @Builder
-@ToString
 @NoArgsConstructor
 @Getter
-public class ScoreDTO {
+public class SkillData {
     private String name;
     private double score;
+    private String feedback;
+    private String description;
+    private boolean isPositive;
 }

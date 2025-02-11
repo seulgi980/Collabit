@@ -9,9 +9,8 @@ import java.util.List;
 @ToString
 @NoArgsConstructor
 @Getter
-public class MultipleTimelineResponseDTO {
-    private List<TimelineDataDTO> timeline;
-
+public class GetTimelineResponseDTO {
+    private List<TimelineData> timeline;
     private int minScore;
     private int maxScore;
 }

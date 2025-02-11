@@ -2,6 +2,7 @@ package com.collabit.community.service;
 
 import com.collabit.community.exception.ImageCountExceededException;
 import com.collabit.community.exception.PostNotFoundException;
+import com.collabit.community.repository.CommentRepository;
 import com.collabit.global.service.S3Service;
 import com.collabit.community.domain.dto.CreatePostRequestDTO;
 import com.collabit.community.domain.dto.CreatePostResponseDTO;
@@ -36,6 +37,7 @@ public class PostService {
     private final LikeCacheService likeCacheService;
 
     private static final String DIR_NAME = "posts";
+    private final CommentRepository commentRepository;
 
     @Transactional
     public CreatePostResponseDTO createPost(String userCode, CreatePostRequestDTO requestDTO) {

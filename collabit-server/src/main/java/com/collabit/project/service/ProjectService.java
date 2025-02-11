@@ -1,5 +1,6 @@
 package com.collabit.project.service;
 
+import com.collabit.portfolio.domain.dto.ScoreData;
 import com.collabit.portfolio.domain.entity.Description;
 import com.collabit.portfolio.domain.entity.Feedback;
 import com.collabit.portfolio.repository.DescriptionRepository;
@@ -652,21 +653,22 @@ public class ProjectService {
         return calculateAverageScores(totalScores, participant);
     }
 
-    // 각 projectInfo 5점 평균 계산 후 이름만 매핑해서 반환 (포트폴리오에서 사용)
-    public Map<String, Double> getProjectInfoAverageWithName(int projectInfoCode) {
+    // 각 projectInfo 5점 평균 계산 후 코드에 이름, 점수 매핑해서 반환 (포트폴리오에서 사용)
+    public Map<String, ScoreData> getProjectInfoAverageWithName(int projectInfoCode) {
         Map<String, Double> scores = getProjectInfoAverage(projectInfoCode);
-        return mapCodeToName(scores);
+        return mapToNameAndValue(scores);
     }
 
-    // name과 5점 평균 매핑 (포트폴리오에서 사용)
-    private Map<String, Double> mapCodeToName(Map<String, Double> scores) {
+    // code에 name과 5점 평균 매핑 (포트폴리오에서 사용)
+    private Map<String, ScoreData> mapToNameAndValue(Map<String, Double> scores) {
         Map<String, Description> descriptionMap = descriptionRepository.findAll().stream()
                 .collect(Collectors.toMap(Description::getCode, desc -> desc));
 
-        return scores.entrySet().stream()
-                .collect(Collectors.toMap(
-                        entry -> descriptionMap.get(entry.getKey()).getName(),
-                        Map.Entry::getValue
-                ));
+        Map<String, ScoreData> result = new HashMap<>();
+        scores.forEach((key, value) -> {
+            result.put(key, new ScoreData(descriptionMap.get(key).getName(), value));
+        });
+
+        return result;
     }
 }
