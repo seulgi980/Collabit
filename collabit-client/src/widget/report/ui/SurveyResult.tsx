@@ -1,3 +1,4 @@
+import PostCarouselSection from "@/features/community/ui/PostCarouselSection";
 import useReport from "@/features/report/api/useReport";
 import AISummarySection from "@/features/report/ui/AISummarySection";
 import CloudSection from "@/features/report/ui/CloudSection";
@@ -27,7 +28,7 @@ const SurveyResult = () => {
         />
       )}
       {timeline && <HistoryRateSection history={timeline} />}
-      {/* <CommunityCard post={mockData[0]} /> */}
+      <PostCarouselSection type="recommend" />
     </div>
   );
 };

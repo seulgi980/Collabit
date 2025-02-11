@@ -57,7 +57,7 @@ const HistoryRateSection = ({ history }: HistoryRateSectionProps) => {
   };
 
   const data = {
-    labels: timeline.map((project) => project.projectName),
+    labels: [...new Set(timeline.map((project) => project.projectName))],
     datasets: Object.keys(timeline[0])
       .filter(
         (key) =>
@@ -66,13 +66,18 @@ const HistoryRateSection = ({ history }: HistoryRateSectionProps) => {
           key !== "completedAt",
       )
       .map((key) => ({
-        label: (timeline[0][key as keyof SkillData] as Skill).name,
-        data: timeline.map(
-          (project) => (project[key as keyof SkillData] as Skill)?.score ?? 0,
-        ),
+        label: (timeline[0][key] as keyof SkillData as unknown as Skill).name,
+        data: [
+          ...timeline.map(
+            (project) =>
+              (project[key] as keyof SkillData as unknown as Skill)?.score ||
+              null,
+          ),
+        ],
         borderColor: skillColors[key] || "gray",
         backgroundColor: skillColors[key] || "gray",
         tension: 0.3,
+        spanGaps: true,
       })),
   };
 

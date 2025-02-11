@@ -1,11 +1,11 @@
 "use client";
 
 import CompareScoreSection from "@/features/main/CompareScoreSection";
-import HotIssueSection from "@/features/main/HotIssueSection";
 import MyProjectSection from "@/features/main/MyProjectSection";
 import { useState } from "react";
 
 import { useEffect } from "react";
+import PostCarouselSection from "@/features/community/ui/PostCarouselSection";
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
@@ -24,7 +24,7 @@ export default function Home() {
       </h2>
       <CompareScoreSection />
       <MyProjectSection />
-      <HotIssueSection />
+      <PostCarouselSection type="latest" />
     </div>
   );
 }
