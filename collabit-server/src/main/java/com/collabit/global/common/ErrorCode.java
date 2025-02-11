@@ -20,6 +20,9 @@ public enum ErrorCode {
     // 403 Forbidden (인가 실패)
     ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 
+    // 404 Not Found
+    DATA_NOT_FOUND(HttpStatus.NOT_FOUND, "데이터를 찾을 수 없습니다."),
+
     // 500 Internal Server Error (예상하지 못한 예외)
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
 
@@ -29,7 +32,12 @@ public enum ErrorCode {
 
     // 409 Conflict (중복)
     EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 이메일입니다."),
-    NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 닉네임입니다.");
+    NICKNAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 등록된 닉네임입니다."),
+
+    // =========== portfolio ===========
+    SURVEY_NOT_CLOSED(HttpStatus.BAD_REQUEST, "설문이 마감되지 않아 프로젝트 결과를 조회할 수 없습니다."),
+    PROJECT_INFO_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 프로젝트 정보를 찾을 수 없습니다."),
+    FEEDBACK_NOT_FOUND(HttpStatus.NOT_FOUND, "해당되는 피드백 정보를 찾을 수 없습니다.");
 
     // =========== Business ===========
 
