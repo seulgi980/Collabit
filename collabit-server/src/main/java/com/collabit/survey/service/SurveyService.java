@@ -2,12 +2,14 @@ package com.collabit.survey.service;
 
 import com.collabit.project.domain.entity.ProjectContributor;
 import com.collabit.project.domain.entity.ProjectInfo;
+import com.collabit.project.exception.ProjectInfoNotFoundException;
 import com.collabit.project.repository.ProjectContributorRepository;
 import com.collabit.project.repository.ProjectInfoRepository;
 import com.collabit.survey.domain.dto.*;
 import com.collabit.survey.domain.entity.SurveyEssay;
 import com.collabit.survey.domain.entity.SurveyQuestion;
 import com.collabit.survey.domain.entity.SurveyMultiple;
+import com.collabit.survey.exception.SurveyAuthorizationException;
 import com.collabit.survey.exception.SurveyMessageDecodingException;
 import com.collabit.survey.repository.SurveyMultipleRepository;
 import com.collabit.survey.repository.SurveyQuestionRepository;
@@ -110,6 +112,32 @@ public class SurveyService {
 
     // 객관식 설문 결과 저장하기
     public void saveResponse(String userCode, int projectInfoCode, List<Integer> scores) {
+        User user = userRepository.findByCode(userCode).orElseThrow(() -> {
+            log.debug("User not found");
+            return new UserNotFoundException();
+        });
+        log.debug("User GithubID: " + user.getGithubId());
+
+        log.debug("projectInfoCode로 contributorsGithubId 조회");
+        ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
+        if(projectInfo == null) {
+            log.error("해당 ProjectInfo를 찾을 수 없습니다.");
+            throw new ProjectInfoNotFoundException();
+        }
+        List<String> contributorsGithubId = projectContributorRepository.findByProjectCodeAndProjectInfoCodeLessThanEqual(projectInfo.getProject().getCode(), projectInfoCode);
+        log.debug("contributorsGithubId: " + contributorsGithubId.toString());
+
+        if(!contributorsGithubId.contains(user.getGithubId())) {
+            log.debug("User is not Contributors");
+            throw new SurveyAuthorizationException();
+        }
+
+        log.debug("객관식 설문 조회");
+        SurveyMultiple multiple = getMultiple(userCode, projectInfoCode);
+        if (multiple != null) {
+            throw new RuntimeException("이미 응답한 설문입니다.");
+        }
+
         SurveyMultiple surveyMultiple = SurveyMultiple.builder()
                 .projectInfoCode(projectInfoCode)
                 .userCode(userCode)
@@ -145,7 +173,6 @@ public class SurveyService {
     //주관식 설문 답변 조회하기
     public SurveyEssayResponseDTO getEssayResponse(String userCode, int projectInfoCode) {
         SurveyEssay essay = getEssay(userCode, projectInfoCode);
-        System.out.println(essay);
 
         if (essay == null) {
             return null;
@@ -183,14 +210,27 @@ public class SurveyService {
     public SurveyDetailResponseDTO getSurveyDetail(String userCode, int projectInfoCode) {
         log.debug("설문조사 상세조회 시작");
 
-        ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
+        User user = userRepository.findByCode(userCode).orElseThrow(() -> {
+            log.debug("User not found");
+            return new UserNotFoundException();
+        });
+        log.debug("User GithubID: " + user.getGithubId());
 
+        log.debug("projectInfoCode로 contributorsGithubId 조회");
+        ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
         if(projectInfo == null) {
             log.error("해당 ProjectInfo를 찾을 수 없습니다.");
-            throw new RuntimeException("해당 프로젝트 정보를 찾을 수 없습니다.");
+            throw new ProjectInfoNotFoundException();
+        }
+        List<String> contributorsGithubId = projectContributorRepository.findByProjectCodeAndProjectInfoCodeLessThanEqual(projectInfo.getProject().getCode(), projectInfoCode);
+        log.debug("contributorsGithubId: " + contributorsGithubId.toString());
+
+        if(!contributorsGithubId.contains(user.getGithubId())) {
+            log.debug("User is not Contributors");
+            throw new SurveyAuthorizationException();
         }
 
-        log.debug("조회한 projectInfo: {}", projectInfo.toString());
+        log.debug("조회한 projectInfo: {}", projectInfo);
 
         return SurveyDetailResponseDTO.builder()
                 .nickname(projectInfo.getUser().getNickname())
