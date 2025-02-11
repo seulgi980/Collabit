@@ -16,6 +16,7 @@ import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +40,8 @@ public class ProjectService {
     private final PortfolioRepository portfolioRepository;
     private final FeedbackRepository feedbackRepository;
 
-    private final int MIN_PEOPLE_COUNT = 1;
+    @Value("${minimum.create.condition}")
+    private int minimumCreateCondition;
 
     // User 검증 메소드
     private User findUserByCode(String userCode) {
@@ -369,11 +371,11 @@ public class ProjectService {
     public boolean canUpdatePortfolio(Portfolio portfolio, int participant) {
         boolean isUpdate = false;
         // 포트폴리오가 아직 생성 전이면 6명 이상인지 확인
-        if(portfolio == null && participant >= MIN_PEOPLE_COUNT){
+        if(portfolio == null && participant >= minimumCreateCondition){
             isUpdate = true;
         }
         // 포트폴리오가 이미 생성되었다면 포트폴리오 테이블의 isUpdate도 확인
-        else if(portfolio != null && portfolio.getIsUpdate() && participant >= MIN_PEOPLE_COUNT){
+        else if(portfolio != null && portfolio.getIsUpdate() && participant >= minimumCreateCondition){
             isUpdate = true;
         }
         return isUpdate;
