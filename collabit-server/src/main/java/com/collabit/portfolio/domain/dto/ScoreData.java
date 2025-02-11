@@ -4,13 +4,10 @@ import lombok.*;
 
 @AllArgsConstructor
 @Builder
+@ToString
 @NoArgsConstructor
 @Getter
-public class HexagonDataDTO {
+public class ScoreData {
     private String name;
     private double score;
-    private double total;
-    private String feedback;
-    private String description;
-    private boolean isPositive;
 }
