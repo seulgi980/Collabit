@@ -25,7 +25,7 @@ export const createPortfolioSpringAPI = async () => {
     if (!res.ok) {
       throw new Error("포트폴리오 생성에 실패했습니다.");
     }
-    return res.json();
+    return res;
   } catch (error) {
     console.error(error);
     throw error;
@@ -41,7 +41,7 @@ export const createPortfolioFlaskAPI = async () => {
     if (!res.ok) {
       throw new Error("포트폴리오 생성에 실패했습니다.");
     }
-    return res.json();
+    return res;
   } catch (error) {
     console.error(error);
     throw error;
@@ -125,7 +125,6 @@ export const getPortfolioWordCloudAPI =
       if (!res.ok) {
         throw new Error("워드클라우드 조회에 실패했습니다.");
       }
-      console.log(res.json());
       return res.json();
     } catch (error) {
       console.error(error);
