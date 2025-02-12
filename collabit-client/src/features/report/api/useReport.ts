@@ -26,7 +26,6 @@ const useReport = () => {
     enabled: !!reportStatus?.exist,
   });
 
-  
   const fetchReportPDF = async ({
     queryKey,
   }: {
@@ -36,17 +35,17 @@ const useReport = () => {
     return getPortfolioShareAPI(hashedValue as string);
   };
 
-  const { data: reportPDF } = useQuery<ChartResponse, Error>({
-    queryKey: ["reportPDF", hashedValue],
-    queryFn: () => fetchReportPDF({ queryKey: ["reportPDF", hashedValue] }),
-    enabled: !!reportStatus?.exist && !!hashedValue,
-  });
+  // const { data: reportPDF } = useQuery<ChartResponse, Error>({
+  //   queryKey: ["reportPDF", hashedValue],
+  //   queryFn: () => fetchReportPDF({ queryKey: ["reportPDF", hashedValue] }),
+  //   enabled: !!reportStatus?.exist && !!hashedValue,
+  // });
 
   if (!report)
     return {
       reportStatusLoading,
       reportStatus,
-      reportPDF,
+      // reportPDF,
     };
 
   const { hexagon, progress, wordCloud, aiSummary, timeline, portfolioInfo } =
@@ -61,7 +60,7 @@ const useReport = () => {
     aiSummary,
     timeline,
     portfolioInfo,
-    reportPDF,
+    // reportPDF,
   };
 };
 
