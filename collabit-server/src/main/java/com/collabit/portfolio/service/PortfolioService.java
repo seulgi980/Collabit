@@ -377,7 +377,7 @@ public class PortfolioService {
                     .expression(totalScores.getOrDefault("expression", 0L))
                     .problemSolving(totalScores.getOrDefault("problemSolving", 0L))
                     .leadership(totalScores.getOrDefault("leadership", 0L))
-                    .isUpdate(true)
+                    .isUpdate(false)
                     .updatedAt(LocalDateTime.now())
                     .build();
 
