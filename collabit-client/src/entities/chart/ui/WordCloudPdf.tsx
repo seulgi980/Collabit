@@ -20,7 +20,7 @@ interface WordCloudProps {
   type: "strength" | "weakness";
 }
 
-const WordCloud = ({ words, type }: WordCloudProps) => {
+const WordCloudPdf = ({ words, type }: WordCloudProps) => {
   const [isClientLoaded, setIsClientLoaded] = useState(false);
 
   useEffect(() => {
@@ -58,23 +58,22 @@ const WordCloud = ({ words, type }: WordCloudProps) => {
       "#FFCDD2",
     ], // Soft Pink],
   };
-
   const chartData = {
     type: "wordcloud",
     options: {
       words: words.map((word) => ({
         text: word.text,
         weight: word.value,
-        fontSize: word.value,
+        fontSize: word.value * 0.8,
         color: colors[type][Math.floor(Math.random() * colors[type].length)],
       })),
     },
   };
   return (
-    <div className="h-[200px] w-full rounded border">
+    <div className="h-[150px] w-full rounded border">
       <ZingChart width="100%" height="100%" data={chartData} output="svg" />
     </div>
   );
 };
 
-export default WordCloud;
+export default WordCloudPdf;
