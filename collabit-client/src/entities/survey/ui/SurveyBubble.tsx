@@ -78,7 +78,7 @@ const SurveyBubble = ({
             />
           ) : (
             <>
-              <span className="text-sm md:text-base">
+              <span className="block whitespace-pre-wrap break-all text-sm md:text-base">
                 {animation ? displayedText : message}
               </span>
               {(!animation || !isTyping) && showComponent && component}
