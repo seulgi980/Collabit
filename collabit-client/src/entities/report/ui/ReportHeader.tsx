@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useRef, useState, useEffect } from "react";
 import { useAuth } from "@/features/auth/api/useAuth";
 import { Button } from "@/shared/ui/button";
 import { Share, RefreshCw } from "lucide-react";
@@ -17,19 +18,37 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { FileDown, Link2 } from "lucide-react";
 import useReport from "@/features/report/api/useReport";
+import hashUser from "@/shared/utils/hashUser";
+import ReportPDF from "@/widget/report/ui/ReportPDF";
 
 const ReportHeader = () => {
   const { userInfo } = useAuth();
-
   const { reportInfo } = useReport();
+  const reportPDFRef = useRef<{ handleDownloadPDF: () => void } | null>(null);
+  const [shareUrl, setShareUrl] = useState<string>("");
 
-  const handlePdfShare = () => {
-    console.log("pdf share");
+  useEffect(() => {
+    const fetchHashedValue = async () => {
+      if (userInfo?.githubId) {
+        try {
+          const hashedValue = await hashUser(userInfo.githubId);
+          const shareUrl = `${process.env.NEXT_PUBLIC_SHARE_URL}/${hashedValue}`;
+          setShareUrl(shareUrl);
+        } catch (error) {
+          console.error("Hashing failed:", error);
+        }
+      }
+    };
+    fetchHashedValue();
+  }, [userInfo]);
+
+  const handleDownloadPDF = () => {
+    console.log("📄 PDF 다운로드 요청...");
+    reportPDFRef.current?.handleDownloadPDF();
   };
 
   const handleCopyLink = () => {
-    const currentUrl = window.location.href;
-    navigator.clipboard.writeText(currentUrl);
+    navigator.clipboard.writeText(shareUrl);
   };
 
   const handleRefresh = () => {
@@ -84,7 +103,7 @@ const ReportHeader = () => {
               </TooltipContent>
             </Tooltip>
             <DropdownMenuContent>
-              <DropdownMenuItem onClick={handlePdfShare}>
+              <DropdownMenuItem onClick={handleDownloadPDF}>
                 <FileDown className="mr-2 h-4 w-4" />
                 PDF로 저장하기
               </DropdownMenuItem>
@@ -96,6 +115,7 @@ const ReportHeader = () => {
           </DropdownMenu>
         </TooltipProvider>
       </div>
+      <ReportPDF ref={reportPDFRef} shareUrl={shareUrl} />
     </div>
   );
 };

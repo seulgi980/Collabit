@@ -1,20 +1,35 @@
-"use client";
-
-import React, { useRef, useState } from "react";
-import html2pdf from "html2pdf.js";
 import ReportPDFHeader from "@/entities/report/ui/ReportPDFHeader";
-import useReport from "@/features/report/api/useReport";
 import ScorePdfSection from "@/features/pdf/ui/ScorePdfSection";
+import { useImperativeHandle, useRef } from "react";
+import useReport from "@/features/report/api/useReport";
+import html2pdf from "html2pdf.js";
+import { forwardRef } from "react";
+import CloudPdfSection from "@/features/pdf/ui/CloudPdfSection";
+import AISummaryPdfSection from "@/features/pdf/ui/AISummaryPdfSection";
+import { useToast } from "@/shared/hooks/use-toast";
 
-function ReportPDF() {
+interface ReportPDFProps {
+  shareUrl: string;
+}
+
+const ReportPDF = forwardRef(({ shareUrl }: ReportPDFProps, ref) => {
+  const { report, wordCloud, summary } = useReport();
   const contentRef = useRef<HTMLDivElement>(null);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const { report } = useReport();
+  const { toast } = useToast();
 
-  // ✅ 실시간 PDF 미리보기 업데이트 함수
-  const updatePreviewPDF = () => {
+  useImperativeHandle(ref, () => ({ handleDownloadPDF }));
+  const handleDownloadPDF = () => {
+    console.log("📄 PDF 다운로드 요청 중...");
+    console.log("📄 contentRef.current:", contentRef.current);
+
     const element = contentRef.current;
-    if (!element) return;
+    if (!element) {
+      toast({
+        title: "PDF 다운로드 실패",
+        description: "PDF 파일 다운로드에 실패했습니다.",
+      });
+      return;
+    }
 
     const options = {
       filename: "report.pdf",
@@ -26,53 +41,55 @@ function ReportPDF() {
         backgroundColor: null,
       },
       jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      pagebreak: { mode: "css" },
     };
 
     html2pdf()
       .set(options)
       .from(element)
-      .output("bloburi") // ✅ PDF를 Blob URL로 변환
-      .then((pdfBlobUrl) => {
-        setPdfUrl(pdfBlobUrl); // ✅ Blob URL을 상태에 저장 → iframe에서 미리보기 가능
-      });
+      .save()
+      .then(() => {
+        toast({
+          title: "PDF 다운로드 완료",
+          description: "PDF 파일이 다운로드되었습니다.",
+        });
+      })
+      .catch(() =>
+        toast({
+          title: "PDF 다운로드 실패",
+          description: "PDF 파일 다운로드에 실패했습니다.",
+        }),
+      );
   };
-
-  // ✅ report가 변경될 때마다 자동으로 미리보기 업데이트
-  // useEffect(() => {
-  //   updatePreviewPDF();
-  // }, [report]);
-
   return (
-    <div className="flex flex-col gap-4 bg-[#f8f8f8] p-5">
-      <button
-        onClick={updatePreviewPDF}
-        className="cursor-pointer rounded bg-[#0070f3] px-4 py-2 text-white"
-      >
-        미리보기 업데이트
-      </button>
-
-      {pdfUrl && (
-        <iframe
-          src={pdfUrl}
-          className="h-[500px] w-full rounded-lg border border-gray-300 shadow"
-        />
-      )}
-
+    <div className="absolute left-[-9999px]">
       <div
         ref={contentRef}
-        className="mx-auto h-[297mm] w-[210mm] bg-white p-10"
+        className=" mx-auto h-[287mm] w-[200mm] bg-white p-[5mm]"
       >
-        <ReportPDFHeader />
+        <ReportPDFHeader shareUrl={shareUrl} />
         {report?.hexagon && report?.progress && (
           <ScorePdfSection
             hexagon={report?.hexagon}
             progress={report?.progress}
           />
         )}
+        {wordCloud && (
+          <CloudPdfSection
+            strength={wordCloud.strength}
+            weakness={wordCloud.weakness}
+          />
+        )}
+        {summary && (
+          <AISummaryPdfSection
+            strength={summary.strength}
+            weakness={summary.weakness}
+          />
+        )}
       </div>
     </div>
   );
-}
+});
+
+ReportPDF.displayName = "ReportPDF";
 
 export default ReportPDF;
