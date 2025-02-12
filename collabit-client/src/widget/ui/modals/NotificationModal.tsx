@@ -2,19 +2,19 @@ import useModalStore from "@/shared/lib/stores/modalStore";
 import { Button } from "@/shared/ui/button";
 import { X } from "lucide-react";
 
-interface OneButtonModalProps {
+interface NotificationModalProps {
   title: string;
   description: string;
   buttonText: string;
   handleButtonClick: () => void;
 }
 
-const OneButtonModal = ({
+const NotificationModal = ({
   title,
   description,
   buttonText,
   handleButtonClick,
-}: OneButtonModalProps) => {
+}: NotificationModalProps) => {
   const closeModal = useModalStore((state) => state.closeModal);
   return (
     <>
@@ -40,11 +40,11 @@ const OneButtonModal = ({
         >
           <X />
         </Button>
-        <div className="flex flex-col items-center justify-center gap-1 px-6">
+        <div className="flex flex-col items-center justify-center gap-5 px-6">
           <h1 id="modal-title" className="text-xl font-bold text-gray-800">
             {title}
           </h1>
-          <p className="whitespace-pre text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-gray-600 whitespace-pre-line">
             {description}
           </p>
         </div>
@@ -62,4 +62,4 @@ const OneButtonModal = ({
   );
 };
 
-export default OneButtonModal;
+export default NotificationModal;
