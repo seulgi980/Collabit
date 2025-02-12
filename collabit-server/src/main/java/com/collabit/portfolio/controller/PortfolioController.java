@@ -67,7 +67,7 @@ public class PortfolioController {
         return ResponseEntity.ok().body(responseDTO);
     }
 
-    @Operation(summary = "유저 리포트 데이터 조회", description = "유저 리포트 페이지에 들어갈 데이터를 조회하는 API입니다.")
+    @Operation(summary = "개인용 리포트 데이터 조회", description = "개인용(로그인 유저, PDF) 리포트 페이지에 들어갈 데이터를 조회하는 API입니다.")
     @GetMapping("/data")
     public ResponseEntity<GetAllPortfolioResponseDTO> getPortfolioData() {
         String userCode = SecurityUtil.getCurrentUserCode();
@@ -75,9 +75,9 @@ public class PortfolioController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @Operation(summary = "PDF용 포트폴리오 데이터 조회", description = "PDF에 들어갈 데이터를 조회하는 API입니다.")
+    @Operation(summary = "공개용 포트폴리오 데이터 조회", description = "공개용 포트폴리오 들어갈 데이터를 조회하는 API입니다.")
     @GetMapping("/share/{githubId}")
-    public ResponseEntity<GetAllPortfolioResponseDTO> getPDFData(@PathVariable String githubId) {
+    public ResponseEntity<GetAllPortfolioResponseDTO> getOpenPortfolioData(@PathVariable String githubId) {
         String decodedGithubId = portfolioService.decodeGithubId(githubId); // 해싱된 닉네임 decode
         GetAllPortfolioResponseDTO responseDTO = portfolioService.getAllPortfolioByGithubId(decodedGithubId);
         return ResponseEntity.ok(responseDTO);
