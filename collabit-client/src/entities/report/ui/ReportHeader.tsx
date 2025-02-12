@@ -23,7 +23,7 @@ import ReportPDF from "@/widget/report/ui/ReportPDF";
 
 const ReportHeader = () => {
   const { userInfo } = useAuth();
-  const { reportInfo } = useReport();
+  const { portfolioInfo } = useReport();
   const reportPDFRef = useRef<{ handleDownloadPDF: () => void } | null>(null);
   const [shareUrl, setShareUrl] = useState<string>("");
 
@@ -65,13 +65,13 @@ const ReportHeader = () => {
           <p className="text-sm">
             <span>참여인원 </span>
             <span className="font-semibold text-violet-500">
-              {reportInfo?.participant}명
+              {portfolioInfo?.participant}명
             </span>
           </p>
           <p className="text-sm">
             <span>프로젝트 </span>
             <span className="font-semibold text-violet-500">
-              {reportInfo?.project}회
+              {portfolioInfo?.project}회
             </span>
           </p>
         </div>

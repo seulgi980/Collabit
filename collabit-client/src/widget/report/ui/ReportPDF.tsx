@@ -13,7 +13,7 @@ interface ReportPDFProps {
 }
 
 const ReportPDF = forwardRef(({ shareUrl }: ReportPDFProps, ref) => {
-  const { report, wordCloud, summary } = useReport();
+  const { hexagon, progress, wordCloud, aiSummary } = useReport();
   const contentRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -64,14 +64,11 @@ const ReportPDF = forwardRef(({ shareUrl }: ReportPDFProps, ref) => {
     <div className="absolute left-[-9999px]">
       <div
         ref={contentRef}
-        className=" mx-auto h-[287mm] w-[200mm] bg-white p-[5mm]"
+        className="mx-auto h-[287mm] w-[200mm] bg-white p-[5mm]"
       >
         <ReportPDFHeader shareUrl={shareUrl} />
-        {report?.hexagon && report?.progress && (
-          <ScorePdfSection
-            hexagon={report?.hexagon}
-            progress={report?.progress}
-          />
+        {hexagon && progress && (
+          <ScorePdfSection hexagon={hexagon} progress={progress} />
         )}
         {wordCloud && (
           <CloudPdfSection
@@ -79,10 +76,10 @@ const ReportPDF = forwardRef(({ shareUrl }: ReportPDFProps, ref) => {
             weakness={wordCloud.weakness}
           />
         )}
-        {summary && (
+        {aiSummary && (
           <AISummaryPdfSection
-            strength={summary.strength}
-            weakness={summary.weakness}
+            strength={aiSummary.strength}
+            weakness={aiSummary.weakness}
           />
         )}
       </div>
