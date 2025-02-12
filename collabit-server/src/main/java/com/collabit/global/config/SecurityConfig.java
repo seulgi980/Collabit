@@ -1,5 +1,6 @@
 package com.collabit.global.config;
 
+import com.collabit.auth.service.AuthService;
 import com.collabit.global.security.JwtAccessDeniedHandler;
 import com.collabit.global.security.JwtAuthenticationEntryPoint;
 import com.collabit.global.security.JwtFilter;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -25,24 +27,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final TokenProvider tokenProvider;
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-    private final RedisTemplate<String, Object> redisTemplate;
-
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final JwtFilter jwtFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, RedisTemplate<String, Object> redisTemplate) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable) // csrf 비활성화 (JWT, OAUTH 사용할거라 필요 없음)
+            .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/api/user/sign-up","/api/user/login", "/api/auth/**", "/error", "/api/user/**", "/api/survey/**").permitAll();
                 auth.requestMatchers("/api/oauth").anonymous(); // oauth 회원가입, 로그인의 경우 토큰이 있는 사용자 거부
@@ -54,7 +57,7 @@ public class SecurityConfig {
                 auth.anyRequest().authenticated();
             })
             .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class) // cors필터 추가
-            .addFilterBefore(new JwtFilter(tokenProvider, redisTemplate), UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // jwt검증 필터 추가
 
             // exception handling 할 때 우리가 만든 클래스 추가
             .exceptionHandling((exceptionHandling) ->
@@ -78,9 +81,18 @@ public class SecurityConfig {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         response.setContentType("application/json;charset=UTF-8");
                         response.getWriter().write("OAuth 로그인 실패: " + exception.getMessage());
-                    })
-            );
-
+                    }
+            ))
+            .logout((logout) -> logout
+                .logoutUrl("/api/auth/logout")
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"message\": \"로그아웃 성공\"}");
+                })
+                .deleteCookies("JSESSIONID", "accessToken", "refreshToken")
+            )
+            ;
         return http.build();
     }
 
