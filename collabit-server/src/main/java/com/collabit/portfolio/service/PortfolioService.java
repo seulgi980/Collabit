@@ -54,9 +54,6 @@ public class PortfolioService {
     private final ProjectService projectService;
     private final MongoTemplate mongoTemplate;
 
-    @Value("${public.hash.secret.key}")
-    private String secretKey;
-
     public GetMultipleHexagonProgressResponseDTO getHexagonAndProgressbarGraph(String userCode) {
 
         // 개인 역량별 평균 계산
