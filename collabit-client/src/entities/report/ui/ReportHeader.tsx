@@ -21,9 +21,9 @@ import useReport from "@/features/report/api/useReport";
 import hashUser from "@/shared/utils/hashUser";
 import ReportPDF from "@/widget/report/ui/ReportPDF";
 
-const ReportHeader = () => {
+const ReportHeader = ({ handleRefresh }: { handleRefresh: () => void }) => {
   const { userInfo } = useAuth();
-  const { portfolioInfo } = useReport();
+  const { portfolioInfo, reportStatus } = useReport();
   const reportPDFRef = useRef<{ handleDownloadPDF: () => void } | null>(null);
   const [shareUrl, setShareUrl] = useState<string>("");
 
@@ -43,16 +43,11 @@ const ReportHeader = () => {
   }, [userInfo]);
 
   const handleDownloadPDF = () => {
-    console.log("📄 PDF 다운로드 요청...");
     reportPDFRef.current?.handleDownloadPDF();
   };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
-  };
-
-  const handleRefresh = () => {
-    console.log("refresh");
   };
 
   return (
@@ -80,9 +75,11 @@ const ReportHeader = () => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleRefresh}>
-                <RefreshCw className="h-4 w-4 text-gray-600" />
-              </Button>
+              {reportStatus?.update && (
+                <Button variant="ghost" size="icon" onClick={handleRefresh}>
+                  <RefreshCw className="h-4 w-4 text-gray-600" />
+                </Button>
+              )}
             </TooltipTrigger>
             <TooltipContent>
               <p>새로고침</p>

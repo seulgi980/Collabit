@@ -61,7 +61,7 @@ export default function Page() {
     <div className="mx-auto mb-20 mt-5 w-full p-4 md:max-w-5xl">
       {isExist && reportStatus ? (
         <>
-          <ReportHeader />
+          <ReportHeader handleRefresh={handleGenerateReport} />
           <SurveyResult />
         </>
       ) : (
