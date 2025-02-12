@@ -78,15 +78,19 @@ export const logoutAPI = async () => {
   });
   return res;
 };
-
+	
 export const loginCredentialAPI = async (body: LoginRequest) => {
+  const formData = new URLSearchParams();
+  formData.append("email", body.email);
+  formData.append("password", body.password);
+
   const res = await fetch(`${apiUrl}/auth/login`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
     },
     credentials: "include",
-    body: JSON.stringify(body),
+    body: formData.toString(),
   });
 
   const data = await res.json();
