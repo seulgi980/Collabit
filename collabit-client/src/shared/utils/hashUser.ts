@@ -1,20 +1,14 @@
-import * as jose from "jose";
+import CryptoJS from "crypto-js";
 
-const hashUser = async (user: string) => {
+const hashUser = (user: string) => {
   const hashSecretKey = process.env.NEXT_PUBLIC_HASH_SECRET_KEY;
   if (!hashSecretKey) {
     throw new Error("HASH_SECRET_KEY is not defined");
   }
 
-  // 직접 secret key를 사용
-  const encoder = new TextEncoder();
-  const secretKey = encoder.encode(hashSecretKey);
-
-  const hashedUser = await new jose.CompactSign(encoder.encode(user))
-    .setProtectedHeader({ alg: "HS256" })
-    .sign(secretKey);
-
-  return hashedUser;
+  // AES 암호화 수행
+  const encrypted = CryptoJS.AES.encrypt(user, hashSecretKey).toString();
+  return encrypted;
 };
 
 export default hashUser;

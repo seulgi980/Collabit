@@ -47,10 +47,22 @@ export const getPostListAPI = async ({
     method: "GET",
     ...fetchOptions,
   });
-  if (!response.ok) {
-    throw new Error("Failed to fetch posts");
+
+  if (response.status === 204) {
+    return {
+      content: [],
+      pageNumber: 0,
+      pageSize: 0,
+      totalElements: 0,
+      totalPages: 0,
+      last: true,
+      hasNext: false,
+    };
   }
-  return response.json();
+
+  const data = await response.json();
+
+  return data;
 };
 
 export const getPostAPI = async (

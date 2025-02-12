@@ -2,17 +2,22 @@ import FloatingButton from "@/entities/common/ui/FloatingButton";
 
 import Post from "@/features/community/ui/Post";
 import { getPostListAPI } from "@/shared/api/community";
+import EmptyCommunity from "@/widget/community/EmptyCommunity";
 import PostList from "@/widget/community/PostList";
 
 const ListPage = async () => {
-  const posts = await getPostListAPI({ currentPage: 1 });
-  console.log(posts);
+  const posts = await getPostListAPI({ currentPage: 0 });
 
   return (
     <div className="relative w-full">
       <h2 className="sr-only">커뮤니티</h2>
       <Post />
-      <PostList initialPosts={posts.content} />
+
+      {posts.content.length === 0 ? (
+        <EmptyCommunity />
+      ) : (
+        <PostList initialPosts={posts} />
+      )}
 
       <FloatingButton href={"/community/post"} />
     </div>

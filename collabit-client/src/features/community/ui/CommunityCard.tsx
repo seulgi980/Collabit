@@ -26,7 +26,7 @@ const CommunityCard = ({ post }: { post: PostListResponse }) => {
         </div>
         <CommunityCardMenu post={post} />
       </div>
-      <p className="px-2 text-sm">{post.content}</p>
+      <p className="px-2 text-base">{post.content}</p>
       <ul
         className={cn(
           post.images.length > 0 &&
