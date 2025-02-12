@@ -26,7 +26,7 @@ export async function generateMetadata({
 // ${배포주소}/share/user/{hashUser(nickname)}
 const SharePage = async ({ params }: SharePageProps) => {
   const { user } = await params;
-  const data = await getSharedUserReportAPI(user);
+  // const data = await getSharedUserReportAPI(user);
 
   return (
     <div>

@@ -1,3 +1,4 @@
+import { PageResponse } from "./../types/response/page";
 import { CreatePostRequest, EditPostRequest } from "../types/request/post";
 import { PostDetailResponse, PostListResponse } from "../types/response/post";
 import optimizeImageToWebP from "../utils/optimizeImageToWebP";
@@ -36,21 +37,20 @@ export const createPostAPI = async (post: CreatePostRequest) => {
   });
   return response.json();
 };
-
-export const getPostListAPI = async (): Promise<PostListResponse[]> => {
-  try {
-    const response = await fetch(`${apiUrl}/post`, {
-      ...fetchOptions,
-    });
-    if (response.ok) {
-      return response.json();
-    } else {
-      throw new Error("Failed to fetch posts");
-    }
-  } catch (error) {
-    console.error(error);
-    return [];
+interface GetPostListAPIProps {
+  currentPage: number;
+}
+export const getPostListAPI = async ({
+  currentPage,
+}: GetPostListAPIProps): Promise<PageResponse<PostListResponse>> => {
+  const response = await fetch(`${apiUrl}/post?pageNumber=${currentPage}`, {
+    method: "GET",
+    ...fetchOptions,
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch posts");
   }
+  return response.json();
 };
 
 export const getPostAPI = async (
