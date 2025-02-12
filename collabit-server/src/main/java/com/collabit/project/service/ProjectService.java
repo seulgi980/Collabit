@@ -194,10 +194,11 @@ public class ProjectService {
     }
 
     // 로그인 유저의 전체 프로젝트 조회
-    @Transactional(readOnly = true)
     public List<GetProjectListResponseDTO> findProjectList(String userCode, String keyword, SortOrder sortOrder) {
         log.info("프로젝트 목록 조회 시작 - userCode: {}, keyword: {}, sortOrder: {}",
                 userCode, keyword, sortOrder);
+
+        User user = findUserByCode(userCode);
 
         // 1. 로그인 유저의 ProjectInfo 리스트 조회
         // project와 함께 조회하여 N+1 문제 방지 (후에 project 테이블에 있는 정보 조회 시 발생)
@@ -236,7 +237,10 @@ public class ProjectService {
                                         .findByProjectCodeAndProjectInfoCodeLessThanEqual(
                                                 project.getCode(),
                                                 projectInfo.getCode()
-                                        );
+                                        )
+                                        .stream()
+                                        .filter(githubId -> !githubId.equals(user.getGithubId())) // 현재 사용자 제외
+                                        .collect(Collectors.toList());
 
                                 // 조회한 contributor들의 githubId, 프로필 이미지 조회
                                 List<ContributorDetailDTO> contributors = contributorRepository
@@ -248,15 +252,17 @@ public class ProjectService {
                                                 .build())
                                         .collect(Collectors.toList());
 
+                                int nowParticipant = projectInfo.getParticipant() + newSurveyResponseMap.getOrDefault(projectInfo.getCode(), 0);
+
                                 return ProjectDetailDTO.builder()
                                         .code(projectInfo.getCode())
                                         .title(project.getTitle())
                                         .isDone(projectInfo.getCompletedAt() != null)
-                                        .participant(projectInfo.getParticipant() + newSurveyResponseMap.getOrDefault(projectInfo.getCode(), 0))
+                                        .participant(nowParticipant)
                                         .newSurveyResponse(newSurveyResponseMap.containsKey(projectInfo.getCode()))
                                         .createdAt(projectInfo.getCreatedAt())
                                         .contributors(contributors)
-                                        .participationRate(calculateParticipationRate(projectInfo))
+                                        .participationRate(calculateParticipationRate(projectInfo, nowParticipant))
                                         .build();
                             })
 
@@ -287,9 +293,9 @@ public class ProjectService {
     }
 
     // 참여율 계산 메소드
-    private double calculateParticipationRate(ProjectInfo projectInfo) {
+    private double calculateParticipationRate(ProjectInfo projectInfo, int nowParticipant) {
         double rate = projectInfo.getTotal() == 0 ? 0 :
-                (double) projectInfo.getParticipant() / projectInfo.getTotal() * 100;
+                (double) nowParticipant / projectInfo.getTotal() * 100;
         return Math.round(rate * 10.0) / 10.0; // 소수점 첫째자리 반올림
     }
 
@@ -491,6 +497,8 @@ public class ProjectService {
     public List<GetMainProjectListResponseDTO> findMainProjectList(String userCode) {
         log.info("메인페이지 프로젝트 목록 조회 시작 - userCode: {}", userCode);
 
+        User user = findUserByCode(userCode);
+
         // 1. 로그인 유저의 ProjectInfo 리스트 조회
         List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCodeWithProject(userCode);
         log.debug("사용자의 ProjectInfo 조회 완료 - 조회된 ProjectInfo 수: {}", projectInfoList.size());
@@ -508,7 +516,10 @@ public class ProjectService {
                             .findByProjectCodeAndProjectInfoCodeLessThanEqual(
                                     project.getCode(),
                                     projectInfo.getCode()
-                            );
+                            )
+                            .stream()
+                            .filter(githubId -> !githubId.equals(user.getGithubId())) // 현재 사용자 제외
+                            .collect(Collectors.toList());
 
                     // 조회한 contributor들의 githubId, 프로필 이미지 조회
                     List<ContributorDetailDTO> contributors = contributorRepository
@@ -520,16 +531,18 @@ public class ProjectService {
                                     .build())
                             .collect(Collectors.toList());
 
+                    int nowParticipant = projectInfo.getParticipant() + newSurveyResponseMap.getOrDefault(projectInfo.getCode(), 0);
+
                     return GetMainProjectListResponseDTO.builder()
                             .organization(project.getOrganization())
                             .code(projectInfo.getCode())
                             .title(project.getTitle())
-                            .participant(projectInfo.getParticipant() + newSurveyResponseMap.getOrDefault(projectInfo.getCode(), 0))
+                            .participant(nowParticipant)
                             .isDone(projectInfo.getCompletedAt() != null)
                             .newSurveyResponse(newSurveyResponseMap.containsKey(projectInfo.getCode()))
                             .createdAt(projectInfo.getCreatedAt())
                             .contributors(contributors)
-                            .participationRate(calculateParticipationRate(projectInfo))
+                            .participationRate(calculateParticipationRate(projectInfo, nowParticipant))
                             .build();
                 })
                 .sorted(Comparator
@@ -547,26 +560,28 @@ public class ProjectService {
         log.debug("해당 유저의 모든 프로젝트 알림 삭제 시작");
 
         // Redis에서 key가 newSurveyResponse::userCode인 데이터 삭제하며 가져오기
-        Map<Integer, Object> notificationList = projectRedisService.removeAllNotificationByUserCode(userCode);
+        Map<Integer, Integer> notificationList = projectRedisService.removeAllNotificationByUserCode(userCode);
         log.debug("해당 유저의 모든 프로젝트 알림 삭제 완료 - 삭제된 알림 수 {}", notificationList.size());
+
+        if (notificationList.isEmpty()) {
+            return;
+        }
 
         // 각 projectInfoCode의 DB의 참여자 수 업데이트
         List<ProjectInfo> projectInfoList = projectInfoRepository.findByUserCode(userCode);
 
-        for(Integer projectInfoCode : notificationList.keySet()) {
-            // projectInfoList에서 redis에 있던 projectInfoCode를 가진 projectInfo 찾기
-            projectInfoList.stream()
-                    .filter(info -> info.getCode() == projectInfoCode)
-                    .findFirst()
-                    .ifPresent(info -> {
-                        // Redis에서 가져온 값으로 participant 수 업데이트
-                        Object value = notificationList.get(projectInfoCode);
-                        if (value != null) {
-                            info.increaseParticipant(((Number) value).intValue()); // redis에서 가져온 Object 타입을 int형으로
-                            projectInfoRepository.save(info);
-                        }
-                    });
-        }
+        // projectInfoList에서 redis에 있던 projectInfoCode의 참여자 수 업데이트
+        projectInfoList.stream()
+                .filter(info -> notificationList.containsKey(info.getCode()))
+                .forEach(info -> {
+                    Integer increment = notificationList.get(info.getCode());
+                    if (increment != null && increment > 0) {
+                        info.increaseParticipant(increment);
+                        projectInfoRepository.save(info);
+                        log.debug("projectInfo{}의 참여자 수 +{}",
+                                info.getCode(), increment);
+                    }
+                });
         log.debug("Redis에 알림이 있던 전체 projectInfo {}개에 대해 participant 수 업데이트 완료", notificationList.size());
     }
 
