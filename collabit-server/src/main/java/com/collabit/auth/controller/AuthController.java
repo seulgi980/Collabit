@@ -5,8 +5,6 @@ import com.collabit.auth.service.AuthService;
 import com.collabit.auth.service.EmailService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +28,10 @@ public class AuthController {
     public ResponseEntity<?> signUp(@Valid @RequestBody UserSignupRequestDTO userSignupRequestDTO) {
         log.debug("signUp Request: {}", userSignupRequestDTO.toString());
 
-        UserResponseDTO userResponseDto = authService.signup(userSignupRequestDTO);
-        log.debug("signUp Response: {}", userResponseDto.toString());
+        UserSignupResponseDTO responseDto = authService.signup(userSignupRequestDTO);
+        log.debug("signUp Response: {}", responseDto.toString());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(userResponseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     // 닉네임 중복 체크
@@ -61,14 +59,6 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(new ApiTextResponseDTO("사용 가능한 이메일입니다."));
 
-    }
-
-    // 로그인
-    @Operation(summary = "일반 로그인", description = "일반 사이트 자체 로그인 하는 API입니다." )
-    @PostMapping("/login")
-    public ResponseEntity<UserResponseDTO> login(@Valid @RequestBody UserLoginRequestDTO userLoginRequestDto, HttpServletResponse response) {
-        log.debug("login Request: {}", userLoginRequestDto.toString());
-        return ResponseEntity.ok(authService.login(userLoginRequestDto, response));
     }
 
     // 이메일 인증 요청
@@ -99,15 +89,4 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(new ApiTextResponseDTO("알 수 없는 오류가 발생했습니다."));
         }
     }
-
-    // 로그아웃
-    @Operation(summary = "로그아웃", description = "로그아웃 하는 API입니다. ")
-    @PostMapping("/logout")
-    public ResponseEntity<ApiTextResponseDTO> logout(HttpServletRequest request, HttpServletResponse response) {
-        authService.logout(request, response);
-        return ResponseEntity.ok(new ApiTextResponseDTO("로그아웃 완료"));
-    }
-
-
-
 }

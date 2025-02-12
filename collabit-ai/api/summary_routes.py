@@ -14,7 +14,7 @@ def get_ai_summary():
   try:
     user_code = decode_jwt_from_cookie()
 
-    summaries = list(mongodb.summary_collection.find({"user_code": user_code}))
+    summaries = list(mongodb.get_summary_by_user(user_code))
 
     strength_answers = []
     weakness_answers = []
@@ -35,17 +35,20 @@ def get_ai_summary():
 
     # AI 요약 요청
     summary_messages = [
-      chat_service.create_message("system", """주어진 답변들을 종합적으로 분석하여 해당 사람의 강점과 약점을 간단명료하게 요약해주세요. 
-답변을 다음과 같은 JSON 형식으로 작성해주세요:
-{
-    "strength": "강점에 대한 종합적인 요약",
-    "weakness": "약점에 대한 종합적인 요약"
-}"""),
+      chat_service.create_message("system", """분석 결과를 JSON 형식으로 반환해야 합니다.
+    중괄호나 다른 서식 없이 정확히 다음 형식으로만 응답하세요:
+    {
+        "strength": "강점에 대한 종합적인 요약",
+        "weakness": "약점에 대한 종합적인 요약"
+    }
+    추가 설명이나 다른 텍스트를 포함하지 마세요."""),
       chat_service.create_message("user", f"""강점 관련 답변들:
-{' // '.join(strength_answers)}
+    {' // '.join(strength_answers)}
 
-약점 관련 답변들:
-{' // '.join(weakness_answers)}""")
+    약점 관련 답변들:
+    {' // '.join(weakness_answers)}
+
+    위 답변들을 분석하여 정확히 JSON 형식으로만 응답해주세요.""")
     ]
 
     analysis_stream = chat_service.generate_response(summary_messages)
@@ -100,45 +103,6 @@ def get_ai_summary():
     )
 
     return "", 200
-
-  except Exception as e:
-    return jsonify({"error": str(e)}), 500
-
-
-@summary_bp.route("/ai/portfolio/essay/wordcloud", methods=["GET"])
-def get_wordcloud():
-  try:
-    user_code = decode_jwt_from_cookie()
-
-    wordcloud = mongodb.wordcloud_collection.find_one(
-        {"user_code": user_code},
-        {"_id": 0}
-    )
-
-    if not wordcloud:
-      return jsonify({"error": "Wordcloud data not found"}), 404
-
-    return jsonify({
-      "strength": wordcloud.get("strength", []),
-      "weakness": wordcloud.get("weakness", [])
-    }), 200
-
-  except Exception as e:
-    return jsonify({"error": str(e)}), 500
-
-@summary_bp.route("/ai/portfolio/essay/ai-summary", methods=["GET"])
-def get_summary():
-  try:
-    user_code = decode_jwt_from_cookie()
-
-    summary = mongodb.ai_analysis.find_one(
-        {"user_code": user_code},
-        {"_id": 0, "analysis_results": 1}
-    )
-
-    if summary:
-      return jsonify(summary["analysis_results"]), 200
-    return jsonify({"error": "Summary not found"}), 404
 
   except Exception as e:
     return jsonify({"error": str(e)}), 500
