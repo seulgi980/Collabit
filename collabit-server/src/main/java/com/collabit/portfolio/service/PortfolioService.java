@@ -54,9 +54,6 @@ public class PortfolioService {
     private final ProjectService projectService;
     private final MongoTemplate mongoTemplate;
 
-    @Value("${public.hash.secret.key}")
-    private String secretKey;
-
     public GetMultipleHexagonProgressResponseDTO getHexagonAndProgressbarGraph(String userCode) {
 
         // 개인 역량별 평균 계산
@@ -377,7 +374,7 @@ public class PortfolioService {
                     .expression(totalScores.getOrDefault("expression", 0L))
                     .problemSolving(totalScores.getOrDefault("problemSolving", 0L))
                     .leadership(totalScores.getOrDefault("leadership", 0L))
-                    .isUpdate(true)
+                    .isUpdate(false)
                     .updatedAt(LocalDateTime.now())
                     .build();
 
@@ -465,8 +462,8 @@ public class PortfolioService {
     }
 
     // 해당 닉네임을 가진 유저의 포트폴리오 데이터 조회 (로그인 없이 접근 가능)
-    public GetAllPortfolioResponseDTO getAllPortfolioByGithubId(String nickname) {
-        User user = userRepository.findByNickname(nickname)
+    public GetAllPortfolioResponseDTO getAllPortfolioByGithubId(String githubId) {
+        User user = userRepository.findByGithubId(githubId)
                 .orElseThrow(UserNotFoundException::new);
         String userCode = user.getCode();
         return getAllPortfolio(userCode);
@@ -490,23 +487,10 @@ public class PortfolioService {
     // 닉네임 decode
     public String decodeGithubId(String encodedGithubId) {
         try {
-            // AES 키 설정
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "AES");
-
-            // Cipher 초기화 (AES 알고리즘 사용)
-            Cipher cipher = Cipher.getInstance("AES");
-            cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
-
-            // Base64 디코딩
-            byte[] decodedBytes = Base64.getDecoder().decode(encodedGithubId);
-
-            // 복호화
-            byte[] decryptedBytes = cipher.doFinal(decodedBytes);
-
-            // 복호화된 바이트 배열을 문자열로 변환
-            return new String(decryptedBytes);
+            // URL Safe Base64 디코딩
+            byte[] decodedBytes = Base64.getUrlDecoder().decode(encodedGithubId);
+            return new String(decodedBytes);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new BusinessException(ErrorCode.FAILED_DECODE_NICKNAME);
         }
     }
