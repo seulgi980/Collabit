@@ -78,7 +78,7 @@ export const logoutAPI = async () => {
   });
   return res;
 };
-
+	
 export const loginCredentialAPI = async (body: LoginRequest) => {
   const formData = new URLSearchParams();
   formData.append("email", body.email);

@@ -26,6 +26,7 @@ ChartJS.register(
   Legend,
 );
 
+
 const formatProjectName = (name: string): string[] => {
   const maxCharsPerLine = 10;
   if (name.length <= maxCharsPerLine) return [name];
@@ -42,11 +43,13 @@ const formatProjectName = (name: string): string[] => {
   }
 };
 
-const HistoryRateSection = ({
-  timeline,
-  minScore,
-  maxScore,
-}: TimelineResponse) => {
+interface HistoryRateSectionProps {
+  history: TimelineResponse;
+}
+
+const HistoryRateSection = ({ history }: HistoryRateSectionProps) => {
+  const timeline = history.timeline;
+
   const options = {
     responsive: true,
     plugins: {
@@ -56,8 +59,8 @@ const HistoryRateSection = ({
     },
     scales: {
       y: {
-        min: minScore,
-        max: maxScore,
+        min: history.minScore,
+        max: history.maxScore,
       },
     },
   };
@@ -71,6 +74,8 @@ const HistoryRateSection = ({
     leadership: "rgb(255, 159, 64)",
   };
 
+  // 기존에는 라벨을 문자열로 처리했지만, 이제 각 프로젝트명을 문자열 배열로 처리합니다.
+  // 중복 제거를 위해 우선 join("\n")한 값으로 Set에 넣은 후 다시 split("\n")으로 배열로 복원합니다.
   const uniqueLabels = Array.from(
     new Set(
       timeline.map((project) =>

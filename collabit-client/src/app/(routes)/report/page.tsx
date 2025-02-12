@@ -21,18 +21,15 @@ export default function Page() {
 
   const { reportStatus, reportStatusLoading } = useReport();
   const [isExist, setIsExist] = useState(reportStatus?.exist);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (reportStatus?.exist) {
       setIsExist(true);
-      setLoading(false);
     }
   }, [reportStatus]);
 
   // ✅ 리포트 생성 함수
   const handleGenerateReport = async () => {
-    setLoading(true);
     openModal(<ReportLoadingModal context="AI가 리포트를 생성하고 있어요." />);
 
     try {
@@ -45,14 +42,12 @@ export default function Page() {
         description: "최신 결과를 확인하세요.",
       });
 
-      setLoading(false);
       closeModal();
 
       await queryClient.invalidateQueries({ queryKey: ["reportStatus"] });
       setIsExist(reportStatus?.exist);
     } catch {
       toast({ title: "오류 발생", description: "리포트 생성에 실패했습니다." });
-      setLoading(false);
       closeModal();
     }
   };
@@ -66,7 +61,7 @@ export default function Page() {
     <div className="mx-auto mb-20 mt-5 w-full p-4 md:max-w-5xl">
       {isExist && reportStatus ? (
         <>
-          <ReportHeader />
+          <ReportHeader handleRefresh={handleGenerateReport} />
           <SurveyResult />
         </>
       ) : (
