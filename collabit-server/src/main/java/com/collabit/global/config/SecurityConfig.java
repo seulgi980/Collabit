@@ -5,6 +5,7 @@ import com.collabit.global.security.CustomUserDetailsService;
 import com.collabit.global.security.JwtAccessDeniedHandler;
 import com.collabit.global.security.JwtAuthenticationEntryPoint;
 import com.collabit.global.security.JwtFilter;
+import com.collabit.global.security.SecurityUtil;
 import com.collabit.global.security.TokenProvider;
 import com.collabit.oauth.handler.OAuth2SuccessHandler;
 import com.collabit.oauth.service.CustomOAuth2UserService;
@@ -60,6 +61,7 @@ public class SecurityConfig {
                 auth.requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll();
                 auth.anyRequest().authenticated();
             })
+            .userDetailsService(customUserDetailsService)
             .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
@@ -78,7 +80,7 @@ public class SecurityConfig {
 
                     // 쿠키 설정
                     accessTokenCookie.setHttpOnly(true);
-                    accessTokenCookie.setSecure(true); // HTTPS만 사용
+                    accessTokenCookie.setSecure(true);
                     accessTokenCookie.setPath("/");
 
                     refreshTokenCookie.setHttpOnly(true);
@@ -90,9 +92,6 @@ public class SecurityConfig {
                     response.addCookie(refreshTokenCookie);
 
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.setContentType("application/json;charset=UTF-8");
-                    response.getWriter().write("{\"message\": \"로그인 성공\", \"accessToken\": \"" + accessToken + "\"}");
-                    response.sendRedirect(frontendRedirectUrl);
                 })
                 .failureHandler((request, response, exception) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
