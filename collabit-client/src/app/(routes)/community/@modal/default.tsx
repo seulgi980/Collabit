@@ -1,5 +1,5 @@
 const Default = () => {
-  return <div>Default</div>;
+  return null;
 };
 
 export default Default;
