@@ -219,31 +219,11 @@ public class SurveyService {
     public SurveyDetailResponseDTO getSurveyDetail(String userCode, int projectInfoCode) {
         log.debug("설문조사 상세조회 시작");
 
-        User user = userRepository.findByCode(userCode).orElseThrow(() -> {
-            log.debug("User not found");
-            return new UserNotFoundException();
-        });
-        log.debug("User GithubID: " + user.getGithubId());
-
         ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
 
         if(projectInfo == null) {
             log.error("해당 ProjectInfo를 찾을 수 없습니다.");
             throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
-        }
-
-        // projectInfoCode와 projectCode로
-        List<String> contributorsGithubId = projectContributorRepository
-            .findByProjectCodeAndProjectInfoCodeLessThanEqual(
-                projectInfo.getProject().getCode(),
-                projectInfo.getCode()
-            )
-            .stream()
-            .filter(githubId -> !githubId.equals(projectInfo.getUser().getGithubId()))
-            .collect(Collectors.toList());
-
-        if(!contributorsGithubId.contains(user.getGithubId())){
-            throw new BusinessException(ErrorCode.ACCESS_DENIED);
         }
 
         log.debug("조회한 projectInfo: {}", projectInfo.toString());
