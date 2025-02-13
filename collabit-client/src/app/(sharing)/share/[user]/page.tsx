@@ -24,9 +24,8 @@
 // }
 
 // ${배포주소}/share/user/{hashUser(nickname)}
-export default async function Page(
-  // { params }: { params: { user: string } }
-) {
+export default async function Page() {
+// { params }: { params: { user: string } }
   // const { user } = params;
   return <div></div>;
 }

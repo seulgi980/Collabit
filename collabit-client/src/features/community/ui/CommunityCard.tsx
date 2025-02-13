@@ -26,7 +26,7 @@ const CommunityCard = ({ post }: { post: PostListResponse }) => {
         </div>
         <CommunityCardMenu post={post} />
       </div>
-      <p className="px-2 text-sm">{post.content}</p>
+      <p className="px-2 text-base">{post.content}</p>
       <ul
         className={cn(
           post.images.length > 0 &&
@@ -45,6 +45,12 @@ const CommunityCard = ({ post }: { post: PostListResponse }) => {
               "relative h-full w-full",
               post.images.length === 3 && index > 0 && "h-[130px]",
               post.images.length === 3 && index === 0 && "h-[260px]",
+              ((post.images.length >= 2 && index % 2 === 1) ||
+                (post.images.length === 3 && index === 2)) &&
+                "border-l-2 border-gray-400",
+              post.images.length >= 2 &&
+                index >= 2 &&
+                "border-t-2 border-gray-400",
             )}
           >
             <Image
