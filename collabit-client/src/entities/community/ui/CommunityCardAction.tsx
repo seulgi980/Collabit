@@ -3,13 +3,20 @@
 import { Button } from "@/shared/ui/button";
 import { Heart, MessageCircle, Send } from "lucide-react";
 import { cn } from "@/shared/lib/shadcn/utils";
-import { PostListResponse } from "@/shared/types/response/post";
+import {
+  PostDetailResponse,
+  PostListResponse,
+} from "@/shared/types/response/post";
 import { getChatRoomWithNicknameAPI } from "@/shared/api/chat";
 import { useRouter } from "next/navigation";
 import useModalStore from "@/shared/lib/stores/modalStore";
 import ChatMessageModal from "@/widget/ui/modals/ChatMessageModal";
 
-export const CommunityCardActions = ({ post }: { post: PostListResponse }) => {
+export const CommunityCardActions = ({
+  post,
+}: {
+  post: PostListResponse | PostDetailResponse;
+}) => {
   const nickname = post.author.nickname;
   const router = useRouter();
   const { openModal } = useModalStore();

@@ -1,3 +1,4 @@
+import { getPostAPI } from "@/shared/api/community";
 import ModalPostDetail from "@/widget/community/ModalPostDetail";
 
 const CommunityDetailPage = async ({
@@ -6,7 +7,9 @@ const CommunityDetailPage = async ({
   params: Promise<{ postId: string }>;
 }) => {
   const { postId } = await params;
-  return <ModalPostDetail postId={postId} />;
+  const post = await getPostAPI(Number(postId));
+  console.log(post);
+  return <ModalPostDetail post={post} />;
 };
 
 export default CommunityDetailPage;

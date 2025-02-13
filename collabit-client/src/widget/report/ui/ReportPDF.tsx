@@ -13,7 +13,11 @@ interface ReportPDFProps {
 }
 
 const ReportPDF = forwardRef(({ shareUrl }: ReportPDFProps, ref) => {
-  const { hexagon, progress, wordCloud, aiSummary } = useReport();
+  const { report } = useReport();
+  const hexagon = report?.hexagon;
+  const progress = report?.progress;
+  const wordCloud = report?.wordCloud;
+  const aiSummary = report?.aiSummary;
   const contentRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
