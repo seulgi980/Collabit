@@ -1,3 +1,4 @@
+"use client";
 import PostCarouselSection from "@/features/community/ui/PostCarouselSection";
 import AISummarySection from "@/features/report/ui/AISummarySection";
 import CloudSection from "@/features/report/ui/CloudSection";

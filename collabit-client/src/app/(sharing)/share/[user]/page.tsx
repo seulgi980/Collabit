@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getPortfolioShareAPI } from "@/shared/api/report";
-import SurveyResult from "@/widget/report/ui/SurveyResult";
+import dynamic from "next/dynamic";
 
 interface SharePageProps {
   params: { user: string };
@@ -78,14 +78,37 @@ export async function generateMetadata({
   };
 }
 
-// ${배포주소}/share/{hashUser(nickname)}
+const SurveyResult = dynamic(() => import("@/widget/report/ui/SurveyResult"), {
+  ssr: true,
+});
+
 export default async function Page({ params }: SharePageProps) {
   console.log(params);
   const { user } = params;
   const reportShare = await fetchReportShare(user);
+  const portfolioInfo = reportShare?.portfolioInfo;
   console.log(reportShare);
   return (
-    <div>
+    <div className="mx-auto mb-20 mt-5 w-full p-4 md:max-w-5xl">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold">
+          {portfolioInfo?.nickname}님의 협업 역량 리포트
+        </h1>
+        <div className="flex gap-2">
+          <p className="text-sm">
+            <span>참여인원 </span>
+            <span className="font-semibold text-violet-500">
+              {portfolioInfo?.participant}명
+            </span>
+          </p>
+          <p className="text-sm">
+            <span>프로젝트 </span>
+            <span className="font-semibold text-violet-500">
+              {portfolioInfo?.project}회
+            </span>
+          </p>
+        </div>
+      </div>
       {reportShare && (
         <SurveyResult
           hexagon={reportShare?.hexagon}
