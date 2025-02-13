@@ -6,7 +6,6 @@ const CommunityDetailPage = async ({
   params: Promise<{ postId: string }>;
 }) => {
   const { postId } = await params;
-
   return <ModalPostDetail postId={postId} />;
 };
 

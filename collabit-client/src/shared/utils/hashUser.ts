@@ -1,14 +1,11 @@
-import CryptoJS from "crypto-js";
-
 const hashUser = (user: string) => {
-  const hashSecretKey = process.env.NEXT_PUBLIC_HASH_SECRET_KEY;
-  if (!hashSecretKey) {
-    throw new Error("HASH_SECRET_KEY is not defined");
-  }
+  const base64 = Buffer.from(user).toString("base64");
+  const urlSafeHash = base64
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=/g, "");
 
-  // AES 암호화 수행
-  const encrypted = CryptoJS.AES.encrypt(user, hashSecretKey).toString();
-  return encrypted;
+  return urlSafeHash;
 };
 
 export default hashUser;

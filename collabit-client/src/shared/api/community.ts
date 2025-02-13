@@ -1,5 +1,5 @@
 import { PageResponse } from "./../types/response/page";
-import { CreatePostRequest, EditPostRequest } from "../types/request/post";
+import { CreatePostRequest, EditPostAPIRequest } from "../types/request/post";
 import { PostDetailResponse, PostListResponse } from "../types/response/post";
 import optimizeImageToWebP from "../utils/optimizeImageToWebP";
 
@@ -20,7 +20,6 @@ export const createPostAPI = async (post: CreatePostRequest) => {
     post.images.map(async (image) => {
       try {
         const optimizedImage = await optimizeImageToWebP(image);
-
         const fileName = image.name.replace(/\.[^/.]+$/, "") + ".webp";
         formData.append("images", optimizedImage, fileName);
       } catch (error) {
@@ -33,8 +32,9 @@ export const createPostAPI = async (post: CreatePostRequest) => {
   const response = await fetch(`${apiUrl}/post`, {
     method: "POST",
     body: formData,
-    ...fetchOptions,
+    credentials: "include",
   });
+
   return response.json();
 };
 interface GetPostListAPIProps {
@@ -74,7 +74,10 @@ export const getPostAPI = async (
   return response.json();
 };
 
-export const editPostAPI = async (postCode: number, post: EditPostRequest) => {
+export const editPostAPI = async ({
+  postCode,
+  post,
+}: EditPostAPIRequest): Promise<{ code: number }> => {
   const formData = new FormData();
   formData.append("content", post.content);
 
@@ -95,7 +98,8 @@ export const deletePostAPI = async (postCode: number) => {
     method: "DELETE",
     ...fetchOptions,
   });
-  return response.json();
+
+  return response;
 };
 
 export const likePostAPI = async (postCode: number) => {
