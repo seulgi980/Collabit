@@ -25,9 +25,6 @@ public class EmailService {
     private static final long EXPIRE_MINUTES = 5; // 인증 코드 유효 시간: 5분
     private static final String EMAIL_SUBJECT = "[Collabit] 회원가입 인증 코드";
 
-    @Value("${spring.mail.username}")
-    private String REAL_EMAIL;
-
     // 이메일 전송 메서드
     public void sendMail(String email){
         int verificationCode = generateVerificationCode();
@@ -37,8 +34,8 @@ public class EmailService {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
 
-            helper.setFrom("collabit.site");  // 발신자 주소
-            helper.setReplyTo(REAL_EMAIL); // 실제 답장 받을 이메일
+            helper.setFrom("collabittest3@gmail.com");  // 발신자 주소
+            helper.setReplyTo("collabittest3@gmail.com"); // 실제 답장 받을 이메일
             helper.setTo(email); // 수신자 이메일 주소
             helper.setSubject(EMAIL_SUBJECT); // 이메일 제목
             helper.setText("Collabit 회원가입인증 코드: " + verificationCode); // 이메일 본문
