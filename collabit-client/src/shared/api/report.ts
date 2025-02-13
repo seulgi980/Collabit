@@ -80,7 +80,7 @@ export const getPortfolioShareAPI = async (
   try {
     const res = await fetch(`${apiUrl}/portfolio/share/${githubId}`, {
       method: "GET",
-      ...fetchOptions,
+      cache: "force-cache",
     });
     if (!res.ok) {
       throw new Error("데이터 조회에 실패했습니다.");
