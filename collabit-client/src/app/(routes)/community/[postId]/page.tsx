@@ -8,10 +8,9 @@ const CommunityDetailPage = async ({
 }) => {
   const { postId } = await params;
   const post = await getPostAPI(Number(postId));
-  console.log(post);
 
   return (
-    <div className="mx-auto max-w-5xl overflow-y-auto">
+    <div className="mx-auto w-full max-w-5xl overflow-y-auto">
       <CommunityDetail post={post} />
     </div>
   );

@@ -29,7 +29,9 @@ const ModalPostDetail = ({ post }: { post: PostDetailResponse }) => {
         <DialogHeader>
           <DialogTitle className="sr-only">{`${post.code}번 게시글`}</DialogTitle>
           <DialogDescription className="sr-only">
-            {`${post.content.slice(0, 100)}...`}
+            {post.content?.length >= 100
+              ? `${post.content.slice(0, 100)}...`
+              : post.content}
           </DialogDescription>
         </DialogHeader>
         <CommunityDetail post={post} />
