@@ -1,15 +1,40 @@
 "use client";
 
-import Modal from "@/shared/ui/Modal";
+import CommunityDetail from "@/features/community/ui/CommunityDetail";
+import { PostDetailResponse } from "@/shared/types/response/post";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { useRouter } from "next/navigation";
 
-const ModalPostDetail = ({ postId }: { postId: string }) => {
+const ModalPostDetail = ({ post }: { post: PostDetailResponse }) => {
+  const router = useRouter();
+
   return (
-    <Modal>
-      <div className="h-[500px] w-full overflow-y-auto">
-        <h1>게시글이다 {postId}</h1>
-        {/* 실제 게시글 내용 */}
-      </div>
-    </Modal>
+    <Dialog
+      open={true}
+      onOpenChange={() => {
+        router.back();
+      }}
+    >
+      <DialogContent
+        className="max-h-[80vh] max-w-[800px] overflow-y-auto"
+        onEscapeKeyDown={() => router.back()}
+        onInteractOutside={() => router.back()}
+      >
+        <DialogHeader>
+          <DialogTitle className="sr-only">{`${post.code}번 게시글`}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {`${post.content.slice(0, 100)}...`}
+          </DialogDescription>
+        </DialogHeader>
+        <CommunityDetail post={post} />
+      </DialogContent>
+    </Dialog>
   );
 };
 

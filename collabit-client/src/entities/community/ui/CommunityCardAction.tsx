@@ -15,10 +15,7 @@ export const CommunityCardActions = ({ post }: { post: PostListResponse }) => {
       <div className="flex items-center">
         <Button variant="ghost" className="flex items-center px-2 py-1">
           <Heart
-            className={cn(
-              "size-4",
-              post.liked && "fill-red-500 text-red-500",
-            )}
+            className={cn("size-4", post.liked && "fill-red-500 text-red-500")}
           />
           <span className="text-sm">{post.likeCount}</span>
         </Button>
