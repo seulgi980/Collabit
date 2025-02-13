@@ -17,10 +17,10 @@ import lombok.ToString;
 public class GetCommentResponseDTO {
     int code;
     int postCode;
-    String userNickname;
+    Author author;
     String content;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-    int parentCommentCode;
+    Integer parentCommentCode;
     boolean isDeleted;
 }

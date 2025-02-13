@@ -324,6 +324,8 @@ public class PortfolioService {
 
     @Transactional
     public void generatePortfolio(String userCode) {
+        User user = userRepository.findById(userCode).orElse(null);
+
         Portfolio portfolio = portfolioRepository.findByUserCode(userCode)
                 .orElse(null);
 
@@ -336,7 +338,19 @@ public class PortfolioService {
             throw new RuntimeException("포트폴리오를 생성할 수 없는 상태입니다.");
         }
 
-        if (portfolio == null) portfolio = new Portfolio();
+        if (portfolio == null) portfolio = Portfolio.builder()
+            .user(user)
+            .userCode(userCode)
+            .project(0)
+            .participant(0)
+            .sympathy(0L)
+            .listening(0L)
+            .conflictResolution(0L)
+            .expression(0L)
+            .problemSolving(0L)
+            .leadership(0L)
+            .isUpdate(false)
+            .build();
 
         LocalDateTime lastUpdatedAt = (portfolio.getUpdatedAt() != null)
                 ? portfolio.getUpdatedAt()
@@ -362,21 +376,18 @@ public class PortfolioService {
                 totalParticipants += info.getParticipant();
             }
 
-            portfolio = Portfolio.builder()
-                    .user(userRepository.findById(userCode)
-                            .orElseThrow(UserNotFoundException::new))
-                    .userCode(userCode)
-                    .project(totalProjects)
-                    .participant(totalParticipants)
-                    .sympathy(totalScores.getOrDefault("sympathy", 0L))
-                    .listening(totalScores.getOrDefault("listening", 0L))
-                    .conflictResolution(totalScores.getOrDefault("conflictResolution", 0L))
-                    .expression(totalScores.getOrDefault("expression", 0L))
-                    .problemSolving(totalScores.getOrDefault("problemSolving", 0L))
-                    .leadership(totalScores.getOrDefault("leadership", 0L))
-                    .isUpdate(false)
-                    .updatedAt(LocalDateTime.now())
-                    .build();
+            portfolio.updatePortfolio(
+                totalProjects,
+                totalParticipants,
+                totalScores.getOrDefault("sympathy", 0L),
+                totalScores.getOrDefault("listening", 0L),
+                totalScores.getOrDefault("conflictResolution", 0L),
+                totalScores.getOrDefault("expression", 0L),
+                totalScores.getOrDefault("problemSolving", 0L),
+                totalScores.getOrDefault("leadership", 0L),
+                true,
+                LocalDateTime.now()
+            );
 
             portfolioRepository.save(portfolio);
         }
