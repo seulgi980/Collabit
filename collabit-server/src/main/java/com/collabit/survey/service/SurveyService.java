@@ -223,7 +223,7 @@ public class SurveyService {
 
         if(projectInfo == null) {
             log.error("해당 ProjectInfo를 찾을 수 없습니다.");
-            throw new RuntimeException("해당 프로젝트 정보를 찾을 수 없습니다.");
+            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
         }
 
         log.debug("조회한 projectInfo: {}", projectInfo.toString());
