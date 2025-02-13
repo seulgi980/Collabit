@@ -273,8 +273,8 @@ public class PortfolioService {
 
     private TimelineData createDummyData(int num, Map<String, String> codeAndNameMap) {
         return TimelineData.builder()
-                .projectName("")
-                .organization("")
+                .projectName(" ")
+                .organization(" ")
                 .completedAt(null)
                 .sympathy(new ScoreData(codeAndNameMap.get("sympathy"), num))
                 .listening(new ScoreData(codeAndNameMap.get("listening"), num))
