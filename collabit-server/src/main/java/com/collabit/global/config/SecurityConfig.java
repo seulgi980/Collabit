@@ -46,6 +46,7 @@ public class SecurityConfig {
                 auth.requestMatchers("/oauth2/authorization/**").permitAll();
                 auth.requestMatchers("/login/oauth2/code/**").permitAll();
                 auth.requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html").permitAll();
+                auth.requestMatchers("/api/portfolio/share/**").permitAll();
                 auth.anyRequest().authenticated();
             })
 
