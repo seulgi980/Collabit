@@ -21,17 +21,18 @@ import useReport from "@/features/report/api/useReport";
 import hashUser from "@/shared/utils/hashUser";
 import ReportPDF from "@/widget/report/ui/ReportPDF";
 
-const ReportHeader = ({ handleRefresh }: { handleRefresh: () => void }) => {
+const ReportHeader = ({ handleRefresh }: { handleRefresh?: () => void }) => {
   const { userInfo } = useAuth();
-  const { portfolioInfo, reportStatus } = useReport();
+  const { report, reportStatus } = useReport();
+  const portfolioInfo = report?.portfolioInfo;
   const reportPDFRef = useRef<{ handleDownloadPDF: () => void } | null>(null);
   const [shareUrl, setShareUrl] = useState<string>("");
 
   useEffect(() => {
-    const fetchHashedValue = async () => {
+    const fetchHashedValue = () => {
       if (userInfo?.githubId) {
         try {
-          const hashedValue = await hashUser(userInfo.githubId);
+          const hashedValue = hashUser(userInfo.githubId);
           const shareUrl = `${process.env.NEXT_PUBLIC_SHARE_URL}/${hashedValue}`;
           setShareUrl(shareUrl);
         } catch (error) {

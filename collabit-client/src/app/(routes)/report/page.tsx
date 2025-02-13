@@ -19,7 +19,7 @@ export default function Page() {
   const { openModal, closeModal } = useModalStore();
   const queryClient = useQueryClient();
 
-  const { reportStatus, reportStatusLoading } = useReport();
+  const { reportStatus, reportStatusLoading, report } = useReport();
   const [isExist, setIsExist] = useState(reportStatus?.exist);
 
   useEffect(() => {
@@ -45,6 +45,7 @@ export default function Page() {
       closeModal();
 
       await queryClient.invalidateQueries({ queryKey: ["reportStatus"] });
+      await queryClient.invalidateQueries({ queryKey: ["report"] });
       setIsExist(reportStatus?.exist);
     } catch {
       toast({ title: "오류 발생", description: "리포트 생성에 실패했습니다." });
@@ -62,15 +63,25 @@ export default function Page() {
       {isExist && reportStatus ? (
         <>
           <ReportHeader handleRefresh={handleGenerateReport} />
-          <SurveyResult />
+          {report && (
+            <SurveyResult
+              hexagon={report?.hexagon}
+              progress={report?.progress}
+              wordCloud={report?.wordCloud}
+              aiSummary={report?.aiSummary}
+              timeline={report?.timeline}
+            />
+          )}
         </>
       ) : (
         <NoReport
           handleGenerateReport={handleGenerateReport}
           currentCount={reportStatus?.totalParticipant ?? 0}
-          requiredCount={Number(
-            process.env.NEXT_PUBLIC_MINIMUM_CREATE_CONDITION,
-          )}
+          requiredCount={
+            isNaN(Number(process.env.NEXT_PUBLIC_MINIMUM_CREATE_CONDITION))
+              ? 0
+              : Number(process.env.NEXT_PUBLIC_MINIMUM_CREATE_CONDITION)
+          }
         />
       )}
     </div>

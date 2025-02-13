@@ -13,7 +13,11 @@ interface ReportPDFProps {
 }
 
 const ReportPDF = forwardRef(({ shareUrl }: ReportPDFProps, ref) => {
-  const { hexagon, progress, wordCloud, aiSummary } = useReport();
+  const { report } = useReport();
+  const hexagon = report?.hexagon;
+  const progress = report?.progress;
+  const wordCloud = report?.wordCloud;
+  const aiSummary = report?.aiSummary;
   const contentRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -34,7 +38,7 @@ const ReportPDF = forwardRef(({ shareUrl }: ReportPDFProps, ref) => {
       const html2pdf = (await import("html2pdf.js")).default;
 
       const options = {
-        filename: "report.pdf",
+        filename: "collabit_report.pdf",
         image: { type: "jpeg", quality: 1 },
         html2canvas: {
           scale: 3,
