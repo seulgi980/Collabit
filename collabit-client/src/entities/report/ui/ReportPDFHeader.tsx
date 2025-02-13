@@ -4,7 +4,8 @@ import useReport from "@/features/report/api/useReport";
 import { QRCodeCanvas } from "qrcode.react";
 
 const ReportPDFHeader = ({ shareUrl }: { shareUrl: string }) => {
-  const { portfolioInfo } = useReport();
+  const { report } = useReport();
+  const portfolioInfo = report?.portfolioInfo;
 
   return (
     <div className="flex items-start justify-between">
