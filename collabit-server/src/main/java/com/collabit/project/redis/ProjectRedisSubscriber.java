@@ -26,7 +26,6 @@ public class ProjectRedisSubscriber implements MessageListener { //Redis의 특�
             String body = new String(message.getBody(), StandardCharsets.UTF_8);
 
             // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9
-            System.out.println("레디스키 조회 ========================" + body);
             String[] keyParts = body.split("::");
             String key = keyParts[0];
             String userCode = keyParts[1];
@@ -35,16 +34,18 @@ public class ProjectRedisSubscriber implements MessageListener { //Redis의 특�
                 // 새로운 설문 응답이 들어올 때 처리
                 if (key.startsWith("newSurveyResponse")) {
                     int projectInfoCode = Integer.parseInt(keyParts[2]);
-                    System.out.println("설문조사 응답 레디스 키 조회해서 if문 들어옴 ===================");
-                    log.debug("설문조사 응답 알림 - targetUser: {}, projectInfoCode: {}", userCode, projectInfoCode);
+                    List<Integer> projectInfoCodes = projectRedisService.findAllNewSurveyResponse(userCode);
+                    log.debug("설문조사 응답 알림 전송");
                     projectSseEmitterService.sendNewSurveyResponse(userCode, projectInfoCode);
+                    log.debug("설문조사 응답 알림 전송 완료");
                 }
 
                 // 새로운 설문 요청이 등록될 때 처리
                 else if (key.startsWith("newSurveyRequest")) {
-                    List<Integer> projectInfoCodes = projectRedisService.findAllProjectInfoCodesByUserCode(userCode);
-                    log.debug("설문 요청 알림 - targetUser: {}, projectInfoCodes: {}", userCode, projectInfoCodes);
+                    List<Integer> projectInfoCodes = projectRedisService.findAllNewSurveyRequest(userCode);
+                    log.debug("설문 요청 SSE 알림 전송");
                     projectSseEmitterService.sendNewSurveyRequest(userCode, projectInfoCodes);
+                    log.debug("설문 요청 SSE 알림 전송 완료");
                 }
             }
         } catch (Exception e) {
