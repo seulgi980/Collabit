@@ -1,7 +1,12 @@
 package com.collabit.community.service;
 
+import com.collabit.community.domain.dto.Author;
 import com.collabit.community.exception.ImageCountExceededException;
 import com.collabit.community.exception.PostNotFoundException;
+import com.collabit.community.repository.CommentRepository;
+import com.collabit.global.common.ErrorCode;
+import com.collabit.global.common.PageResponseDTO;
+import com.collabit.global.error.exception.BusinessException;
 import com.collabit.global.service.S3Service;
 import com.collabit.community.domain.dto.CreatePostRequestDTO;
 import com.collabit.community.domain.dto.CreatePostResponseDTO;
@@ -16,8 +21,14 @@ import com.collabit.user.exception.UserDifferentException;
 import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -36,15 +47,16 @@ public class PostService {
     private final LikeCacheService likeCacheService;
 
     private static final String DIR_NAME = "posts";
+    private final CommentRepository commentRepository;
 
     @Transactional
     public CreatePostResponseDTO createPost(String userCode, CreatePostRequestDTO requestDTO) {
 
         User user = userRepository.findByCode(userCode)
             .orElseThrow(() -> {
-                log.debug("User not found for user code {}", userCode);
-                return new UserNotFoundException();
-            }
+                    log.debug("User not found for user code {}", userCode);
+                    return new BusinessException(ErrorCode.UNAUTHORIZED);
+                }
             );
 
         Post post = Post.builder()
@@ -55,7 +67,9 @@ public class PostService {
         log.debug("Post created with code: {}", savedPost.getCode());
 
         if (requestDTO.getImages() != null) {
-            if(requestDTO.getImages().length>4) throw new ImageCountExceededException();
+            if (requestDTO.getImages().length > 4) {
+                throw new ImageCountExceededException();
+            }
             Arrays.stream(requestDTO.getImages())
                 .map(file -> {
                     String url = s3Service.upload(file, DIR_NAME);
@@ -73,25 +87,37 @@ public class PostService {
         return responseDTO;
     }
 
-    public List<GetPostResponseDTO> getPostList(String userCode) {
-        List<GetPostResponseDTO> list = new ArrayList<>();
+    public PageResponseDTO<GetPostResponseDTO> getPostList(String userCode, int pageNumber) {
+        int size = 20;
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(Sort.Order.desc("createdAt")));
 
-        List<Post> posts = postRepository.findAll();
-        log.debug("Found {} posts", posts.size());
+        Page<Post> postPage = postRepository.findAll(pageable);
+        log.debug("Found {} posts, page {} of {}",
+            postPage.getTotalElements(),
+            pageNumber + 1,
+            postPage.getTotalPages());
 
-        for (Post post : posts) {
-            GetPostResponseDTO responseDTO = buildDTO(post, userCode);
-            list.add(responseDTO);
-        }
-        return list;
+        List<GetPostResponseDTO> content = postPage.getContent().stream()
+            .map(post -> buildDTO(post, userCode))
+            .collect(Collectors.toList());
+
+        return PageResponseDTO.<GetPostResponseDTO>builder()
+            .content(content)
+            .pageNumber(postPage.getNumber())
+            .pageSize(size)
+            .totalElements((int) postPage.getTotalElements())
+            .totalPages(postPage.getTotalPages())
+            .last(postPage.isLast())
+            .hasNext(postPage.hasNext())
+            .build();
     }
 
     public GetPostResponseDTO getPost(String userCode, int postCode) {
         Post post = postRepository.findByCode(postCode)
             .orElseThrow(() -> {
-                log.debug("could not find post with code: {}", postCode);
-                return new PostNotFoundException();
-            }
+                    log.debug("could not find post with code: {}", postCode);
+                    return new PostNotFoundException();
+                }
             );
         GetPostResponseDTO responseDTO = buildDTO(post, userCode);
         return responseDTO;
@@ -100,6 +126,13 @@ public class PostService {
     @Transactional
     public GetPostResponseDTO updatePost(String userCode, int postCode,
         UpdatePostRequestDTO requestDTO) {
+
+        User user = userRepository.findByCode(userCode)
+            .orElseThrow(() -> {
+                    log.debug("User not found for user code {}", userCode);
+                    return new BusinessException(ErrorCode.UNAUTHORIZED);
+                }
+            );
 
         Post post = postRepository.findByCode(postCode)
             .orElseThrow(() -> {
@@ -138,6 +171,13 @@ public class PostService {
     @Transactional
     public void deletePost(String userCode, int postCode) {
 
+        User user = userRepository.findByCode(userCode)
+            .orElseThrow(() -> {
+                    log.debug("User not found for user code {}", userCode);
+                    return new BusinessException(ErrorCode.UNAUTHORIZED);
+                }
+            );
+
         Post post = postRepository.findByCode(postCode)
             .orElseThrow(() -> new PostNotFoundException());
 
@@ -164,30 +204,87 @@ public class PostService {
 
     public GetPostResponseDTO buildDTO(Post post, String userCode) {
         log.debug("Building DTO for post: {}", post.getCode());
-
-        User user = userRepository.findByCode(userCode)
-            .orElseThrow(()-> {
+        System.out.println("유저코드"+userCode);
+        if (userCode != "anonymousUser") {
+            userRepository.findByCode(userCode).orElseThrow(() -> {
                 log.debug("could not find user with code {}", userCode);
                 return new UserNotFoundException();
             });
+        }
 
         List<Image> images = post.getImages();
-        String[] imageUrls = images.stream()
+        List<String> imageUrls = images.stream()
             .map(Image::getUrl)
-            .toArray(String[]::new);
+            .collect(Collectors.toList());
 
         int likeCount = likeCacheService.getLikeCount((post.getCode()));
-        boolean isLiked = likeCacheService.getIsLiked(userCode, post.getCode());
+        boolean isLiked = userCode != null ? likeCacheService.getIsLiked(userCode, post.getCode()) : false;
+
+        User author = post.getUser();
 
         return GetPostResponseDTO.builder()
             .code(post.getCode())
-            .userNickname(user.getNickname())
+            .author(Author.builder()
+                .nickname(author.getNickname())
+                .profileImage(author.getProfileImage())
+                .githubId(author.getGithubId())
+                .build())
             .content(post.getContent())
+            .commentCount(commentRepository.findByPostCode(post.getCode()).size())
             .createdAt(post.getCreatedAt())
             .updatedAt(post.getUpdatedAt())
             .images(imageUrls)
             .likeCount(likeCount)
-            .isLiked(isLiked)
+            .liked(isLiked)
+            .build();
+    }
+
+
+    public List<GetPostResponseDTO> recommendPost(String userCode) {
+        log.debug("Finding recommended posts");
+
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Post> topPosts = postRepository.findTop5ByOrderByLikeCountAndCreatedAt(pageable);
+
+        return topPosts.getContent().stream()
+            .map(post -> buildDTO(post, userCode))
+            .collect(Collectors.toList());
+    }
+
+    public List<GetPostResponseDTO> latestPost(String userCode) {
+        log.debug("Finding latest posts");
+
+        Pageable pageable = PageRequest.of(0, 5);
+        Page<Post> latestPosts = postRepository.findAll(pageable);
+
+        return latestPosts.getContent().stream()
+            .map(post -> buildDTO(post, userCode))
+            .collect(Collectors.toList());
+    }
+
+    public PageResponseDTO<GetPostResponseDTO> myPost(String userCode, int pageNumber) {
+        log.debug("Finding my posts");
+        int size = 20;
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(Sort.Order.desc("createdAt")));
+
+        Page<Post> postPage = postRepository.findByUserCode(userCode,pageable);
+        log.debug("Found {} posts, page {} of {}",
+            postPage.getTotalElements(),
+            pageNumber + 1,
+            postPage.getTotalPages());
+
+        List<GetPostResponseDTO> content = postPage.getContent().stream()
+            .map(post -> buildDTO(post, userCode))
+            .collect(Collectors.toList());
+
+        return PageResponseDTO.<GetPostResponseDTO>builder()
+            .content(content)
+            .pageNumber(postPage.getNumber())
+            .pageSize(size)
+            .totalElements((int) postPage.getTotalElements())
+            .totalPages(postPage.getTotalPages())
+            .last(postPage.isLast())
+            .hasNext(postPage.hasNext())
             .build();
     }
 }

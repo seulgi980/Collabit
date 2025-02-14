@@ -34,7 +34,7 @@ public class MypageController {
         return ResponseEntity.ok(mypageCurrentUserResponseDTO);
     }
 
-    @Operation(summary="마이페이지 유저 비밀번호 변경을 위해 현재 비밀번호를 -검증-.", description ="마이페이지에서 비밀번호를 변경하기 위한 임시토큰을 발급받는 API입니다.")
+    @Operation(summary="마이페이지 유저 비밀번호 변경을 위해 현재 비밀번호 검증", description ="마이페이지에서 비밀번호를 변경하기 위한 임시토큰을 발급받는 API입니다.")
     @PostMapping("/password")
     public ResponseEntity<ApiTextResponseDTO> verifyCurrentPasswordForChange(@RequestBody VerifyPasswordRequestDTO verifyPasswordRequestDTO) {
         String userCode = SecurityUtil.getCurrentUserCode();

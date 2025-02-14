@@ -1,8 +1,16 @@
-import { CreatePostRequest, EditPostRequest } from "../types/request/post";
+import { PageResponse } from "./../types/response/page";
+import { CreatePostRequest, EditPostAPIRequest } from "../types/request/post";
 import { PostDetailResponse, PostListResponse } from "../types/response/post";
 import optimizeImageToWebP from "../utils/optimizeImageToWebP";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+const fetchOptions = {
+  credentials: "include" as RequestCredentials,
+  headers: {
+    "Content-Type": "application/json",
+  },
+};
 
 export const createPostAPI = async (post: CreatePostRequest) => {
   const formData = new FormData();
@@ -12,7 +20,6 @@ export const createPostAPI = async (post: CreatePostRequest) => {
     post.images.map(async (image) => {
       try {
         const optimizedImage = await optimizeImageToWebP(image);
-
         const fileName = image.name.replace(/\.[^/.]+$/, "") + ".webp";
         formData.append("images", optimizedImage, fileName);
       } catch (error) {
@@ -27,31 +34,50 @@ export const createPostAPI = async (post: CreatePostRequest) => {
     body: formData,
     credentials: "include",
   });
+
   return response.json();
 };
+interface GetPostListAPIProps {
+  currentPage: number;
+}
+export const getPostListAPI = async ({
+  currentPage,
+}: GetPostListAPIProps): Promise<PageResponse<PostListResponse>> => {
+  const response = await fetch(`${apiUrl}/post?pageNumber=${currentPage}`, {
+    method: "GET",
+    ...fetchOptions,
+  });
 
-export const getPostListAPI = async (): Promise<PostListResponse[]> => {
-  try {
-    const response = await fetch(`${apiUrl}/post`);
-    if (response.ok) {
-      return response.json();
-    } else {
-      throw new Error("Failed to fetch posts");
-    }
-  } catch (error) {
-    console.error(error);
-    return [];
+  if (response.status === 204) {
+    return {
+      content: [],
+      pageNumber: 0,
+      pageSize: 0,
+      totalElements: 0,
+      totalPages: 0,
+      last: true,
+      hasNext: false,
+    };
   }
+
+  const data = await response.json();
+
+  return data;
 };
 
 export const getPostAPI = async (
   postCode: number,
 ): Promise<PostDetailResponse> => {
-  const response = await fetch(`${apiUrl}/post/${postCode}`);
+  const response = await fetch(`${apiUrl}/post/${postCode}`, {
+    ...fetchOptions,
+  });
   return response.json();
 };
 
-export const editPostAPI = async (postCode: number, post: EditPostRequest) => {
+export const editPostAPI = async ({
+  postCode,
+  post,
+}: EditPostAPIRequest): Promise<{ code: number }> => {
   const formData = new FormData();
   formData.append("content", post.content);
 
@@ -62,7 +88,7 @@ export const editPostAPI = async (postCode: number, post: EditPostRequest) => {
   const response = await fetch(`${apiUrl}/post/${postCode}`, {
     method: "PATCH",
     body: formData,
-    credentials: "include",
+    ...fetchOptions,
   });
   return response.json();
 };
@@ -70,17 +96,16 @@ export const editPostAPI = async (postCode: number, post: EditPostRequest) => {
 export const deletePostAPI = async (postCode: number) => {
   const response = await fetch(`${apiUrl}/post/${postCode}`, {
     method: "DELETE",
+    ...fetchOptions,
   });
-  return response.json();
+
+  return response;
 };
 
 export const likePostAPI = async (postCode: number) => {
   const response = await fetch(`${apiUrl}/post/${postCode}/like`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
+    ...fetchOptions,
   });
   return response.json();
 };
@@ -88,10 +113,31 @@ export const likePostAPI = async (postCode: number) => {
 export const unlikePostAPI = async (postCode: number) => {
   const response = await fetch(`${apiUrl}/post/${postCode}/like`, {
     method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
+    ...fetchOptions,
   });
   return response.json();
+};
+
+export const getMainPostAPI = async (): Promise<PostListResponse[]> => {
+  try {
+    const response = await fetch(`${apiUrl}/post/latest`, {
+      ...fetchOptions,
+    });
+    return response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+export const getRecommendPostAPI = async (): Promise<PostListResponse[]> => {
+  try {
+    const response = await fetch(`${apiUrl}/post/recommend`, {
+      ...fetchOptions,
+    });
+    return response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
