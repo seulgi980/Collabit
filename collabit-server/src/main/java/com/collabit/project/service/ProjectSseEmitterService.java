@@ -18,6 +18,7 @@ public class ProjectSseEmitterService {
 
     // targetUser에게 새로운 설문 응답이 왔음을 SSE로 전송
     public void sendNewSurveyResponse(String userCode, int projectInfoCode) {
+        System.out.println("설문조사 응답 SSE 전송=====================");
         SseEmitter emitter = sseEmitters.get(userCode);
         if (emitter != null) {
             try {
