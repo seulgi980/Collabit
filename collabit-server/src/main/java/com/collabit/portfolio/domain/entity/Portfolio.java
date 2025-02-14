@@ -38,7 +38,6 @@ public class Portfolio {
 
     @Column(name = "problem_solving", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long problemSolving;
-
     @Column(name = "conflict_resolution", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long conflictResolution;
 
@@ -77,12 +76,12 @@ public class Portfolio {
     ) {
         this.project = project;
         this.participant = participant;
-        this.sympathy = sympathy;
-        this.listening = listening;
-        this.conflictResolution = conflictResolution;
-        this.expression = expression;
-        this.problemSolving = problemSolving;
-        this.leadership = leadership;
+        this.sympathy += sympathy;
+        this.listening += listening;
+        this.conflictResolution += conflictResolution;
+        this.expression += expression;
+        this.problemSolving += problemSolving;
+        this.leadership += leadership;
         this.isUpdate = isUpdate;
         this.updatedAt = updatedAt;
     }
