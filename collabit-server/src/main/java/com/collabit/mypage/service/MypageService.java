@@ -110,11 +110,6 @@ public class MypageService {
             throw new BusinessException(ErrorCode.DATA_NOT_FOUND);
         }
 
-        // 현재 비밀번호가 맞는지 확인
-        if(!passwordEncoder.matches(changePasswordRequestDTO.getCurrentPassword(), userOptional.get().getPassword()) ) {
-            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
-        }
-
         // 새로운 비밀번호 "암호화 후" 저장
         String encodedNewPassword = authService.encodePassword(changePasswordRequestDTO.getNewPassword());
         userOptional.get().updatePassword(encodedNewPassword); // Dirty Checking으로 자동 업데이트
