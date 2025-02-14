@@ -29,10 +29,10 @@ const ReportHeader = ({ handleRefresh }: { handleRefresh?: () => void }) => {
   const [shareUrl, setShareUrl] = useState<string>("");
 
   useEffect(() => {
-    const fetchHashedValue = async () => {
+    const fetchHashedValue = () => {
       if (userInfo?.githubId) {
         try {
-          const hashedValue = await hashUser(userInfo.githubId);
+          const hashedValue = hashUser(userInfo.githubId);
           const shareUrl = `${process.env.NEXT_PUBLIC_SHARE_URL}/${hashedValue}`;
           setShareUrl(shareUrl);
         } catch (error) {
@@ -55,7 +55,7 @@ const ReportHeader = ({ handleRefresh }: { handleRefresh?: () => void }) => {
     <div className="flex justify-between border-b py-2">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">
-          {userInfo?.nickname}님의 협업 역량 리포트
+          {portfolioInfo?.nickname}님의 협업 역량 리포트
         </h1>
         <div className="flex gap-2">
           <p className="text-sm">

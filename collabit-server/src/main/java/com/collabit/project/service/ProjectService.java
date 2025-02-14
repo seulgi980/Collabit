@@ -1,5 +1,7 @@
 package com.collabit.project.service;
 
+import com.collabit.global.common.ErrorCode;
+import com.collabit.global.error.exception.BusinessException;
 import com.collabit.portfolio.domain.dto.ScoreData;
 import com.collabit.portfolio.domain.entity.Description;
 import com.collabit.portfolio.domain.entity.Feedback;
@@ -82,6 +84,10 @@ public class ProjectService {
     // 프론트에서 받은 프로젝트 정보 검증 후 프로젝트 저장
      public void saveProject(CreateProjectRequestDTO createProjectRequestDTO, String userCode) {
         log.info("프로젝트 등록 시작 - CreateProjectRequestDTO: {}, userCode: {}", createProjectRequestDTO.toString(), userCode);
+
+        if(createProjectRequestDTO.getContributors().isEmpty()){
+            throw new BusinessException(ErrorCode.EMPTY_CONTRIBUTOR_LIST);
+        }
 
         // 1. 시용자 조회
         User user = findUserByCode(userCode);
@@ -189,8 +195,28 @@ public class ProjectService {
             }
         }
 
+        // 레디스에 설문조사 요청을 저장
+        saveNewSurveyRequestForRedis(createProjectRequestDTO.getContributors(), projectInfo.getCode());
+
         log.info("프로젝트 등록 완료 - projectCode: {}, projectInfoCode: {}, 컨트리뷰터 수: {}",
                 project.getCode(), projectInfo.getCode(), createProjectRequestDTO.getContributors().size());
+    }
+
+    private void saveNewSurveyRequestForRedis(List<ContributorDetailDTO> contributors, Integer projectInfoCode) {
+        log.debug("설문 요청 처리 시작 - 컨트리뷰터 수: {}", contributors.size());
+
+        for (ContributorDetailDTO contributor : contributors) {
+            // 각 깃허브 아이디로 유저 조회
+            User user = userRepository.findByGithubId(contributor.getGithubId())
+                    .orElse(null);
+
+            // 유저가 존재하면 Redis에 키 등록
+            if (user != null) {
+                projectRedisService.saveNewSurveyRequest(user.getCode(), projectInfoCode);
+                log.debug("설문 요청 등록 완료 - userCode: {}, projectInfoCode: {}",
+                        user.getCode(), projectInfoCode);
+            }
+        }
     }
 
     // 로그인 유저의 전체 프로젝트 조회
@@ -381,7 +407,7 @@ public class ProjectService {
             isUpdate = true;
         }
         // 포트폴리오가 이미 생성되었다면 포트폴리오 테이블의 isUpdate도 확인
-        else if(portfolio != null && portfolio.getIsUpdate() && participant >= minimumCreateCondition){
+        else if(portfolio != null && portfolio.getIsUpdate() && participant >= minimumCreateCondition + portfolio.getParticipant()){
             isUpdate = true;
         }
         return isUpdate;

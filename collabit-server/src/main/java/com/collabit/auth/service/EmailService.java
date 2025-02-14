@@ -5,6 +5,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -24,7 +25,6 @@ public class EmailService {
     private static final long EXPIRE_MINUTES = 5; // 인증 코드 유효 시간: 5분
     private static final String EMAIL_SUBJECT = "[Collabit] 회원가입 인증 코드";
 
-
     // 이메일 전송 메서드
     public void sendMail(String email){
         int verificationCode = generateVerificationCode();
@@ -34,6 +34,8 @@ public class EmailService {
             MimeMessage message = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
 
+            helper.setFrom("collabittest3@gmail.com");  // 발신자 주소
+            helper.setReplyTo("collabittest3@gmail.com"); // 실제 답장 받을 이메일
             helper.setTo(email); // 수신자 이메일 주소
             helper.setSubject(EMAIL_SUBJECT); // 이메일 제목
             helper.setText("Collabit 회원가입인증 코드: " + verificationCode); // 이메일 본문
@@ -55,7 +57,11 @@ public class EmailService {
 
         Integer IntStoredCode = (Integer) storedCode;
         if (IntStoredCode.equals(code)) {
-            redisService.delete(email); // 인증 성공 시 Redis 에서 삭제
+            // 인증 성공 시 Redis 에서 삭제
+            redisService.delete(email);
+
+            // 인증 완료 저장
+            redisTemplate.opsForValue().set("verifiedEmailCode:" + email, true, 600, TimeUnit.SECONDS);
             return "성공";
         } else {
             return "틀림";

@@ -1,5 +1,7 @@
 package com.collabit.survey.service;
 
+import com.collabit.global.common.ErrorCode;
+import com.collabit.global.error.exception.BusinessException;
 import com.collabit.project.domain.entity.ProjectContributor;
 import com.collabit.project.domain.entity.ProjectInfo;
 import com.collabit.project.repository.ProjectContributorRepository;
@@ -16,6 +18,7 @@ import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -127,42 +130,6 @@ public class SurveyService {
                 .build();
         log.debug("surveyResponse: {}", surveyMultiple);
 
-        // 각 영역별 점수 초기화
-        int sympathy = 0;
-        int listening = 0;
-        int expression = 0;
-        int problemSolving = 0;
-        int conflictResolution = 0;
-        int leadership = 0;
-
-        // 인덱스를 6으로 나눈 나머지를 기준으로 점수 합산
-        for (int i = 0; i < scores.size(); i++) {
-            switch (i % 6) {
-                case 0:
-                    sympathy += scores.get(i);
-                    break;
-                case 1:
-                    listening += scores.get(i);
-                    break;
-                case 2:
-                    expression += scores.get(i);
-                    break;
-                case 3:
-                    problemSolving += scores.get(i);
-                    break;
-                case 4:
-                    conflictResolution += scores.get(i);
-                    break;
-                case 5:
-                    leadership += scores.get(i);
-                    break;
-            }
-        }
-
-        log.debug("Calculated Scores - Sympathy: {}, Listening: {}, Expression: {}, ProblemSolving: {}, ConflictResolution: {}, Leadership: {}",
-                sympathy, listening, expression, problemSolving, conflictResolution, leadership);
-
-        projectInfoRepository.updateSurveyScores(projectInfoCode, sympathy, listening, expression, problemSolving, conflictResolution, leadership);
         surveyMultipleRepository.save(surveyMultiple);
     }
 
@@ -220,7 +187,7 @@ public class SurveyService {
 
         if(projectInfo == null) {
             log.error("해당 ProjectInfo를 찾을 수 없습니다.");
-            throw new RuntimeException("해당 프로젝트 정보를 찾을 수 없습니다.");
+            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
         }
 
         log.debug("조회한 projectInfo: {}", projectInfo.toString());
@@ -232,5 +199,36 @@ public class SurveyService {
                 .surveyMultipleResponse(getMultipleResponse(userCode, projectInfoCode))
                 .surveyEssayResponse(getEssayResponse(userCode, projectInfoCode))
                 .build();
+    }
+
+    public void verifySurvey(String userCode, int projectInfoCode) {
+        log.debug("설문조사 상세조회 시작");
+
+        User user = userRepository.findByCode(userCode).orElseThrow(() -> {
+            log.debug("User not found");
+            return new UserNotFoundException();
+        });
+        log.debug("User GithubID: " + user.getGithubId());
+
+        ProjectInfo projectInfo = projectInfoRepository.findByCode(projectInfoCode);
+
+        if(projectInfo == null) {
+            log.error("해당 ProjectInfo를 찾을 수 없습니다.");
+            throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
+        }
+
+        // projectInfoCode와 projectCode로
+        List<String> contributorsGithubId = projectContributorRepository
+            .findByProjectCodeAndProjectInfoCodeLessThanEqual(
+                projectInfo.getProject().getCode(),
+                projectInfo.getCode()
+            )
+            .stream()
+            .filter(githubId -> !githubId.equals(projectInfo.getUser().getGithubId()))
+            .collect(Collectors.toList());
+
+        if(!contributorsGithubId.contains(user.getGithubId())){
+            throw new BusinessException(ErrorCode.ACCESS_DENIED);
+        }
     }
 }
