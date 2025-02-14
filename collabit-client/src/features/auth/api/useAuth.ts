@@ -1,5 +1,6 @@
 import { logoutAPI } from "@/shared/api/auth";
 import { getUserInfoAPI } from "@/shared/api/user";
+import { notificationService } from "@/shared/service/NotificationService";
 import { UserInfoResponse } from "@/shared/types/response/user";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ export const useAuth = () => {
       });
       document.cookie =
         "lastPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      notificationService.disconnect(); // 연결 종료
       router.refresh();
     } catch (error) {
       console.error(error);

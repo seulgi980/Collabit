@@ -12,7 +12,8 @@ export const useNotifications = () => {
     const unsubscribe = notificationService.subscribe((data) => {
       // 3. 새 알림이 오면 로컬 상태 업데이트
       setNotifications((prev) => [...prev, data]);
-
+      console.log(data);
+      console.log(notifications);
       // 4. 서버 상태(캐시) 무효화
       // queryClient.invalidateQueries(['notifications']);
     });
