@@ -23,10 +23,11 @@ public class ProjectRedisSubscriber implements MessageListener { //Redis의 특�
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
-            String channel = new String(message.getChannel(), StandardCharsets.UTF_8);
+            String body = new String(message.getBody(), StandardCharsets.UTF_8);
 
             // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9
-            String[] keyParts = channel.split("::");
+            System.out.println("레디스키 조회 ========================" + body);
+            String[] keyParts = body.split("::");
             String key = keyParts[0];
             String userCode = keyParts[1];
 
@@ -34,6 +35,7 @@ public class ProjectRedisSubscriber implements MessageListener { //Redis의 특�
                 // 새로운 설문 응답이 들어올 때 처리
                 if (key.startsWith("newSurveyResponse")) {
                     int projectInfoCode = Integer.parseInt(keyParts[2]);
+                    System.out.println("설문조사 응답 레디스 키 조회해서 if문 들어옴 ===================");
                     log.debug("설문조사 응답 알림 - targetUser: {}, projectInfoCode: {}", userCode, projectInfoCode);
                     projectSseEmitterService.sendNewSurveyResponse(userCode, projectInfoCode);
                 }
