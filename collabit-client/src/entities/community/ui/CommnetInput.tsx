@@ -18,6 +18,7 @@ interface CommponetInputProps {
   postCode: number;
   hidden?: boolean;
   parentCode?: number;
+  onCancel?: () => void;
 }
 
 const formSchema = z.object({
@@ -32,7 +33,8 @@ const CommponetInput = ({
   parentCode,
   nickname,
   postCode,
-  hidden = true,
+  hidden = false,
+  onCancel,
 }: CommponetInputProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -50,6 +52,7 @@ const CommponetInput = ({
       parentCode,
     }: {
       content: string;
+      postCode: number;
       parentCode?: number;
     }) => createCommentAPI({ postCode, content, parentCode }),
     onSuccess: () => {
@@ -69,16 +72,6 @@ const CommponetInput = ({
     },
   });
 
-  const {} = useMutation({
-    mutationFn: ({
-      content,
-      parentCode,
-    }: {
-      content: string;
-      parentCode?: number;
-    }) => createCommentAPI({ postCode, content, parentCode }),
-  });
-
   const onError = () => {
     toast({
       variant: "destructive",
@@ -87,8 +80,11 @@ const CommponetInput = ({
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
+    console.log(postCode, parentCode, values.comment);
+
     createComment({
       content: values.comment,
+      postCode,
       parentCode: parentCode ?? undefined,
     });
   };
@@ -106,7 +102,7 @@ const CommponetInput = ({
           className="flex w-full gap-2"
         >
           <div className="flex w-full items-center gap-2">
-            <Avatar>
+            <Avatar className={cn(parentCode !== 0 ? "" : "ml-2 h-6 w-6")}>
               <AvatarImage src={img} />
               <AvatarFallback>{nickname.slice(0, 2)}</AvatarFallback>
             </Avatar>
@@ -126,9 +122,15 @@ const CommponetInput = ({
               )}
             />
           </div>
-          <Button type="submit" variant="outline">
-            댓글 작성
-          </Button>
+
+          <div className="flex gap-2">
+            <Button type="submit">작성</Button>
+            {onCancel ? (
+              <Button type="button" variant="outline" onClick={onCancel}>
+                취소
+              </Button>
+            ) : null}
+          </div>
         </form>
       </Form>
     </div>

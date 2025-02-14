@@ -19,11 +19,6 @@ const CommentList = ({ postCode }: { postCode: number }) => {
     enabled: !!postCode,
   });
   console.log(data);
-  const user = {
-    nickname: "홍길동",
-    profileImage: "https://api.dicebear.com/7.x/pixel-art/svg?seed=홍길동",
-    githubId: "honggildong",
-  };
 
   const toggleReply = (commentCode: number) => {
     setReplyStates((prev) => ({
@@ -38,8 +33,7 @@ const CommentList = ({ postCode }: { postCode: number }) => {
         <li key={item.code} className="flex flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              {/* <UserAvatar user={item.author} /> */}
-              <UserAvatar user={user} />
+              <UserAvatar user={item.author} />
               <button
                 className="text-sm text-muted-foreground"
                 onClick={() => toggleReply(item.code)}
@@ -53,10 +47,11 @@ const CommentList = ({ postCode }: { postCode: number }) => {
           </div>
           <p className="ml-12">{item.content}</p>
           <CommponetInput
-            img={user.profileImage}
-            nickname={user.nickname}
+            img={item.author.profileImage}
+            nickname={item.author.nickname}
             postCode={postCode}
             parentCode={item.parentCommentCode}
+            onCancel={() => setReplyStates({})}
             hidden={!replyStates[item.code]}
           />
         </li>

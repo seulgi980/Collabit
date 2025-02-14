@@ -14,12 +14,7 @@ const UserAvatar = ({ user, size = "md", time }: UserAvatarProps) => {
   return (
     <div className="flex items-center gap-2">
       <Avatar className={cn("h-10 w-10", size === "sm" && "h-6 w-6")}>
-        <AvatarImage
-          src={
-            user.profileImage &&
-            `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.nickname}`
-          }
-        />
+        <AvatarImage src={user.profileImage} />
         <AvatarFallback className="truncate">
           {user.nickname.slice(0, 2)}
         </AvatarFallback>
