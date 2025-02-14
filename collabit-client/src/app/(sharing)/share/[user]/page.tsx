@@ -3,7 +3,7 @@ import { getPortfolioShareAPI } from "@/shared/api/report";
 import dynamic from "next/dynamic";
 
 interface SharePageProps {
-  params: { user: string };
+  params: Promise<{ user: string }>;
 }
 
 async function fetchReportShare(user: string) {
@@ -13,7 +13,7 @@ async function fetchReportShare(user: string) {
 export async function generateMetadata({
   params,
 }: SharePageProps): Promise<Metadata> {
-  const { user } = params;
+  const { user } = await params;
   const data = await fetchReportShare(user);
   const title = `${data.portfolioInfo?.nickname}님의 협업 리포트 - Collabit`;
   const description =
@@ -79,12 +79,12 @@ export async function generateMetadata({
 }
 
 const SurveyResult = dynamic(() => import("@/widget/report/ui/SurveyResult"), {
-  ssr: false,
+  ssr: true,
 });
 
 export default async function Page({ params }: SharePageProps) {
   console.log(params);
-  const { user } = params;
+  const { user } = await params;
   const reportShare = await fetchReportShare(user);
   const portfolioInfo = reportShare?.portfolioInfo;
   console.log(reportShare);
