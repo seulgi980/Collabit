@@ -29,6 +29,8 @@ export const useAuth = () => {
         userInfo: undefined,
         isAuthenticated: false,
       });
+      document.cookie =
+        "lastPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       router.refresh();
     } catch (error) {
       console.error(error);
