@@ -310,6 +310,19 @@ public class PortfolioService {
                 .sum();
     }
 
+    private boolean canUpdatePortfolio(Portfolio portfolio, int participant) {
+        boolean isUpdate = false;
+        // 포트폴리오가 아직 생성 전이면 6명 이상인지 확인
+        if(portfolio == null && participant >= MIN_PEOPLE_COUNT){
+            isUpdate = true;
+        }
+        // 포트폴리오가 이미 생성되었다면 포트폴리오 테이블의 isUpdate도 확인
+        else if(portfolio != null && portfolio.getIsUpdate() && participant >= MIN_PEOPLE_COUNT + portfolio.getParticipant()){
+            isUpdate = true;
+        }
+        return isUpdate;
+    }
+
     @Transactional
     public void generatePortfolio(String userCode) {
         User user = userRepository.findById(userCode).orElse(null);
