@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/features/auth/api/useAuth";
+
 import { Button } from "@/shared/ui/button";
 import { ChevronsUpIcon } from "lucide-react";
 import Image from "next/image";
@@ -8,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 const apiUri = process.env.NEXT_PUBLIC_API_URI;
+
 const LoginPage = () => {
   const router = useRouter();
 

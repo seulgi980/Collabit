@@ -35,6 +35,7 @@ const useLoginCallback = () => {
         } else {
           router.push("/");
         }
+
         document.cookie =
           "lastPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
       } else {
