@@ -53,9 +53,8 @@ public class MypageService {
                 .build();
     }
 
-    @Transactional
     // 비밀번호 변경이 가능한 일반회원인지 체크하는 메서드
-    public boolean isCommenUser(String userCode) {
+    private boolean isCommenUser(String userCode) {
         Optional<User> userOptional = userRepository.findByCode(userCode);
 
         if(userOptional.isEmpty()) {
@@ -71,6 +70,11 @@ public class MypageService {
     // 현재 비밀번호가 맞는지 검증하는 메서드
     @Transactional
     public boolean verifyPassword(String userCode, VerifyPasswordRequestDTO verifyPasswordRequestDTO) {
+        // 일반회원인지 확인
+        if(!isCommenUser(userCode)) {
+            throw new BusinessException((ErrorCode.UNAUTHORIZED));
+        }
+
         // 사용자 조회
         Optional<User> userOptional = userRepository.findByCode(userCode);
 
