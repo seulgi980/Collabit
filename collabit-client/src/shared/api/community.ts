@@ -149,3 +149,34 @@ export const getRecommendPostAPI = async (): Promise<PostListResponse[]> => {
     return [];
   }
 };
+
+interface GetMyPostListAPIProps {
+  currentPage: number;
+}
+export const getMyPostListAPI = async ({
+  currentPage,
+}: GetMyPostListAPIProps): Promise<PageResponse<PostListResponse>> => {
+  const response = await fetch(
+    `${apiUrl}/post/myPost?pageNumber=${currentPage}`,
+    {
+      method: "GET",
+      ...fetchOptions,
+    },
+  );
+
+  if (response.status === 204) {
+    return {
+      content: [],
+      pageNumber: 0,
+      pageSize: 0,
+      totalElements: 0,
+      totalPages: 0,
+      last: true,
+      hasNext: false,
+    };
+  }
+
+  const data = await response.json();
+
+  return data;
+};
