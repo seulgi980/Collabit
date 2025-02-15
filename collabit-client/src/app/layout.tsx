@@ -7,6 +7,7 @@ import QueryProviders from "../shared/lib/query/QueryProviders";
 import "./globals.css";
 import ModalContainer from "@/shared/ui/ModalContainer";
 import { Toaster } from "@/shared/ui/toaster";
+import { notificationService } from "@/shared/service/NotificationService";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,6 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
+  console.log(notificationService);
+
   return (
     <html lang="ko-KR">
       <body className={`${inter.className}`}>

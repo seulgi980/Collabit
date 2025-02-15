@@ -1,5 +1,7 @@
 import { getUserInfoAPI } from "@/shared/api/user";
+import { useNotifications } from "@/shared/hooks/useNotifications";
 import useModalStore from "@/shared/lib/stores/modalStore";
+import { notificationService } from "@/shared/service/NotificationService";
 import OneButtonModal from "@/widget/ui/modals/OneButtonModal";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -8,6 +10,7 @@ import { useEffect } from "react";
 const useLoginCallback = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { notifications } = useNotifications();
   const { openModal, closeModal } = useModalStore();
 
   useEffect(() => {
@@ -35,6 +38,7 @@ const useLoginCallback = () => {
         } else {
           router.push("/");
         }
+        notificationService.connect();
 
         document.cookie =
           "lastPath=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

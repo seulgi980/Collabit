@@ -13,10 +13,14 @@ class NotificationService {
   }
 
   connect() {
-    if (this.eventSource) return;
+    if (this.eventSource?.readyState === EventSource.OPEN) return;
+
+    if (this.eventSource) {
+      this.eventSource.close();
+    }
 
     this.eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/sse/subscribe`,
+      `${process.env.NEXT_PUBLIC_API_URL}/sse/subscribe`,
       {
         withCredentials: true,
       },
@@ -25,7 +29,23 @@ class NotificationService {
     this.eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
       this.subscribers.forEach((callback) => callback(data));
+      console.log("data", data);
     };
+
+    this.eventSource.onerror = (error) => {
+      console.error("EventSource failed:", error);
+      this.reconnect();
+    };
+  }
+
+  private reconnect() {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+
+    // 3초 후 재연결 시도
+    setTimeout(() => this.connect(), 3000);
   }
 
   disconnect() {
