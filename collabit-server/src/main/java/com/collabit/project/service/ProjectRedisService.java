@@ -18,9 +18,9 @@ public class ProjectRedisService {
     private static final String NEW_SURVEY_REQUEST_KEY_PREFIX = "newSurveyRequest::";
     private final RedisTemplate<String, String> stringRedisTemplate;
 
-    // 특정 userCode에 대한 모든 newSurveyResponse 키-값 쌍을 조회
+    // 해당 유저에게 보내진 모든 신규 설문 응답 알림 조회
     public Map<Integer, Integer> findNewSurveyResponsesByUserCode(String userCode) {
-        log.debug("해당 유저의 모든 프로젝트 조회 시작");
+        log.debug("해당 유저의 모든 신규 설문 응답 조회 시작");
         try {
             // newSurveyResponse::{userCode}::* 패턴으로 Redis에서 해당 유저와 관련된 모든 키 조회
             String pattern = NEW_SURVEY_RESPONSE_KEY_PREFIX + userCode + "::*";
@@ -57,7 +57,7 @@ public class ProjectRedisService {
         }
     }
 
-    // userCode에 해당하는 모든 newSurveyResponse 삭제 후 반환
+    // 해당 유저에게 온 신규 설문 응답 알림들 삭제
     public Map<Integer, Integer> removeAllNotificationByUserCode(String userCode) {
         log.debug("해당 유저의 모든 프로젝트 알림 삭제 시작");
 
@@ -102,6 +102,7 @@ public class ProjectRedisService {
         }
     }
 
+    // 어떤 유저에게 설문 요청을 보낼지 저장
     public void saveNewSurveyRequest(String userCode, Integer projectInfoCode) {
         try {
             String key = NEW_SURVEY_REQUEST_KEY_PREFIX + userCode + "::" + projectInfoCode;
@@ -113,10 +114,18 @@ public class ProjectRedisService {
         }
     }
 
-    // 특정 userCode에 대한 모든 projectInfoCode 조회
-    public List<Integer> findAllProjectInfoCodesByUserCode(String userCode) {
+    // 해당 유저에게 요청된 새로운 설문들 조회 (채팅 알림)
+    public List<Integer> findAllNewSurveyRequest(String userCode) {
+        return findProjectInfoCodes(NEW_SURVEY_REQUEST_KEY_PREFIX + userCode + "::*");
+    }
+
+    // 해당 유저에게 보내진 모든 신규 설문 응답 조회 (프로젝트 알림)
+    public List<Integer> findAllNewSurveyResponse(String userCode) {
+        return findProjectInfoCodes(NEW_SURVEY_RESPONSE_KEY_PREFIX + userCode + "::*");
+    }
+
+    private List<Integer> findProjectInfoCodes(String pattern) {
         try {
-            String pattern = NEW_SURVEY_REQUEST_KEY_PREFIX + userCode + "::*";
             Set<String> keys = stringRedisTemplate.keys(pattern);
 
             if (keys == null || keys.isEmpty()) {
@@ -125,6 +134,7 @@ public class ProjectRedisService {
 
             return keys.stream()
                     .map(key -> key.split("::"))
+                    .filter(parts -> parts.length >= 3)
                     .map(parts -> {
                         try {
                             return Integer.parseInt(parts[2]);
@@ -136,8 +146,9 @@ public class ProjectRedisService {
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.error("Redis에서 projectInfoCode 조회 중 오류 발생", e);
+            log.error("Redis에서 projectInfoCode 조회 중 오류 발생: {}", pattern, e);
             return new ArrayList<>();
         }
     }
+
 }
