@@ -10,15 +10,19 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+interface NavMobileProps {
+  menuList: { name: string; href: string }[];
+  hasNewChat: boolean;
+  hasNewResponse: boolean;
+  isChatRoom: boolean;
+}
+
 const NavMobile = ({
   menuList,
   hasNewChat,
+  hasNewResponse,
   isChatRoom,
-}: {
-  menuList: { name: string; href: string }[];
-  hasNewChat: boolean;
-  isChatRoom: boolean;
-}) => {
+}: NavMobileProps) => {
   const pathname = usePathname();
   const menus = [{ name: "홈", href: "/" }, ...menuList];
   const icons = {
@@ -52,7 +56,8 @@ const NavMobile = ({
                 className="relative flex flex-col items-center justify-center gap-1"
                 href={i.href}
               >
-                {hasNewChat && i.name === "채팅" && (
+                {((hasNewChat && i.name === "채팅") ||
+                  (hasNewResponse && i.name === "프로젝트")) && (
                   <Dot className="absolute -top-5 text-violet-700" />
                 )}
                 <Icon />

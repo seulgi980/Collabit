@@ -3,10 +3,19 @@ import { useAuth } from "@/features/auth/api/useAuth";
 import { notificationService } from "@/shared/service/NotificationService";
 import { useNotificationStore } from "@/shared/lib/stores/NotificationStore";
 import { useEffect } from "react";
+import { useShallow } from "zustand/shallow";
 
 const NotificationInitializer = () => {
   const { isAuthenticated } = useAuth();
-  const { addSurveyRequests, addSurveyResponses } = useNotificationStore();
+  const { setSurveyRequests, setSurveyResponses, setChatRequests, reset } =
+    useNotificationStore(
+      useShallow((state) => ({
+        setSurveyRequests: state.setSurveyRequests,
+        setSurveyResponses: state.setSurveyResponses,
+        setChatRequests: state.setChatRequests,
+        reset: state.reset,
+      })),
+    );
 
   useEffect(() => {
     // console.log("NotificationInitializer");
@@ -18,10 +27,13 @@ const NotificationInitializer = () => {
 
         if (event.type === "newSurveyRequest") {
           // console.log("요청에 대한 전역상태 구독");
-          addSurveyRequests(event.data);
+          setSurveyRequests(event.data);
         } else if (event.type === "newSurveyResponse") {
           // console.log("응답에 대한 전역상태 구독");
-          addSurveyResponses(event.data);
+          setSurveyResponses(event.data);
+        } else if (event.type === "newChatRequest") {
+          // console.log("채팅에 대한 전역상태 구독");
+          setChatRequests(event.data);
         }
       });
 
@@ -29,11 +41,12 @@ const NotificationInitializer = () => {
       notificationService.connect();
 
       return () => {
+        reset();
         unsubscribe();
         notificationService.disconnect();
       };
     }
-  }, [isAuthenticated, addSurveyRequests, addSurveyResponses]);
+  }, [isAuthenticated]);
 
   return null;
 };

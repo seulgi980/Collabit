@@ -4,32 +4,57 @@ import { devtools } from "zustand/middleware";
 interface NotificationState {
   surveyRequests: number[];
   surveyResponses: number[];
-  addSurveyRequests: (ids: number[]) => void;
-  addSurveyResponses: (ids: number[]) => void;
+  chatRequests: number[];
+}
+interface NotificationAction {
+  setSurveyRequests: (ids: number[]) => void;
+  setSurveyResponses: (ids: number[]) => void;
+  setChatRequests: (ids: number[]) => void;
+  reset: () => void;
 }
 
-export const useNotificationStore = create<NotificationState>()(
+export const useNotificationStore = create<
+  NotificationState & NotificationAction
+>()(
   devtools(
     (set) => ({
       surveyRequests: [],
       surveyResponses: [],
-
-      addSurveyRequests: (ids) =>
+      chatRequests: [],
+      setSurveyRequests: (ids) =>
         set(
           () => ({
             surveyRequests: ids,
           }),
           false,
-          "notifications/addSurveyRequests",
+          "notifications/setSurveyRequests",
         ),
 
-      addSurveyResponses: (ids) =>
+      setSurveyResponses: (ids) =>
         set(
           () => ({
             surveyResponses: ids,
           }),
           false,
-          "notifications/addSurveyResponses",
+          "notifications/setSurveyResponses",
+        ),
+      setChatRequests: (ids) =>
+        set(
+          () => ({
+            chatRequests: ids,
+          }),
+          false,
+          "notifications/setChatRequests",
+        ),
+      reset: () =>
+        set(
+          () => ({
+            surveyRequests: [],
+            surveyResponses: [],
+            chatRequests: [],
+          }),
+          false,
+          "notifications/reset",
         ),
     }),
     {
