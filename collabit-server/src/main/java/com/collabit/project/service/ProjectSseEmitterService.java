@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -60,9 +62,13 @@ public class ProjectSseEmitterService {
 
     private void sendEventSafely(SseEmitter emitter, String eventName, Object data, String userCode) {
         try {
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("type", eventName);
+            eventData.put("data", data);
+
             emitter.send(SseEmitter.event()
-                    .name(eventName)
-                    .data(data));
+                    .name("message")
+                    .data(eventData));
         } catch (IOException e) {
             log.error("{} 유저에게 {} 이벤트 전송 실패", eventName, userCode, e);
             emitter.complete();
