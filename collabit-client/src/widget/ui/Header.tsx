@@ -7,18 +7,38 @@ import MENU_LIST from "@/shared/constant/MENU_LIST";
 import { QUERY_SIZE } from "@/shared/constant/QUERY_SIZE";
 import { toast } from "@/shared/hooks/use-toast";
 import useMediaQuery from "@/shared/hooks/useMediaQuery";
+import { useNotificationStore } from "@/shared/lib/stores/NotificationStore";
+import { useShallow } from "zustand/shallow";
+
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const Header = () => {
   const isMobile = useMediaQuery(QUERY_SIZE.md);
   const pathname = usePathname();
   const router = useRouter();
-  const [hasNewChat] = useState(true);
+
   const { userInfo, isAuthenticated, logout } = useAuth();
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/survey/") && pathname !== "/survey");
+
+  const { surveyRequests, surveyResponses, chatRequests } =
+    useNotificationStore(
+      useShallow((state) => ({
+        surveyRequests: state.surveyRequests,
+        surveyResponses: state.surveyResponses,
+        chatRequests: state.chatRequests,
+      })),
+    );
+  console.log("surveyRequests", surveyRequests);
+  console.log("surveyResponses", surveyResponses);
+  console.log("chatRequests", chatRequests);
+
+  const hasNewChat = surveyRequests.length > 0 || chatRequests.length > 0;
+  const hasNewResponse = surveyResponses.length > 0;
+  console.log("hasNewChat", hasNewChat);
+  console.log("hasNewResponse", hasNewResponse);
 
   // 채팅 알림
   useEffect(() => {
@@ -53,6 +73,7 @@ const Header = () => {
           <NavMobile
             menuList={MENU_LIST}
             hasNewChat={hasNewChat}
+            hasNewResponse={hasNewResponse}
             isChatRoom={isChatRoom}
           />
         </>
@@ -65,6 +86,7 @@ const Header = () => {
           userInfo={userInfo}
           menuList={MENU_LIST}
           hasNewChat={hasNewChat}
+          hasNewResponse={hasNewResponse}
         />
       )}
     </>
