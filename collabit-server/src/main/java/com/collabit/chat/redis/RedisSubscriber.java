@@ -25,7 +25,7 @@ public class RedisSubscriber implements MessageListener {
 
     private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     private final ChatSseEmitterService chatSseEmitterService;
     private final ChatRedisService chatRedisService;
 
