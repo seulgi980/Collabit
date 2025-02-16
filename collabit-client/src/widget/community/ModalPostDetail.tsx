@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 
 const ModalPostDetail = ({ post }: { post: PostDetailResponse }) => {
   const router = useRouter();
-  console.log(router);
 
   return (
     <Dialog
