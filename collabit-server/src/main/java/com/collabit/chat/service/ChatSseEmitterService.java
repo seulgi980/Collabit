@@ -14,9 +14,16 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChatSseService {
+public class ChatSseEmitterService {
 
     private final ConcurrentHashMap<String, SseEmitter> sseEmitters;
+    private final ChatRedisService chatRedisService;
+
+    // 헤더의 채팅 알림 전송
+    public void sendHeaderChatNotification(String userCode){
+        List<Integer> unreadChatRooms = chatRedisService.getUnreadChatRoomForUser(userCode);
+        sendUnreadChatRooms(userCode, unreadChatRooms);
+    }
 
     // 채팅 알림 전송
     public void sendUnreadChatRooms(String userCode, List<Integer> roomCodes) {

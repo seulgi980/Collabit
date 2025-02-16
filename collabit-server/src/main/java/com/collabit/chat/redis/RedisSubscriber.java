@@ -2,7 +2,7 @@ package com.collabit.chat.redis;
 
 import com.collabit.chat.domain.dto.WebSocketMessageDTO;
 import com.collabit.chat.service.ChatRedisService;
-import com.collabit.chat.service.ChatSseService;
+import com.collabit.chat.service.ChatSseEmitterService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class RedisSubscriber implements MessageListener {
     private final ObjectMapper objectMapper;
     private final SimpMessagingTemplate messagingTemplate;
     private final RedisTemplate<Object, Object> redisTemplate;
-    private final ChatSseService chatSseService;
+    private final ChatSseEmitterService chatSseEmitterService;
     private final ChatRedisService chatRedisService;
 
     @Override
@@ -62,7 +62,7 @@ public class RedisSubscriber implements MessageListener {
                 for (Map.Entry<Object, Object> entry : entries.entrySet()) {
                     String userCode = entry.getKey().toString();
                     List<Integer> unreadRooms = chatRedisService.getUnreadChatRoomForUser(userCode);
-                    chatSseService.sendUnreadChatRooms(userCode, unreadRooms);
+                    chatSseEmitterService.sendUnreadChatRooms(userCode, unreadRooms);
                 }
             } catch (Exception e) {
                 log.error("Failed to process chat message key event", e);
