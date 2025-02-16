@@ -7,7 +7,8 @@ import QueryProviders from "../shared/lib/query/QueryProviders";
 import "./globals.css";
 import ModalContainer from "@/shared/ui/ModalContainer";
 import { Toaster } from "@/shared/ui/toaster";
-import { notificationService } from "@/shared/service/NotificationService";
+
+import NotificationInitializer from "@/widget/ui/NotificationInitializer";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,12 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
-  console.log(notificationService);
-
   return (
     <html lang="ko-KR">
       <body className={`${inter.className}`}>
         <QueryProviders>
+          <NotificationInitializer />
           <Header />
           <main className="w-full px-5 pb-10 md:px-20 md:pb-0">
             {children}

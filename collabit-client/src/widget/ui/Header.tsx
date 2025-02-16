@@ -7,20 +7,29 @@ import MENU_LIST from "@/shared/constant/MENU_LIST";
 import { QUERY_SIZE } from "@/shared/constant/QUERY_SIZE";
 import { toast } from "@/shared/hooks/use-toast";
 import useMediaQuery from "@/shared/hooks/useMediaQuery";
-import NotificationHandler from "@/shared/service/NotificationHandler";
+import { useNotificationStore } from "@/shared/lib/stores/NotificationStore";
+
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 const Header = () => {
   const isMobile = useMediaQuery(QUERY_SIZE.md);
   const pathname = usePathname();
   const router = useRouter();
-  const [hasNewChat] = useState(true);
+
   const { userInfo, isAuthenticated, logout } = useAuth();
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/survey/") && pathname !== "/survey");
-  NotificationHandler();
+
+  const { surveyRequests, surveyResponses } = useNotificationStore();
+  console.log("surveyRequests", surveyRequests);
+  console.log("surveyResponses", surveyResponses);
+
+  const hasNewChat = surveyRequests.length > 0;
+  const hasNewResponse = surveyResponses.length > 0;
+  // console.log("HEADER", surveyRequests, surveyResponses);
+
   // 채팅 알림
   useEffect(() => {
     if (hasNewChat && pathname === "/") {
