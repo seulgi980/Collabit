@@ -135,13 +135,6 @@ public class ChatRoomListService {
                 .build();
     }
 
-    // Redis와 연계하여 읽지 않은 메시지 확인
-    public ChatUnreadResponseDTO getUnreadMessagesCount(String userCode) {
-        return ChatUnreadResponseDTO.builder()
-                .isExist(chatRedisService.getUnreadMessagesForUser(userCode) > 0)
-                .build();
-    }
-
     // 상대 유저 정보 가져오기
     private User getOtherUser(ChatRoom chatRoom, String userCode) {
         return chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
