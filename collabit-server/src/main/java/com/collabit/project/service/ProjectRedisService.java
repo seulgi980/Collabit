@@ -26,7 +26,7 @@ public class ProjectRedisService {
             String pattern = NEW_SURVEY_RESPONSE_KEY_PREFIX + userCode + "::*";
             Set<String> keys = stringRedisTemplate.keys(pattern);
 
-            if (keys == null || keys.isEmpty()) {
+            if (keys.isEmpty()) {
                 return new HashMap<>();
             }
 
@@ -102,6 +102,27 @@ public class ProjectRedisService {
         }
     }
 
+    // 설문 응답을 완료하여 해당 유저의 요청 알림 삭제
+    public void removeNewSurveyRequest(String userCode, String projectInfoCode) {
+        log.debug("해당 유저가 응답을 완료한 프로젝트의 설문 요청 알림 삭제 시작");
+
+        try {
+            String pattern = NEW_SURVEY_REQUEST_KEY_PREFIX + userCode + "::" + projectInfoCode;
+            Set<String> keys = stringRedisTemplate.keys(pattern);
+
+            if (keys.isEmpty()) {
+                log.debug("삭제할 알림이 없음: responseUserCode={}, projectInfoCode={}", userCode, projectInfoCode);
+                return;
+            }
+
+            stringRedisTemplate.delete(keys);
+            log.debug("알림 삭제 완료: 삭제된 알림 수={}", keys.size());
+        } catch (Exception e) {
+            log.error("Redis에서 설문 요청 알림 삭제 중 오류 발생: userCode={}, projectInfoCode={}",
+                    userCode, projectInfoCode, e);
+        }
+    }
+
     // 어떤 유저에게 설문 요청을 보낼지 저장
     public void saveNewSurveyRequest(String userCode, Integer projectInfoCode) {
         try {
@@ -128,7 +149,7 @@ public class ProjectRedisService {
         try {
             Set<String> keys = stringRedisTemplate.keys(pattern);
 
-            if (keys == null || keys.isEmpty()) {
+            if (keys.isEmpty()) {
                 return new ArrayList<>();
             }
 
@@ -150,5 +171,4 @@ public class ProjectRedisService {
             return new ArrayList<>();
         }
     }
-
 }
