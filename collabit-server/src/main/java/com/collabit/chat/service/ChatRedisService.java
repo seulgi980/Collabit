@@ -30,19 +30,12 @@ public class ChatRedisService {
     }
 
     // 모든 읽지 않은 메시지 수 반환 (사용자 기준)
-    public int getUnreadMessagesForUser(String userCode) {
+    public List<Integer> getUnreadChatRoomForUser(String userCode) {
         String keyPattern = "chat_message:*";
-        List<String> allRoomKeys = redisTemplate.keys(keyPattern).stream()
+        return redisTemplate.keys(keyPattern).stream()
                 .filter(key -> redisTemplate.opsForHash().hasKey(key, userCode))
+                .map(key -> Integer.parseInt(key.split(":")[1]))
                 .collect(Collectors.toList());
-
-        // 각 키에서 읽지 않은 메시지 수를 합산
-        return allRoomKeys.stream()
-                .mapToInt(key -> {
-                    Object unreadCount = redisTemplate.opsForHash().get(key, userCode);
-                    return unreadCount != null ? Integer.parseInt(unreadCount.toString()) : 0;
-                })
-                .sum();
     }
 
     // 메시지 상태 업데이트

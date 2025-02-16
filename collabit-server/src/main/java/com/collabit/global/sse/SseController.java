@@ -1,5 +1,6 @@
 package com.collabit.global.sse;
 
+import com.collabit.chat.service.ChatSseEmitterService;
 import com.collabit.global.security.SecurityUtil;
 import com.collabit.project.service.ProjectSseEmitterService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class SseController {
 
     private final SseEmitterService sseEmitterService;
     private final ProjectSseEmitterService projectSseEmitterService;
+    private final ChatSseEmitterService chatSseEmitterService;
 
     // 클라이언트의 SSE 연결 요청을 처리하는 엔드포인트 (로그인 유저와 연결)
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -29,6 +31,7 @@ public class SseController {
     public ResponseEntity<?> notification() {
         String userCode = SecurityUtil.getCurrentUserCode();
         projectSseEmitterService.sendHeaderNotification(userCode);
+        chatSseEmitterService.sendHeaderChatNotification(userCode);
         return ResponseEntity.ok().build();
     }
 }
