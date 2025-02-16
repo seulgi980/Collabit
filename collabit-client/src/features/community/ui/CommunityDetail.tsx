@@ -22,9 +22,9 @@ const CommunityDetail = ({ post }: { post: PostDetailResponse }) => {
         <div className="flex w-full items-center justify-between">
           <UserAvatar
             user={{
-              nickname: post.author.nickname,
-              profileImage: post.author.profileImage,
-              githubId: post.author.githubId,
+              nickname: post.author?.nickname,
+              profileImage: post.author?.profileImage,
+              githubId: post.author?.githubId,
             }}
             time={formatRelativeTime(post.createdAt)}
           />
@@ -44,12 +44,14 @@ const CommunityDetail = ({ post }: { post: PostDetailResponse }) => {
                 <CarouselItem
                   key={item}
                   className={
-                    post.images.length > 1 ? "basis-1/2" : "basis-full"
+                    post.images.length > 1
+                      ? "basis-full md:basis-1/2"
+                      : "basis-full"
                   }
                 >
                   <div className="p-1">
                     <Card className="">
-                      <CardContent className="relative flex h-[100px] items-center justify-center p-6 md:h-[300px]">
+                      <CardContent className="relative flex h-[300px] items-center justify-center p-6">
                         <Image
                           className="object-contain"
                           src={item}
