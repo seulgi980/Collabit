@@ -14,18 +14,33 @@ export default function Home() {
 
   useEffect(() => {
     setIsMounted(true);
-    openModal(
-      <NotificationModal
-        title="알림"
-        description={`안녕하세요, Collabit 팀입니다.\n
-  현재 프로젝트 및 리포트 생성 기능이 정상적으로 작동하고 있으며,\n
-  커뮤니티 및 채팅 생성, 마이페이지 기능은 개발 진행 중입니다.\n
-  추후 업데이트에서 반영될 예정이니 많은 기대 부탁드립니다.\n
-  감사합니다!😊`}
-        buttonText="확인"
-        handleButtonClick={closeModal}
-      />,
+
+    const notificationCount = Number(
+      localStorage.getItem("notificationCount") || "0",
     );
+
+    if (notificationCount < 5) {
+      openModal(
+        <NotificationModal
+          title="알림"
+          description={`안녕하세요, Collabit 팀입니다.\n
+    Collabit은 함께 프로젝트를 진행했던 동료들로부터 \n나의 협업능력에 대해 피드백을 받는 플랫폼입니다. \n
+    "Github로그인 > 프로젝트 등록 > URL 공유 > 피드백 > 리포트 생성"\n 순으로 진행하시면 됩니다. \n
+    생성된 리포트는 URL 공유, PDF 생성 등 다양하게 활용할 수 있습니다.
+
+    이용관련 피드백은 커뮤니티에 자유롭게 올려주시면 \n반영하여 업데이트를 진행하도록 하겠습니다.
+    감사합니다!😊`}
+          buttonText="확인"
+          handleButtonClick={() => {
+            localStorage.setItem(
+              "notificationCount",
+              String(notificationCount + 1),
+            );
+            closeModal();
+          }}
+        />,
+      );
+    }
   }, [openModal, closeModal]);
 
   if (!isMounted) return null;
