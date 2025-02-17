@@ -76,7 +76,7 @@ public class ProjectRedisService {
 
             for (String key : keys) {
                 String[] keyParts = key.split("::");
-                if (keyParts.length == 3) {
+                if (keyParts.length >= 3) {
                     try {
                         int projectInfoCode = Integer.parseInt(keyParts[2]);
                         String value = ops.get(key);
