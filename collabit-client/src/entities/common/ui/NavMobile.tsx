@@ -11,20 +11,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 interface NavMobileProps {
-  menuList: { name: string; href: string }[];
-  hasNewChat: boolean;
-  hasNewResponse: boolean;
+  menuList: { name: string; href: string; isNew: boolean }[];
   isChatRoom: boolean;
 }
 
-const NavMobile = ({
-  menuList,
-  hasNewChat,
-  hasNewResponse,
-  isChatRoom,
-}: NavMobileProps) => {
+const NavMobile = ({ menuList, isChatRoom }: NavMobileProps) => {
   const pathname = usePathname();
-  const menus = [{ name: "홈", href: "/" }, ...menuList];
+  const menus = [{ name: "홈", href: "/", isNew: false }, ...menuList];
   const icons = {
     홈: Home,
     리포트: ClipboardList,
@@ -56,10 +49,7 @@ const NavMobile = ({
                 className="relative flex flex-col items-center justify-center gap-1"
                 href={i.href}
               >
-                {((hasNewChat && i.name === "채팅") ||
-                  (hasNewResponse && i.name === "프로젝트")) && (
-                  <Dot className="absolute -top-5 text-violet-700" />
-                )}
+                {i.isNew && <Dot className="absolute -top-5 text-violet-700" />}
                 <Icon />
                 <span className="text-xs font-medium">{i.name}</span>
               </Link>

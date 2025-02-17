@@ -25,7 +25,7 @@ public class ProjectRedisSubscriber implements MessageListener { //Redis의 특�
         try {
             String body = new String(message.getBody(), StandardCharsets.UTF_8);
 
-            // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9
+            // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9::f86f4f15-bab2-413b-881e-ae34799f9b84
             String[] keyParts = body.split("::");
             String key = keyParts[0];
             String targetUserCode = keyParts[1]; // 설문조사의 대상 userCode
