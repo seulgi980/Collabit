@@ -29,7 +29,7 @@ public class ChatRedisService {
         return unreadCount != null ? Integer.parseInt(unreadCount.toString()) : 0;
     }
 
-    // 모든 읽지 않은 메시지 수 반환 (사용자 기준)
+    // 모든 읽지 않은 메시지가 있는 chat_room code 반환 (사용자 기준)
     public List<Integer> getUnreadChatRoomForUser(String userCode) {
         String keyPattern = "chat_message:*";
         return redisTemplate.keys(keyPattern).stream()
