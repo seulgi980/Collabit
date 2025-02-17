@@ -41,7 +41,7 @@ class MongoDB:
     """Save survey data to MongoDB"""
     try:
       survey_data = {
-        "submittedAt": datetime.utcnow() + timedelta(hours=9),
+        "submittedAt": datetime.utcnow(),
         "messages": messages,
         "projectInfoCode": int(survey_code),
         "userCode": user_code
