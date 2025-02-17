@@ -13,13 +13,15 @@ import java.util.stream.Collectors;
 public class ChatRedisService {
 
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ChatSseEmitterService chatSseEmitterService;
 
-    public ChatRedisService(RedisConnectionFactory redisConnectionFactory) {
+    public ChatRedisService(RedisConnectionFactory redisConnectionFactory, ChatSseEmitterService chatSseEmitterService) {
         this.redisTemplate = new RedisTemplate<>();
         this.redisTemplate.setConnectionFactory(redisConnectionFactory);
         Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<>(Object.class);
         redisTemplate.setDefaultSerializer(serializer);
         redisTemplate.afterPropertiesSet();
+        this.chatSseEmitterService = chatSseEmitterService;
     }
 
     // 읽지 않은 메시지 수 반환
@@ -41,7 +43,10 @@ public class ChatRedisService {
     // 메시지 상태 업데이트
     public void updateRoomMessageStatus(int roomCode, String userCode, boolean isRead) {
         String key =  "chat_message:" + roomCode;
-        if (isRead) redisTemplate.opsForHash().delete(key, userCode);
+        if (isRead) {
+            redisTemplate.opsForHash().delete(key, userCode);
+            chatSseEmitterService.sendHeaderChatNotification(userCode); // 삭제 후 변경된 상태를 SSE로 전송
+        }
         else redisTemplate.opsForHash().increment(key, userCode, 1);
         log.debug("Updated message status for sender {} and receiver {} in room {}: read={}",
                 userCode, roomCode, isRead);
