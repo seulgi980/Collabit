@@ -72,6 +72,26 @@ public class ProjectRedisService {
         }
     }
 
+    // projectInfoCode에 해당하는 newSurveyRequest 모두 삭제
+    public void removeAllNewSurveyRequestByProjectInfoCode(int projectInfoCode) {
+        log.debug("해당 프로젝트의 모든 요청 알림 삭제 시작");
+
+        try {
+            // 해당 유저의 모든 알림 키 조회
+            String pattern = NEW_SURVEY_REQUEST_KEY_PREFIX + "*::"+projectInfoCode;
+            Set<String> keys = stringRedisTemplate.keys(pattern);
+
+            if (keys.isEmpty()) {
+                log.debug("삭제할 알림이 없음: projectInfoCode={}", projectInfoCode);
+            }
+
+            stringRedisTemplate.delete(keys);
+            log.debug("알림 삭제 완료: 삭제된 알림 수={}", keys.size());
+        } catch (Exception e) {
+            log.error("Redis에서 설문 요청 알림 삭제 중 오류 발생: projectInfoCode={}",projectInfoCode, e);
+        }
+    }
+
     // 해당 유저에게 온 newSurveyResponse 삭제 후 반환 - projectInfoCode : count(참여인원)
     public Map<Integer, Integer> removeAllNotificationByUserCode(String userCode) {
         log.debug("해당 유저의 모든 프로젝트 알림 삭제 시작");

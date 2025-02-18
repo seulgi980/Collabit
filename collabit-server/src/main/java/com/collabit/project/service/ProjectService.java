@@ -13,6 +13,7 @@ import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
 import com.collabit.project.exception.ProjectInfoNotFoundException;
 import com.collabit.project.repository.*;
+import com.collabit.survey.repository.SurveyMultipleRepository;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
@@ -41,6 +42,7 @@ public class ProjectService {
     private final DescriptionRepository descriptionRepository;
     private final PortfolioRepository portfolioRepository;
     private final FeedbackRepository feedbackRepository;
+    private final SurveyMultipleRepository surveyMultipleRepository;
 
     @Value("${minimum.create.condition}")
     private int minimumCreateCondition;
@@ -515,6 +517,11 @@ public class ProjectService {
                 }
             }
         }
+        // 해당 projectInfoCode의 newSurveyRequest 모두 삭제
+        projectRedisService.removeAllNewSurveyRequestByProjectInfoCode(projectInfo.getCode());
+
+        // MongoDB 객관식 정보 삭제 (객관식까지 참여한 경우에는 참여자로 인식하지 않음)
+        surveyMultipleRepository.deleteByProjectInfoCode(projectInfo.getCode());
     }
 
     // 로그인 유저의 메인페이지에 보여줄 프로젝트 리스트 조회 (isDone, new응답, 최신순)
