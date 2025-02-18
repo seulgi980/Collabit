@@ -29,8 +29,6 @@ const CommentReplyInput = ({
   postCode,
   onCancel,
 }: CommentReplyInputProps) => {
-  console.log("부모 댓글 : ", parentCommentCode);
-
   const { userInfo } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -77,16 +75,6 @@ const CommentReplyInput = ({
   };
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(
-      "제출",
-      "게시글 : ",
-      postCode,
-      "댓글 : ",
-      values.comment,
-      "부모 댓글 : ",
-      parentCommentCode,
-    );
-
     createComment({
       content: values.comment,
       postCode,
@@ -117,8 +105,9 @@ const CommentReplyInput = ({
                 <FormItem className="w-full">
                   <FormControl>
                     <Input
+                      disabled={!userInfo}
                       className="w-full border-none shadow-none"
-                      placeholder="댓글을 입력하세요"
+                      placeholder={"댓글을 입력하세요"}
                       {...field}
                     />
                   </FormControl>
@@ -128,7 +117,9 @@ const CommentReplyInput = ({
           </div>
 
           <div className="flex gap-2">
-            <Button type="submit">작성</Button>
+            <Button type="submit" disabled={!userInfo}>
+              작성
+            </Button>
             {onCancel ? (
               <Button type="button" variant="outline" onClick={onCancel}>
                 취소
