@@ -43,6 +43,7 @@ public class ProjectService {
     private final PortfolioRepository portfolioRepository;
     private final FeedbackRepository feedbackRepository;
     private final SurveyMultipleRepository surveyMultipleRepository;
+    private final ProjectSseEmitterService projectSseEmitterService;
 
     @Value("${minimum.create.condition}")
     private int minimumCreateCondition;
@@ -518,7 +519,13 @@ public class ProjectService {
             }
         }
         // 해당 projectInfoCode의 newSurveyRequest 모두 삭제
-        projectRedisService.removeAllNewSurveyRequestByProjectInfoCode(projectInfo.getCode());
+        List<String> contributorUserCodes = projectRedisService.removeAllNewSurveyRequestByProjectInfoCode(projectInfo.getCode());
+
+        // newSurveyRequest를 지운 후 알림 상태를 각 user에게 다시 SSE 전송
+        for (String contributorUserCode : contributorUserCodes) {
+            List<Integer> projectInfoCodes = projectRedisService.findAllNewSurveyResponse(contributorUserCode);
+            projectSseEmitterService.sendNewSurveyRequest(contributorUserCode, projectInfoCodes);
+        }
 
         // MongoDB 객관식 정보 삭제 (객관식까지 참여한 경우에는 참여자로 인식하지 않음)
         surveyMultipleRepository.deleteByProjectInfoCode(projectInfo.getCode());
