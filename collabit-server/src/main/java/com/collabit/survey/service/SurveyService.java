@@ -86,6 +86,10 @@ public class SurveyService {
                 }
                 log.debug("status: " + status + ", updatedAt: " + updatedAt);
 
+                if(projectInfo.getCompletedAt() != null && status != 2) { // 참여하지 않은 마감된 설문은 리스트에 반환하지 않음
+                    continue;
+                }
+
                 SurveyListResponseDTO dto = SurveyListResponseDTO.builder()
                         .surveyCode(projectInfo.getCode())
                         .title(projectInfo.getProject().getTitle())
