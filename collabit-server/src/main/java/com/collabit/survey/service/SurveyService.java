@@ -102,7 +102,7 @@ public class SurveyService {
 
         surveyList.sort(Comparator
             .comparing(SurveyListResponseDTO::getStatus)
-            .thenComparing(SurveyListResponseDTO::getUpdatedAt));
+            .thenComparing(SurveyListResponseDTO::getUpdatedAt).reversed());
         return surveyList;
     }
 
