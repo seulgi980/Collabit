@@ -66,9 +66,9 @@
 <br>
 
 ## 🐣 아키텍처
-
-  <img src="https://github.com/user-attachments/assets/6461d0d8-d78b-428d-8575-2619adc1aea3" width="600"/>
-
+<div align="center>
+  <img src="https://github.com/user-attachments/assets/dd8a6581-529e-4dd8-9df3-fb2876381265" width="600"/>
+</div>
 <br>
 
 ## 👥 팀원 소개  
