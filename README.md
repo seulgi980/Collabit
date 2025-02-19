@@ -74,11 +74,11 @@
 ## 👥 팀원 소개  
 <table>
   <tr>
-    <td align="center"><img src="https://avatars.githubusercontent.com/u/140936963?v=4" width="140px"></td>
-    <td align="center"><img src="https://avatars.githubusercontent.com/u/152263125?v=4" width="140px"></td>
-    <td align="center"><img src="https://avatars.githubusercontent.com/u/140643716?v=4" width="140px"></td>
-    <td align="center"><img src="https://avatars.githubusercontent.com/u/117894789?v=4" width="140px"></td>
-    <td align="center"><img src="https://avatars.githubusercontent.com/u/57521555?v=4" width="140px"></td>
+    <td align="center"><img src="https://avatars.githubusercontent.com/u/140936963?v=4" width="100px"></td>
+    <td align="center"><img src="https://avatars.githubusercontent.com/u/152263125?v=4" width="100px"></td>
+    <td align="center"><img src="https://avatars.githubusercontent.com/u/140643716?v=4" width="100px"></td>
+    <td align="center"><img src="https://avatars.githubusercontent.com/u/117894789?v=4" width="100px"></td>
+    <td align="center"><img src="https://avatars.githubusercontent.com/u/57521555?v=4" width="100px"></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/seon318">정은선</a> <br>BE, FE </td>
