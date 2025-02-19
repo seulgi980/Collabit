@@ -40,11 +40,11 @@
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/2a5c0aa8-60bc-4e8c-85f6-e840f46e7e80" width="400"/>
+  <br>
   <img src="https://github.com/user-attachments/assets/4fd60432-5683-40d7-a794-e9b778b13d4b" width="400"/>
   <img src="https://github.com/user-attachments/assets/28fb4e7b-7aa1-47b1-b105-43d44b2897ad" width="400"/>
-<img src="https://github.com/user-attachments/assets/7e996109-69bf-4c7c-996e-910d3218fd71" width="400"/>
-<img src="https://github.com/user-attachments/assets/b5734ef7-61e8-4798-8482-5ab8fae9e078" width="400"/>
-
+  <img src="https://github.com/user-attachments/assets/7e996109-69bf-4c7c-996e-910d3218fd71" width="400"/>
+  <img src="https://github.com/user-attachments/assets/b5734ef7-61e8-4798-8482-5ab8fae9e078" width="400"/>
 </div>
 
 ### 3️⃣ 리포트를 통한 설문 결과 시각화 & AI 기반 요약 분석  
