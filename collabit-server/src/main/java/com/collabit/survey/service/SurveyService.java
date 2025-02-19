@@ -219,6 +219,13 @@ public class SurveyService {
             throw new BusinessException(ErrorCode.PROJECT_INFO_NOT_FOUND);
         }
 
+        if(projectInfo.getCompletedAt() != null){
+            SurveyMultiple surveyMultiples = getMultiple(userCode, projectInfo.getCode());
+            if(surveyMultiples == null) {
+                throw new BusinessException(ErrorCode.SURVEY_ALREADY_CLOSED);
+            }
+        }
+
         // projectInfoCode와 projectCode로
         List<String> contributorsGithubId = projectContributorRepository
             .findByProjectCodeAndProjectInfoCodeLessThanEqual(
