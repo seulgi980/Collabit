@@ -66,8 +66,8 @@
 <br>
 
 ## 🐣 아키텍처
-<div align="center>
-  <img src="https://github.com/user-attachments/assets/dd8a6581-529e-4dd8-9df3-fb2876381265" width="600"/>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/184b12ca-624a-4d23-889f-b84bfeaf55d3" width="600"/>
 </div>
 <br>
 
