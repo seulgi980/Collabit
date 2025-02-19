@@ -19,27 +19,32 @@
 <br>
 
 ## 🐣 핵심 기능 MVP
-![Image](https://github.com/user-attachments/assets/9aa6208b-05d7-45c6-91f4-a993084c172e)
+<div align="center" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+  <img src="https://github.com/user-attachments/assets/9aa6208b-05d7-45c6-91f4-a993084c172e" width="600" style="max-width: 600px;"/>
+</div>
 
 ### 1. GITHUB API 연동 실제 프로젝트 기반 설문 요청 기능
 
-![Image](https://github.com/user-attachments/assets/73b19342-7430-4e85-b35d-f8489a5ebc5f)
-
-
-![Image](https://github.com/user-attachments/assets/6e71f132-15d9-49f6-aacc-9d9facad985e)
+<div align="center" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+  <img src="https://github.com/user-attachments/assets/73b19342-7430-4e85-b35d-f8489a5ebc5f" width="400" style="max-width: 400px;"/>
 
 <br>
+
+  <img src="https://github.com/user-attachments/assets/6e71f132-15d9-49f6-aacc-9d9facad985e" width="400" style="max-width: 400;"/>
+</div>
 
 ### 2. AI 챗봇을 활용한 주관식 설문 + 논문을 기반으로 한 신뢰성있는 객관식 설문
 
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/2a5c0aa8-60bc-4e8c-85f6-e840f46e7e80" width="400" style="max-width: 400;"/>
+</div>
 
-![Image](https://github.com/user-attachments/assets/2a5c0aa8-60bc-4e8c-85f6-e840f46e7e80)
+### 3. 리포트를 통한 설문 결과 시각화. AI를 통한 요약분석 및 공유링크 PDF추출 기능 제공
 
-<br>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/95d1ebba-f465-41f2-84ba-9cf36a0f1ff5" width="400" style="max-width: 400;"/>
+</div>
 
-### 3. 리포트를 통한 설문 결과 시각화. AI를 통한 요약분석석 및 공유링크 PDF추출 기능 제공
-
-![Image](https://github.com/user-attachments/assets/95d1ebba-f465-41f2-84ba-9cf36a0f1ff5)
 
 
 ## 👑 주요 기능들
