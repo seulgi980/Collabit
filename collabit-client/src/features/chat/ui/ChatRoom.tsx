@@ -77,8 +77,6 @@ const ChatRoom = () => {
 
     if (!message.trim()) return;
     if (!userInfo || !sendMessage || !chatRoomDetail) {
-      console.log(userInfo, sendMessage, chatRoomDetail);
-      console.error("❌ WebSocket이 연결되지 않거나 채팅방 정보가 없습니다.");
       return;
     }
 
@@ -94,11 +92,7 @@ const ChatRoom = () => {
 
   // 채팅방 정보가 없을 경우 로딩 상태 표시
   if (chatRoomLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        🔄 채팅방 로딩 중...
-      </div>
-    );
+    return null;
   }
 
   if (chatRoomError || !chatRoomDetail) {

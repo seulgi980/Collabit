@@ -13,13 +13,19 @@ import formatRelativeTime from "@/shared/utils/formatRelativeTime";
 import { DeleteIcon, Ellipsis, GithubIcon } from "lucide-react";
 import { useProjectList } from "@/features/project/api/useProjectList";
 import calcRatio from "@/shared/utils/calcRatio";
+import { useNotificationStore } from "@/shared/lib/stores/NotificationStore";
+import { useShallow } from "zustand/shallow";
+import { useEffect } from "react";
+import { toast } from "@/shared/hooks/use-toast";
 
 interface ProjectListCardProps {
   organization: string;
   project: ProjectResponse;
   onClick?: (e: React.MouseEvent) => void;
 }
-
+const MINIMUM_PARTICIPANT_CONDITION = Number(
+  process.env.NEXT_PUBLIC_MINIMUM_PARTICIPANT_CONDITION,
+);
 const ProjectListCard = ({
   project,
   organization,
@@ -29,7 +35,20 @@ const ProjectListCard = ({
 
   const contributorsCount = project.contributors?.length;
   const participantsRatio = calcRatio(project.participant, contributorsCount);
-
+  const { surveyResponses } = useNotificationStore(
+    useShallow((state) => ({
+      surveyResponses: state.surveyResponses,
+    })),
+  );
+  useEffect(() => {
+    if (surveyResponses.includes(project.code)) {
+      toast({
+        title: `[${project.title}] 새로운 응답이 도착했습니다`,
+        description:
+          "현재 참여율을 확인하고, 목표 응답률 달성 시 설문을 종료하실 수 있습니다.",
+      });
+    }
+  }, [surveyResponses, project.code, project.title]);
   return (
     <Card
       onClick={onClick}
@@ -50,19 +69,16 @@ const ProjectListCard = ({
             <Ellipsis />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            {/* 설문 참여 인원이 0명일 때만 프로젝트 삭제 가능*/}
-            {project.participant == 0 && (
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveProject(project.code);
-                }}
-                className="cursor-pointer text-red-500"
-              >
-                <DeleteIcon />
-                프로젝트 삭제
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemoveProject(project.code, project.participant);
+              }}
+              className="cursor-pointer text-red-500"
+            >
+              <DeleteIcon />
+              프로젝트 삭제
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
                 window.open(
@@ -101,6 +117,14 @@ const ProjectListCard = ({
             className="z-5 bg-black"
             onClick={(e) => {
               e.stopPropagation();
+              if (project.participant === 0) {
+                toast({
+                  title: "참여자가 부족합니다.",
+                  description: `최소 ${MINIMUM_PARTICIPANT_CONDITION}명 이상 참여해야 설문을 종료할 수 있습니다.`,
+                  variant: "destructive",
+                });
+                return;
+              }
               handleFinishSurvey(project.code);
             }}
           >

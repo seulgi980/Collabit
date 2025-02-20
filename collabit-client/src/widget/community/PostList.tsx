@@ -13,7 +13,8 @@ const PostList = ({ initialPosts }: PostListProps) => {
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: ["posts", "infinite"],
+      queryKey: ["myPosts", "infinite"],
+      staleTime: 0,
       queryFn: ({ pageParam = 0 }) =>
         getPostListAPI({ currentPage: pageParam }),
       initialPageParam: 0,

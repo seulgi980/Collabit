@@ -33,6 +33,7 @@ public class ChatRoomDetailService {
 
     // 채팅방 디테일 조회
     public ChatRoomDetailResponseDTO getChatRoomDetail(String userCode, int roomCode) {
+        markMessagesAsRead(roomCode, userCode);
         if (!isUserInChatRoom(userCode, roomCode)) {
             log.debug("User {} is not in chat room", userCode);
             throw new UserNotInChatRoomException();
@@ -54,11 +55,8 @@ public class ChatRoomDetailService {
             log.debug("User {} is not in chat room", userCode);
             throw new UserNotInChatRoomException();
         }
-
         Pageable pageable = PageRequest.of(pageNumber, 50);
         Page<ChatMessage> chatMessagePage = chatMessageRepository.findByRoomCodeOrderByTimestampDesc(roomCode, pageable);
-        log.debug("ChatMessagePage {}", chatMessagePage.toString());
-
         PageResponseDTO<ChatMessageResponseDTO> chatMessages = PageResponseDTO.<ChatMessageResponseDTO>builder()
                 .content(chatMessagePage.getContent().stream()
                         .map(this::convertToResponseDTO)
@@ -70,7 +68,6 @@ public class ChatRoomDetailService {
                 .last(chatMessagePage.isLast())
                 .hasNext(chatMessagePage.hasNext())
                 .build();
-
         log.debug("ChatMessages {}", chatMessages);
         return chatMessages;
     }
@@ -90,17 +87,14 @@ public class ChatRoomDetailService {
 
         log.debug("ChatMessage saving... {}", chatMessage);
         chatMessageRepository.save(chatMessage);
-
         ChatRoom chatRoom = chatRoomRepository.findById(roomCode).orElseThrow(ChatRoomNotFoundException::new);
+        //상대방 유저코드 얻어오기
         String receiverCode;
         if (chatRoom.getUser1().getCode().equals(userCode)) {receiverCode = chatRoom.getUser2().getCode();}
         else {receiverCode = chatRoom.getUser1().getCode();}
-
         chatRedisService.updateRoomMessageStatus(roomCode, receiverCode, false);
-
         chatRoom.setUpdatedAt(LocalDateTime.now());
         chatRoomRepository.save(chatRoom);
-
         log.info("메시지 저장 완료: Room {}, Message {}", roomCode, chatMessageRequestDTO.getMessage());
     }
 
@@ -124,5 +118,13 @@ public class ChatRoomDetailService {
 
     private User getOtherUser(ChatRoom chatRoom, String userCode) {
         return chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
+    }
+
+    // roomCode로 채팅방 조회 후 상대 참여자 userCode 반환
+    public String getOtherUserByRoomCode(int roomCode, String userCode) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomCode)
+                .orElseThrow(ChatRoomNotFoundException::new);
+        User otherUser = getOtherUser(chatRoom, userCode);
+        return otherUser.getCode();
     }
 }

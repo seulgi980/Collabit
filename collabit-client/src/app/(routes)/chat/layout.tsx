@@ -7,6 +7,7 @@ import { useChatRoomList } from "@/features/chat/api/useChatRoomList";
 import useSocket from "@/features/chat/api/useSocket";
 import { useChatStore } from "@/shared/lib/stores/chatStore";
 import { WebSocketMessage } from "@/shared/types/model/Chat";
+import { useChat } from "@/features/chat/api/useChat";
 
 const ChatLayout = ({
   list,
@@ -19,25 +20,23 @@ const ChatLayout = ({
   const isChatRoom =
     (pathname.includes("/chat/") && pathname !== "/chat") ||
     (pathname.includes("/survey/") && pathname !== "/survey");
+  const { updateMessages } = useChat();
 
   // WebSocket 연결
   const { clientRef, connectionStatus } = useSocket();
-  const { setSendMessage, addMessage, chatId } = useChatStore();
+  const { setSendMessage, chatId } = useChatStore();
 
   useEffect(() => {
     if (!clientRef.current) return;
 
     const handleSendMessage = async (message: WebSocketMessage) => {
-      console.log("📩 메시지 전송:", message);
       if (!clientRef.current?.connected) {
-        console.error("❌ WebSocket이 연결되지 않음.");
         return;
       }
       if (!chatId) {
-        console.error("❌ chatId가 설정되지 않음.");
         return;
       }
-      addMessage(message);
+      updateMessages(message);
 
       try {
         await connectionStatus;
@@ -45,7 +44,6 @@ const ChatLayout = ({
           destination: `/app/chat.message/${chatId}`,
           body: JSON.stringify(message),
         });
-        console.log("✅ Message sent successfully");
       } catch (error) {
         console.error("❌ Failed to send message:", error);
       }

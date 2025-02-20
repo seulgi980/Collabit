@@ -25,12 +25,15 @@ public class ProjectRedisSubscriber implements MessageListener { //Redis의 특�
         try {
             String body = new String(message.getBody(), StandardCharsets.UTF_8);
 
-            // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9
+            if (!body.startsWith("newSurveyRequest") && !body.startsWith("newSurveyResponse")){
+                return;
+            }
+
+            // key 구조 = newSurveyResponse::f76f4f15-bab2-413b-881e-ae34799f9b84::9::f86f4f15-bab2-413b-881e-ae34799f9b84
             String[] keyParts = body.split("::");
             String key = keyParts[0];
             String targetUserCode = keyParts[1]; // 설문조사의 대상 userCode
             String projectInfoCode = keyParts[2];
-            String responseUserCode = keyParts[3]; // 설문조사 응답한 사람의 userCode
 
             // 새로운 설문 응답이 들어올 때 처리
             if (key != null) {
@@ -40,6 +43,7 @@ public class ProjectRedisSubscriber implements MessageListener { //Redis의 특�
                     log.debug("설문조사 응답 알림 전송 완료");
 
                     // 설문 응답이 들어옴 = 응답을 했으므로 설문 요청이 삭제되어야 함 (삭제 후 해당 유저의 요청 알림 반환)
+                    String responseUserCode = keyParts[3]; // 설문조사 응답한 사람의 userCode
                     projectRedisService.removeNewSurveyRequest(responseUserCode, projectInfoCode);
                     List<Integer> newRequestCodes = projectRedisService.findAllNewSurveyRequest(responseUserCode);
                     projectSseEmitterService.sendNewSurveyRequest(responseUserCode, newRequestCodes);
