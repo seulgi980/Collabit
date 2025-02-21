@@ -44,22 +44,22 @@ const HeaderDesktop = ({
       <div className="flex items-center gap-4">
         {/* 메뉴 */}
         <NavigationMenu>
-          <NavigationMenuList className="flex items-center">
+          <NavigationMenuList className="flex items-center gap-4">
             {menuList!.map((i) => (
               <NavigationMenuItem
                 key={i.name}
                 className={cn(
-                  "relative rounded-md px-4 py-2 hover:bg-slate-100",
+                  "relative rounded-md px-2 py-1 hover:bg-slate-100",
                   (pathname.startsWith(i.href) ||
                     (i.href === "/chat" && pathname.startsWith("/survey"))) &&
                     "bg-slate-100",
                 )}
               >
-                <NavigationMenuLink className="text-sm" href={i.href}>
+                <NavigationMenuLink className="px-1 py-1 text-sm" href={i.href}>
                   {i.name}
                 </NavigationMenuLink>
                 {i.isNew && (
-                  <div className="absolute -top-2 right-0 h-3 w-3">
+                  <div className="absolute -right-1 -top-3 h-3 w-3">
                     <span className="absolute right-0.5 top-1.5 inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-50" />
                     <span className="relative inline-flex size-2 rounded-full bg-violet-500" />
                   </div>

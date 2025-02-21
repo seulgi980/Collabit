@@ -6,15 +6,13 @@ import { Client } from "@stomp/stompjs";
 import { useAuth } from "@/features/auth/api/useAuth";
 import { useChatRoomList } from "./useChatRoomList";
 import { useChat } from "@/features/chat/api/useChat";
-import { useQueryClient } from "@tanstack/react-query";
 const useSocket = () => {
   const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
   const clientRef = useRef<Client | null>(null);
   const subscribedRooms = useRef<Set<number>>(new Set()); // 구독된 방 추적용
   const { userInfo } = useAuth(); // 사용자의 채팅방 목록
   const { chatList } = useChatRoomList();
-  const { addMessage } = useChat();
-  const queryClient = useQueryClient();
+  const { updateMessages } = useChat();
 
   // WebSocket 연결 및 구독 설정
   useEffect(() => {
@@ -28,11 +26,9 @@ const useSocket = () => {
       heartbeatIncoming: 0,
       heartbeatOutgoing: 0,
       onConnect: () => {
-        console.log("✅ WebSocket 연결 성공");
         setConnectionStatus("connected");
       },
       onDisconnect: () => {
-        console.log("🔴 WebSocket 연결 해제");
         if (chatList) {
           chatList.forEach((room) => {
             const roomCode = room.roomCode;
@@ -76,16 +72,13 @@ const useSocket = () => {
       return;
     }
 
-    console.log(`✅ 채팅방 ${roomCode} 구독 시작`);
     clientRef.current?.subscribe(`/topic/chat/${roomCode}`, (message) => {
       const receivedMessage = JSON.parse(message.body);
 
       // 받은 메시지가 내가 보낸 메시지가 아닐 때만 추가
       if (receivedMessage.nickname !== userInfo?.nickname) {
-        addMessage(receivedMessage);
+        updateMessages(receivedMessage);
       }
-
-      queryClient.invalidateQueries({ queryKey: ["chatList"] });
     });
   };
 

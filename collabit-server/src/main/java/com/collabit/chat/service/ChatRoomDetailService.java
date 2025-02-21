@@ -33,6 +33,7 @@ public class ChatRoomDetailService {
 
     // 채팅방 디테일 조회
     public ChatRoomDetailResponseDTO getChatRoomDetail(String userCode, int roomCode) {
+        markMessagesAsRead(roomCode, userCode);
         if (!isUserInChatRoom(userCode, roomCode)) {
             log.debug("User {} is not in chat room", userCode);
             throw new UserNotInChatRoomException();
@@ -43,7 +44,6 @@ public class ChatRoomDetailService {
                 .profileImage(otherUser.getProfileImage())
                 .nickname(otherUser.getNickname())
                 .build();
-        markMessagesAsRead(roomCode, userCode);
         log.debug("ChatRoomDetail {}", chatRoomDetail);
         return chatRoomDetail;
     }
@@ -118,5 +118,13 @@ public class ChatRoomDetailService {
 
     private User getOtherUser(ChatRoom chatRoom, String userCode) {
         return chatRoom.getUser1().getCode().equals(userCode) ? chatRoom.getUser2() : chatRoom.getUser1();
+    }
+
+    // roomCode로 채팅방 조회 후 상대 참여자 userCode 반환
+    public String getOtherUserByRoomCode(int roomCode, String userCode) {
+        ChatRoom chatRoom = chatRoomRepository.findById(roomCode)
+                .orElseThrow(ChatRoomNotFoundException::new);
+        User otherUser = getOtherUser(chatRoom, userCode);
+        return otherUser.getCode();
     }
 }

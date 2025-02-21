@@ -13,6 +13,7 @@ import com.collabit.project.domain.dto.*;
 import com.collabit.project.domain.entity.*;
 import com.collabit.project.exception.ProjectInfoNotFoundException;
 import com.collabit.project.repository.*;
+import com.collabit.survey.repository.SurveyMultipleRepository;
 import com.collabit.user.domain.entity.User;
 import com.collabit.user.exception.UserNotFoundException;
 import com.collabit.user.repository.UserRepository;
@@ -41,9 +42,14 @@ public class ProjectService {
     private final DescriptionRepository descriptionRepository;
     private final PortfolioRepository portfolioRepository;
     private final FeedbackRepository feedbackRepository;
+    private final SurveyMultipleRepository surveyMultipleRepository;
+    private final ProjectSseEmitterService projectSseEmitterService;
 
     @Value("${minimum.create.condition}")
     private int minimumCreateCondition;
+
+    @Value("${minimum.done.condition}")
+    private int minimumDoneCondition;
 
     // User 검증 메소드
     private User findUserByCode(String userCode) {
@@ -356,8 +362,11 @@ public class ProjectService {
         // Redis에 남아있는 알림 정보, 업데이트 되지 않은 참여자 업데이트
         removeAllNotification(userCode);
 
+        // 해당 설문에 참여하지 않은 유저의 설문 요청 알림 삭제 (남아 있는 해당 projectInfoCode 알림 삭제)
+        removeNewSurveyRequest(projectInfo.getCode());
+
         // 설문 참여자가 전체 컨트리뷰터 수의 1/2 이상일 경우에만 마감 가능
-        if(projectInfo.getParticipant() < projectInfo.getTotal()/2) {
+        if(projectInfo.getParticipant() < minimumDoneCondition) { // projectInfo.getTotal()/2
             log.error("설문 참여자가 부족한 경우 - 해당 ProjectInfo의 participant 수: {}, total 수: {}", projectInfo.getParticipant(), projectInfo.getTotal());
             throw new RuntimeException("해당 프로젝트의 설문 참여자 수가 부족합니다. 전체 인원의 반 이상이 참여해야 마감이 가능합니다.");
         }
@@ -515,6 +524,17 @@ public class ProjectService {
                 }
             }
         }
+        // 해당 projectInfoCode의 newSurveyRequest 모두 삭제
+        List<String> contributorUserCodes = projectRedisService.removeAllNewSurveyRequestByProjectInfoCode(projectInfo.getCode());
+
+        // newSurveyRequest를 지운 후 알림 상태를 각 user에게 다시 SSE 전송
+        for (String contributorUserCode : contributorUserCodes) {
+            List<Integer> projectInfoCodes = projectRedisService.findAllNewSurveyRequest(contributorUserCode);
+            projectSseEmitterService.sendNewSurveyRequest(contributorUserCode, projectInfoCodes);
+        }
+
+        // MongoDB 객관식 정보 삭제 (객관식까지 참여한 경우에는 참여자로 인식하지 않음)
+        surveyMultipleRepository.deleteByProjectInfoCode(projectInfo.getCode());
     }
 
     // 로그인 유저의 메인페이지에 보여줄 프로젝트 리스트 조회 (isDone, new응답, 최신순)
@@ -608,6 +628,21 @@ public class ProjectService {
                     }
                 });
         log.debug("Redis에 알림이 있던 전체 projectInfo {}개에 대해 participant 수 업데이트 완료", notificationList.size());
+    }
+
+    public void removeNewSurveyRequest(int projectInfoCode){
+        log.debug("해당 projectInfoCode에 해당하는 모든 설문 요청 알림 삭제 - 시작");
+
+        // 해당 projectInfoCode의 newSurveyRequest 모두 삭제
+        List<String> userCodeList = projectRedisService.removeAllNewSurveyRequestByProjectInfoCode(projectInfoCode);
+
+        // newSurveyRequest를 지운 후 알림 상태를 각 user에게 다시 SSE 전송
+        for (String userCode : userCodeList) {
+            List<Integer> projectInfoCodes = projectRedisService.findAllNewSurveyRequest(userCode);
+            projectSseEmitterService.sendNewSurveyRequest(userCode, projectInfoCodes);
+        }
+
+        log.debug("설문 요청 알림 삭제 - 완료");
     }
 
     // 육각형 데이터 조회
