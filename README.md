@@ -21,16 +21,14 @@
 <br>
 
 ## 🏆 핵심 기능 (MVP)  
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/9aa6208b-05d7-45c6-91f4-a993084c172e" width="600"/>
-</div>
+
 
 ### 1️⃣ GitHub API 연동: 실제 프로젝트 기반 설문 요청  
 - 새로운 프로젝트를 등로하면 해당 유저들에게 설문이 요청됩니다.
 - 프로젝트 리스트에서는 설문 링크를 복사해 공유할 수 있고, 설문 종료를 시킬 수 있습니다.
 
 <div align="center">
-  <img src="img/프로젝트등록_데스크탑.gif" width="400"/>
+  <img src="img/프로젝트등록_데스크탑.gif" width="800"/>
   <img src="img/프로젝트등록_안드로이드.gif" width="400"/>
 </div>
 
@@ -39,9 +37,9 @@
 - 설문에 참여하면 해당 유저의 프로젝트 설문문 참여자수가 증가합니다
 
 <div align="center">
-  <img src="img/설문조사_데스크탑.gif" width="400"/>
+  <img src="img/설문조사_데스크탑.gif" width="800"/>
   <img src="img/설문조사_안드로이드.gif" width="400"/>
-  <img src="img/설문종료_데스크탑.gif" width="400"/>
+  <img src="img/설문종료_데스크탑.gif" width="800"/>
 </div>
 
 ### 3️⃣ 리포트를 통한 설문 결과 시각화 & AI 기반 요약 분석  
@@ -51,7 +49,7 @@
 - 리포트 생성을 마치면 우측 상단 버튼을 통해 링크를 공유하거나 PDF를 받을 수 있습니다.
 - 마감된 프로젝트가 추가된경우 우측 상단 리프레시 버튼을 통해 리포트 재생성이 가능합니다.
 <div align="center">
-  <img src="img/포트폴리오생성_데스크탑.gif" width="400"/>
+  <img src="img/포트폴리오생성_데스크탑.gif" width="800"/>
   <img src="img/포트폴리오생성_안드로이드.gif" width="400"/>
 </div>
 
