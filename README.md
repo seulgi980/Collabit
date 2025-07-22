@@ -1,7 +1,3 @@
-<div align="center">
-  <img src="file:///C:/Users/hanse/Downloads/logo.svg" width="400"/>
-</div>
-
 
 # 협업능력 피드백 플랫폼  
 **동료들의 솔직한 피드백으로 나의 강약점을 발견하고 평균치와 비교하여 구체적인 성장 방향을 찾아보세요!**  
